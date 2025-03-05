@@ -99,7 +99,7 @@ export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: H
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How Ta'awenu Works</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">How SANAD Works</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               A simple process to connect innovators, organizations, and resources to create impactful solutions together.
             </p>
@@ -143,7 +143,7 @@ export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: H
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Who Can Collaborate on Ta'awenu</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Who Can Collaborate on SANAD</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our platform brings together diverse stakeholders to create powerful innovation ecosystems.
             </p>
@@ -320,7 +320,7 @@ export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: H
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to Start Collaborating?</h2>
           <p className="text-xl text-indigo-100 max-w-3xl mx-auto mb-8">
-            Join Ta'awenu today and be part of a growing ecosystem of innovators creating solutions for tomorrow's challenges.
+            Join SANAD today and be part of a growing ecosystem of innovators creating solutions for tomorrow's challenges.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <button 
@@ -344,7 +344,7 @@ export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: H
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Ta'awenu</h3>
+              <h3 className="text-lg font-semibold mb-4">SANAD</h3>
               <p className="text-gray-400">
                 Empowering collaboration and innovation across sectors to solve complex challenges.
               </p>
@@ -370,14 +370,14 @@ export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: H
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="mailto:info@taawenu.com" className="hover:text-white">info@taawenu.com</a></li>
+                <li><a href="mailto:info@sanad.com" className="hover:text-white">info@sanad.com</a></li>
                 <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Support</button></li>
                 <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Contact Us</button></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400">© 2023 Ta'awenu. All rights reserved.</p>
+            <p className="text-gray-400">© 2023 SANAD. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <button onClick={onNavigateToWorkspace} className="text-gray-400 hover:text-white">Terms</button>
               <button onClick={onNavigateToWorkspace} className="text-gray-400 hover:text-white">Privacy</button>

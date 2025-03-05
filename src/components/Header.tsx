@@ -15,7 +15,7 @@ export function Header({ onNavigateToWorkspace }: HeaderProps) {
               onClick={onNavigateToWorkspace} 
               className="text-2xl font-bold text-indigo-600 focus:outline-none"
             >
-              Ta'awenu
+              SANAD
             </button>
           </div>
           
