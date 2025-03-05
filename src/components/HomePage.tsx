@@ -17,9 +17,16 @@ import { Header } from './Header';
 interface HomePageProps {
   onNavigateToWorkspace: () => void;
   onNavigateToCollaboration: (id: string) => void;
+  onNavigateToChallenges?: () => void;
+  onNavigateToPartnerships?: () => void;
 }
 
-export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: HomePageProps) {
+export function HomePage({ 
+  onNavigateToWorkspace, 
+  onNavigateToCollaboration,
+  onNavigateToChallenges = onNavigateToWorkspace,
+  onNavigateToPartnerships = onNavigateToWorkspace
+}: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
@@ -31,7 +38,11 @@ export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: H
 
   return (
     <div className="min-h-screen bg-white">
-      <Header onNavigateToWorkspace={onNavigateToWorkspace} />
+      <Header 
+        onBackToHome={() => {}}
+        onNavigateToChallenges={onNavigateToChallenges}
+        onNavigateToPartnerships={onNavigateToPartnerships}
+      />
       
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-indigo-600 to-blue-500 py-20">
@@ -352,9 +363,8 @@ export function HomePage({ onNavigateToWorkspace, onNavigateToCollaboration }: H
             <div>
               <h3 className="text-lg font-semibold mb-4">Explore</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Collaborations</button></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Challenges</button></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Innovators</button></li>
+                <li><button onClick={onNavigateToPartnerships} className="hover:text-white">Partnerships</button></li>
+                <li><button onClick={onNavigateToChallenges} className="hover:text-white">Challenges</button></li>
                 <li><button onClick={onNavigateToWorkspace} className="hover:text-white">About Us</button></li>
               </ul>
             </div>

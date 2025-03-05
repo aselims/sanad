@@ -9,6 +9,7 @@ import type { Collaboration } from './types';
 function App() {
   const [selectedCollaboration, setSelectedCollaboration] = useState<string | null>(null);
   const [showHomePage, setShowHomePage] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'challenge' | 'partnership'>('all');
 
   const sampleCollaborations: Collaboration[] = [
     {
@@ -18,6 +19,7 @@ function App() {
       participants: ['Ministry of Transport', 'TechStart Inc.', 'Urban Planning Institute', 'AI Solutions Ltd'],
       status: 'active',
       challengeId: '1',
+      type: 'challenge',
       collaborationRequests: [
         {
           id: '1-1',
@@ -42,6 +44,7 @@ function App() {
       participants: ['HealthTech Research', 'Medical University', 'DataAI Corp'],
       status: 'proposed',
       challengeId: '2',
+      type: 'partnership',
       collaborationRequests: [
         {
           id: '2-1',
@@ -58,6 +61,7 @@ function App() {
       description: 'Multi-stakeholder collaboration to develop new solar energy storage solutions. Research and development of advanced energy storage technologies for renewable energy systems.',
       participants: ['EnergyTech Solutions', 'National Research Lab', 'GreenFund Ventures'],
       status: 'active',
+      type: 'challenge',
       collaborationRequests: [
         {
           id: '3-1',
@@ -70,7 +74,13 @@ function App() {
     }
   ];
 
-  const selectedProject = sampleCollaborations.find(c => c.id === selectedCollaboration);
+  const filteredCollaborations = activeFilter === 'all' 
+    ? sampleCollaborations 
+    : sampleCollaborations.filter(c => c.type === activeFilter);
+
+  const selectedProject = selectedCollaboration 
+    ? sampleCollaborations.find(c => c.id === selectedCollaboration) 
+    : null;
 
   // For demo purposes, clicking on a collaboration will navigate to the collaboration details
   const handleViewCollaboration = (id: string) => {
@@ -88,42 +98,66 @@ function App() {
   const handleNavigateToWorkspace = () => {
     setSelectedCollaboration(null);
     setShowHomePage(false);
+    setActiveFilter('all');
+  };
+
+  // Navigate to challenges
+  const handleNavigateToChallenges = () => {
+    setSelectedCollaboration(null);
+    setShowHomePage(false);
+    setActiveFilter('challenge');
+  };
+
+  // Navigate to partnerships
+  const handleNavigateToPartnerships = () => {
+    setSelectedCollaboration(null);
+    setShowHomePage(false);
+    setActiveFilter('partnership');
   };
 
   if (showHomePage) {
     return (
       <HomePage 
         onNavigateToWorkspace={handleNavigateToWorkspace} 
-        onNavigateToCollaboration={handleViewCollaboration} 
+        onNavigateToCollaboration={handleViewCollaboration}
+        onNavigateToChallenges={handleNavigateToChallenges}
+        onNavigateToPartnerships={handleNavigateToPartnerships}
       />
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onNavigateToWorkspace={handleBackToHome} />
+      <Header 
+        onBackToHome={handleBackToHome}
+        onNavigateToChallenges={handleNavigateToChallenges}
+        onNavigateToPartnerships={handleNavigateToPartnerships}
+      />
       <WorkspaceHeader />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {selectedProject ? (
           <CollaborationDetails
             collaboration={selectedProject}
-            onBack={handleBackToHome}
+            onBack={() => setSelectedCollaboration(null)}
           />
         ) : (
           <div className="space-y-8">
             <div>
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Active Collaborations</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                {activeFilter === 'all' ? 'All Initiatives' : 
+                 activeFilter === 'challenge' ? 'Challenges' : 'Partnerships'}
+              </h2>
               <CollaborationList
-                collaborations={sampleCollaborations.filter(c => c.status === 'active')}
+                collaborations={filteredCollaborations.filter(c => c.status === 'active')}
                 onViewDetails={handleViewCollaboration}
               />
             </div>
             
             <div>
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Proposed Collaborations</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Proposed Initiatives</h2>
               <CollaborationList
-                collaborations={sampleCollaborations.filter(c => c.status === 'proposed')}
+                collaborations={filteredCollaborations.filter(c => c.status === 'proposed')}
                 onViewDetails={handleViewCollaboration}
               />
             </div>

@@ -45,4 +45,5 @@ export interface Collaboration {
   challengeId?: string;
   description: string;
   collaborationRequests?: CollaborationRequest[];
+  type?: 'challenge' | 'partnership';
 }
