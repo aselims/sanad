@@ -47,3 +47,14 @@ export interface Collaboration {
   collaborationRequests?: CollaborationRequest[];
   type?: 'challenge' | 'partnership';
 }
+
+export interface Innovator {
+  id: string;
+  name: string;
+  organization: string;
+  type: 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual';
+  expertise: string[];
+  description: string;
+  profileImage?: string;
+  tags: string[];
+}

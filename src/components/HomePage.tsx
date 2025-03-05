@@ -19,13 +19,15 @@ interface HomePageProps {
   onNavigateToCollaboration: (id: string) => void;
   onNavigateToChallenges?: () => void;
   onNavigateToPartnerships?: () => void;
+  onNavigateToInnovators?: () => void;
 }
 
 export function HomePage({ 
   onNavigateToWorkspace, 
   onNavigateToCollaboration,
   onNavigateToChallenges = onNavigateToWorkspace,
-  onNavigateToPartnerships = onNavigateToWorkspace
+  onNavigateToPartnerships = onNavigateToWorkspace,
+  onNavigateToInnovators = onNavigateToWorkspace
 }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -36,12 +38,19 @@ export function HomePage({
     }
   };
 
+  // Log the navigation functions to verify they exist
+  console.log("HomePage navigation functions:", {
+    onNavigateToChallenges,
+    onNavigateToPartnerships,
+    onNavigateToInnovators
+  });
+
   return (
     <div className="min-h-screen bg-white">
       <Header 
-        onBackToHome={() => {}}
         onNavigateToChallenges={onNavigateToChallenges}
         onNavigateToPartnerships={onNavigateToPartnerships}
+        onNavigateToInnovators={onNavigateToInnovators}
       />
       
       {/* Hero Section */}
@@ -82,25 +91,25 @@ export function HomePage({
             {/* CTA Buttons */}
             <div className="flex flex-wrap justify-center gap-4">
               <button 
-                onClick={onNavigateToWorkspace}
+                onClick={onNavigateToPartnerships}
                 className="px-6 py-3 bg-white text-indigo-700 rounded-lg shadow-md hover:bg-gray-50 font-medium flex items-center"
               >
                 <Users className="h-5 w-5 mr-2" />
-                Find a Collaboration
+                Find Partnerships
               </button>
               <button 
-                onClick={onNavigateToWorkspace}
+                onClick={onNavigateToChallenges}
                 className="px-6 py-3 bg-indigo-800 text-white rounded-lg shadow-md hover:bg-indigo-900 font-medium flex items-center"
               >
-                <Lightbulb className="h-5 w-5 mr-2" />
-                Discover Innovators
+                <Target className="h-5 w-5 mr-2" />
+                Explore Challenges
               </button>
               <button 
-                onClick={onNavigateToWorkspace}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 font-medium flex items-center"
+                onClick={onNavigateToInnovators}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 font-medium flex items-center"
               >
-                <Target className="h-5 w-5 mr-2" />
-                Post a Challenge
+                <Users className="h-5 w-5 mr-2" />
+                Discover Innovators
               </button>
             </div>
           </div>
@@ -366,6 +375,7 @@ export function HomePage({
               <ul className="space-y-2 text-gray-400">
                 <li><button onClick={onNavigateToPartnerships} className="hover:text-white">Partnerships</button></li>
                 <li><button onClick={onNavigateToChallenges} className="hover:text-white">Challenges</button></li>
+                <li><button onClick={onNavigateToInnovators} className="hover:text-white">Innovators</button></li>
                 <li><button onClick={onNavigateToWorkspace} className="hover:text-white">About Us</button></li>
               </ul>
             </div>

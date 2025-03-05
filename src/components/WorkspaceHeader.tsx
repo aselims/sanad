@@ -14,16 +14,7 @@ export function WorkspaceHeader() {
             </button>
           </div>
           
-          <div className="flex space-x-8">
-            <button className="text-gray-900 flex items-center px-1 py-4 border-b-2 border-indigo-500">
-              <Users className="h-5 w-5 mr-2" />
-              <span>Active Collaborations</span>
-            </button>
-            <button className="text-gray-500 hover:text-gray-700 flex items-center px-1 py-4 border-b-2 border-transparent">
-              <MessageSquare className="h-5 w-5 mr-2" />
-              <span>Messages</span>
-            </button>
-          </div>
+          {/* Removed the tab navigation as requested */}
         </div>
       </div>
     </div>
