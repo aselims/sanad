@@ -3,7 +3,7 @@ import {
   Users, Calendar, ArrowLeft, FileText, 
   MessageSquare, Target, BarChart, Link,
   UserPlus, Briefcase, Award, Handshake,
-  Clock, DollarSign
+  Clock, DollarSign, AlertCircle
 } from 'lucide-react';
 import type { Collaboration, CollaborationRequest, InterestSubmission } from '../types';
 import { ExpressInterestModal } from './ExpressInterestModal';
@@ -13,6 +13,36 @@ type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'i
 interface CollaborationDetailsProps {
   collaboration: Collaboration;
   onBack: () => void;
+}
+
+function ComingSoonOverlay({ children, title }: { children: React.ReactNode, title?: string }) {
+  const [isTransparent, setIsTransparent] = useState(false);
+
+  const toggleTransparency = () => {
+    setIsTransparent(!isTransparent);
+  };
+
+  return (
+    <div className="relative">
+      {children}
+      <div 
+        onClick={toggleTransparency}
+        className={`absolute inset-0 ${isTransparent ? 'bg-gray-100 bg-opacity-30' : 'bg-gray-100 bg-opacity-99'} 
+          backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-300 cursor-pointer`}
+      >
+        <AlertCircle className={`h-8 w-8 text-indigo-500 mb-2 ${isTransparent ? 'opacity-50' : 'opacity-100'}`} />
+        <p className={`text-lg font-medium text-gray-800 ${isTransparent ? 'opacity-50' : 'opacity-100'}`}>
+          {title || 'Coming Soon'}
+        </p>
+        <p className={`text-sm text-gray-600 mt-1 ${isTransparent ? 'opacity-50' : 'opacity-100'}`}>
+          This feature will be available in the next version
+        </p>
+        <p className="text-xs text-indigo-600 mt-3 font-medium">
+          {isTransparent ? 'Click to hide details' : 'Click to preview'}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 function CollaborationRequestCard({ request, onExpressInterest }: { 
@@ -248,72 +278,78 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
         <div className="col-span-2">
           <div className="space-y-6">
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center text-gray-500 mb-2">
-                  <Target className="h-5 w-5 mr-2" />
-                  <span className="text-sm">Milestones</span>
+            <ComingSoonOverlay title="Activity Stats Coming Soon">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center text-gray-500 mb-2">
+                    <Target className="h-5 w-5 mr-2" />
+                    <span className="text-sm">Milestones</span>
+                  </div>
+                  <p className="text-2xl font-semibold text-gray-900">3/5</p>
                 </div>
-                <p className="text-2xl font-semibold text-gray-900">3/5</p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center text-gray-500 mb-2">
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  <span className="text-sm">Messages</span>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center text-gray-500 mb-2">
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    <span className="text-sm">Messages</span>
+                  </div>
+                  <p className="text-2xl font-semibold text-gray-900">24</p>
                 </div>
-                <p className="text-2xl font-semibold text-gray-900">24</p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center text-gray-500 mb-2">
-                  <FileText className="h-5 w-5 mr-2" />
-                  <span className="text-sm">Documents</span>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center text-gray-500 mb-2">
+                    <FileText className="h-5 w-5 mr-2" />
+                    <span className="text-sm">Documents</span>
+                  </div>
+                  <p className="text-2xl font-semibold text-gray-900">12</p>
                 </div>
-                <p className="text-2xl font-semibold text-gray-900">12</p>
               </div>
-            </div>
+            </ComingSoonOverlay>
 
             {/* Progress */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <BarChart className="h-5 w-5 mr-2" />
-                Progress
-              </h3>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-600 rounded-full" style={{ width: '60%' }} />
+            <ComingSoonOverlay title="Progress Tracking Coming Soon">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <BarChart className="h-5 w-5 mr-2" />
+                  Progress
+                </h3>
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 rounded-full" style={{ width: '60%' }} />
+                </div>
+                <div className="mt-4 grid grid-cols-3 text-sm">
+                  <div>
+                    <p className="text-gray-500">Start Date</p>
+                    <p className="font-medium">Jan 15, 2025</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-gray-500">Duration</p>
+                    <p className="font-medium">6 months</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-500">End Date</p>
+                    <p className="font-medium">Jul 15, 2025</p>
+                  </div>
+                </div>
               </div>
-              <div className="mt-4 grid grid-cols-3 text-sm">
-                <div>
-                  <p className="text-gray-500">Start Date</p>
-                  <p className="font-medium">Jan 15, 2025</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-gray-500">Duration</p>
-                  <p className="font-medium">6 months</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-gray-500">End Date</p>
-                  <p className="font-medium">Jul 15, 2025</p>
-                </div>
-              </div>
-            </div>
+            </ComingSoonOverlay>
 
             {/* Related Challenge */}
             {collaboration.challengeId && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Link className="h-5 w-5 mr-2" />
-                  Related Challenge
-                </h3>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Challenge #{collaboration.challengeId}</p>
-                    <p className="text-sm text-gray-500">View the original challenge that started this collaboration</p>
+              <ComingSoonOverlay title="Related Challenges Coming Soon">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Link className="h-5 w-5 mr-2" />
+                    Related Challenge
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Challenge #{collaboration.challengeId}</p>
+                      <p className="text-sm text-gray-500">View the original challenge that started this collaboration</p>
+                    </div>
+                    <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                      View Challenge
+                    </button>
                   </div>
-                  <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                    View Challenge
-                  </button>
                 </div>
-              </div>
+              </ComingSoonOverlay>
             )}
           </div>
         </div>
