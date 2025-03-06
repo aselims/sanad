@@ -5,13 +5,15 @@ import { CollaborationList } from './components/CollaborationList';
 import { CollaborationDetails } from './components/CollaborationDetails';
 import { HomePage } from './components/HomePage';
 import { InnovatorsList } from './components/InnovatorsList';
+import { ProfilePage } from './components/ProfilePage';
 import type { Collaboration, Innovator } from './types';
 
 function App() {
   const [selectedCollaboration, setSelectedCollaboration] = useState<string | null>(null);
   const [showHomePage, setShowHomePage] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'challenge' | 'partnership'>('all');
-  const [activePage, setActivePage] = useState<'collaborations' | 'innovators'>('collaborations');
+  const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile'>('collaborations');
+  const [selectedInnovator, setSelectedInnovator] = useState<string | null>(null);
 
   const sampleCollaborations: Collaboration[] = [
     {
@@ -184,6 +186,29 @@ function App() {
     setActivePage('innovators');
   };
 
+  // Sample match requests for demo
+  const sampleMatchRequests = [
+    {
+      innovator: sampleInnovators[0],
+      challenge: sampleCollaborations[0],
+      message: "We have developed a computer vision solution that can help optimize traffic flow in urban areas. Our technology has been deployed in several cities with great results.",
+      date: "2 days ago"
+    },
+    {
+      innovator: sampleInnovators[1],
+      challenge: sampleCollaborations[2],
+      message: "Our research team has been working on advanced energy storage solutions and would like to collaborate on your renewable energy initiative.",
+      date: "1 week ago"
+    }
+  ];
+
+  // Navigate to innovator profile
+  const handleViewInnovatorProfile = (id: string) => {
+    setSelectedInnovator(id);
+    setShowHomePage(false);
+    setActivePage('profile');
+  };
+
   if (showHomePage) {
     console.log("Rendering HomePage with navigation functions");
     return (
@@ -205,7 +230,7 @@ function App() {
         onNavigateToPartnerships={handleNavigateToPartnerships}
         onNavigateToInnovators={handleNavigateToInnovators}
       />
-      <WorkspaceHeader />
+      {activePage !== 'profile' && <WorkspaceHeader />}
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activePage === 'collaborations' && selectedProject ? (
@@ -235,7 +260,16 @@ function App() {
             </div>
           </div>
         ) : activePage === 'innovators' ? (
-          <InnovatorsList innovators={sampleInnovators} />
+          <InnovatorsList 
+            innovators={sampleInnovators} 
+            onViewProfile={handleViewInnovatorProfile}
+          />
+        ) : activePage === 'profile' && selectedInnovator ? (
+          <ProfilePage 
+            user={sampleInnovators.find(i => i.id === selectedInnovator) || sampleInnovators[2]} 
+            potentialMatches={sampleInnovators.filter(i => i.id !== selectedInnovator).slice(0, 3)}
+            matchRequests={sampleMatchRequests}
+          />
         ) : null}
       </main>
     </div>

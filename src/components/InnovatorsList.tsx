@@ -4,9 +4,10 @@ import { Building, User, Briefcase, GraduationCap, DollarSign } from 'lucide-rea
 
 interface InnovatorsListProps {
   innovators: Innovator[];
+  onViewProfile?: (id: string) => void;
 }
 
-export function InnovatorsList({ innovators }: InnovatorsListProps) {
+export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProps) {
   // Function to get the appropriate icon based on innovator type
   const getInnovatorIcon = (type: string) => {
     switch (type) {
@@ -32,6 +33,13 @@ export function InnovatorsList({ innovators }: InnovatorsListProps) {
     if (image === 'orange-gradient') return 'bg-gradient-to-r from-orange-400 to-amber-500';
     if (image === 'teal-gradient') return 'bg-gradient-to-r from-teal-400 to-cyan-500';
     return 'bg-gradient-to-r from-gray-400 to-gray-500';
+  };
+
+  // Handle view profile click
+  const handleViewProfile = (id: string) => {
+    if (onViewProfile) {
+      onViewProfile(id);
+    }
   };
 
   return (
@@ -74,7 +82,10 @@ export function InnovatorsList({ innovators }: InnovatorsListProps) {
                 </div>
               </div>
               
-              <button className="w-full mt-2 inline-flex justify-center items-center px-4 py-2 border border-indigo-600 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <button 
+                onClick={() => handleViewProfile(innovator.id)}
+                className="w-full mt-2 inline-flex justify-center items-center px-4 py-2 border border-indigo-600 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
                 View Profile
               </button>
             </div>
