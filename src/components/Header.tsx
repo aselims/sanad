@@ -1,5 +1,6 @@
-import React from 'react';
-import { Menu, Bell, UserCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Menu, Bell, UserCircle, LogOut, Settings } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
   onNavigateToWorkspace?: () => void;
@@ -7,6 +8,8 @@ interface HeaderProps {
   onNavigateToPartnerships?: () => void;
   onNavigateToInnovators?: () => void;
   onBackToHome?: () => void;
+  onNavigateToProfile?: () => void;
+  onNavigateToAuth?: () => void;
 }
 
 export function Header({ 
@@ -14,8 +17,14 @@ export function Header({
   onNavigateToChallenges,
   onNavigateToPartnerships,
   onNavigateToInnovators,
-  onBackToHome
+  onBackToHome,
+  onNavigateToProfile,
+  onNavigateToAuth
 }: HeaderProps) {
+  const { isAuthenticated, user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
   // Create handler functions that check if the callbacks exist before calling them
   const handleChallengesClick = () => {
     console.log("Challenges clicked");
@@ -44,6 +53,41 @@ export function Header({
       onBackToHome();
     }
   };
+
+  const handleProfileClick = () => {
+    console.log("Profile clicked");
+    setShowUserMenu(false);
+    if (onNavigateToProfile) {
+      onNavigateToProfile();
+    }
+  };
+
+  const handleAuthClick = () => {
+    console.log("Auth clicked");
+    if (onNavigateToAuth) {
+      onNavigateToAuth();
+    }
+  };
+
+  const handleLogout = () => {
+    console.log("Logout clicked");
+    setShowUserMenu(false);
+    logout();
+  };
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="bg-white shadow-sm">
@@ -80,12 +124,62 @@ export function Header({
           </nav>
 
           <div className="flex items-center space-x-4">
-            <button className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer">
-              <Bell className="h-6 w-6" />
-            </button>
-            <button className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer">
-              <UserCircle className="h-6 w-6" />
-            </button>
+            {isAuthenticated ? (
+              <>
+                <button className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer">
+                  <Bell className="h-6 w-6" />
+                </button>
+                <div className="relative" ref={userMenuRef}>
+                  <button 
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer flex items-center"
+                  >
+                    {user?.profilePicture ? (
+                      <img 
+                        src={user.profilePicture} 
+                        alt={`${user.firstName} ${user.lastName}`} 
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <UserCircle className="h-6 w-6" />
+                    )}
+                    <span className="ml-2 text-sm font-medium hidden md:block">
+                      {user?.firstName} {user?.lastName}
+                    </span>
+                  </button>
+                  
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                      <button
+                        onClick={handleProfileClick}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <div className="flex items-center">
+                          <UserCircle className="h-4 w-4 mr-2" />
+                          Profile
+                        </div>
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <div className="flex items-center">
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Logout
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <button
+                onClick={handleAuthClick}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Login / Register
+              </button>
+            )}
             <button className="md:hidden text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer">
               <Menu className="h-6 w-6" />
             </button>
