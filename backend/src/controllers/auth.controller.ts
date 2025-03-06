@@ -6,6 +6,7 @@ import { AppError } from '../middlewares/errorHandler';
 import { hashPassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
 import logger from '../utils/logger';
+import { comparePassword } from '../utils/password';
 
 /**
  * Register a new user
@@ -145,8 +146,8 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
       return next(new AppError('User not found', 404));
     }
 
-    // Verify current password
-    const isMatch = await passport.authenticate('local', { session: false });
+    // Verify current password using the comparePassword utility
+    const isMatch = await comparePassword(currentPassword, user.password);
     if (!isMatch) {
       return next(new AppError('Current password is incorrect', 401));
     }

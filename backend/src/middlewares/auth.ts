@@ -7,7 +7,20 @@ import { AppError } from './errorHandler';
  * Middleware to authenticate JWT token
  */
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+  // Skip authentication for certain paths if needed
+  const skipAuthPaths = ['/api/health', '/api/version'];
+  if (skipAuthPaths.includes(req.path)) {
+    return next();
+  }
+
+  // Add timeout to prevent hanging
+  const authTimeout = setTimeout(() => {
+    return next(new AppError('Authentication timeout', 500));
+  }, 5000); // 5 second timeout
+
   passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
+    clearTimeout(authTimeout); // Clear the timeout
+
     if (err) {
       return next(new AppError(`Authentication error: ${err.message}`, 500));
     }
