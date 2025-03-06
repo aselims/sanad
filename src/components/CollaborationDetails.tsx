@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Users, Calendar, ArrowLeft, FileText, 
   MessageSquare, Target, BarChart, Link,
-  UserPlus, Briefcase, Award, Handshake
+  UserPlus, Briefcase, Award, Handshake,
+  Clock, DollarSign
 } from 'lucide-react';
 import type { Collaboration, CollaborationRequest, InterestSubmission } from '../types';
 import { ExpressInterestModal } from './ExpressInterestModal';
@@ -97,6 +98,15 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
             }`}>
               {collaboration.status}
             </span>
+            {collaboration.type && (
+              <span className={`px-3 py-1 text-sm rounded-full ${
+                collaboration.type === 'challenge'
+                  ? 'bg-purple-100 text-purple-800'
+                  : 'bg-indigo-100 text-indigo-800'
+              }`}>
+                {collaboration.type === 'challenge' ? 'Challenge' : 'Partnership'}
+              </span>
+            )}
           </div>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{collaboration.title}</h1>
@@ -129,6 +139,71 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
               ))}
             </div>
           </div>
+
+          {/* Type-specific details */}
+          {collaboration.type === 'challenge' && collaboration.challengeDetails && (
+            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Target className="h-5 w-5 mr-2 text-purple-600" />
+                Challenge Details
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <Calendar className="h-5 w-5 text-purple-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Deadline</p>
+                    <p className="text-sm text-gray-600">{collaboration.challengeDetails.deadline}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Award className="h-5 w-5 text-purple-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Reward</p>
+                    <p className="text-sm text-gray-600">{collaboration.challengeDetails.reward}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Users className="h-5 w-5 text-purple-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Eligibility Criteria</p>
+                    <p className="text-sm text-gray-600">{collaboration.challengeDetails.eligibilityCriteria}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {collaboration.type === 'partnership' && collaboration.partnershipDetails && (
+            <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Handshake className="h-5 w-5 mr-2 text-indigo-600" />
+                Partnership Details
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <Clock className="h-5 w-5 text-indigo-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Duration</p>
+                    <p className="text-sm text-gray-600">{collaboration.partnershipDetails.duration}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <DollarSign className="h-5 w-5 text-indigo-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Resources</p>
+                    <p className="text-sm text-gray-600">{collaboration.partnershipDetails.resources}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Target className="h-5 w-5 text-indigo-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Expected Outcomes</p>
+                    <p className="text-sm text-gray-600">{collaboration.partnershipDetails.expectedOutcomes}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Initiative Collaborator Button */}
           <div className="bg-white rounded-lg shadow p-4 border border-blue-200">

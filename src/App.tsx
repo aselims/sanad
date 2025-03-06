@@ -14,8 +14,7 @@ function App() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'challenge' | 'partnership'>('all');
   const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile'>('collaborations');
   const [selectedInnovator, setSelectedInnovator] = useState<string | null>(null);
-
-  const sampleCollaborations: Collaboration[] = [
+  const [collaborations, setCollaborations] = useState<Collaboration[]>([
     {
       id: '1',
       title: 'Smart City Transportation Initiative',
@@ -39,7 +38,12 @@ function App() {
           description: 'Need expertise in implementing city-wide sensor networks.',
           status: 'open'
         }
-      ]
+      ],
+      challengeDetails: {
+        deadline: '2023-12-31',
+        reward: 'Contract opportunity with the Ministry of Transport',
+        eligibilityCriteria: 'Open to startups and research institutions with expertise in AI and IoT'
+      }
     },
     {
       id: '2',
@@ -57,7 +61,12 @@ function App() {
           description: 'Seeking medical researchers with experience in clinical validation.',
           status: 'open'
         }
-      ]
+      ],
+      partnershipDetails: {
+        duration: '2 years',
+        resources: 'Access to medical imaging datasets, AI computing resources',
+        expectedOutcomes: 'Validated AI algorithms for early disease detection, joint research publications'
+      }
     },
     {
       id: '3',
@@ -74,11 +83,16 @@ function App() {
           description: 'Looking for experts in advanced battery technology and materials.',
           status: 'open'
         }
-      ]
+      ],
+      challengeDetails: {
+        deadline: '2024-06-30',
+        reward: '$50,000 grant and pilot implementation opportunity',
+        eligibilityCriteria: 'Open to researchers and startups with expertise in energy storage technologies'
+      }
     }
-  ];
+  ]);
 
-  const sampleInnovators: Innovator[] = [
+  const [innovators, setInnovators] = useState<Innovator[]>([
     {
       id: '1',
       name: 'TechStart Inc.',
@@ -129,14 +143,30 @@ function App() {
       profileImage: 'teal-gradient',
       tags: ['Biotechnology', 'Genetics', 'Healthcare']
     }
+  ]);
+
+  // Sample match requests for demo
+  const sampleMatchRequests = [
+    {
+      innovator: innovators[0],
+      challenge: collaborations[0],
+      message: "We have developed a computer vision solution that can help optimize traffic flow in urban areas. Our technology has been deployed in several cities with great results.",
+      date: "2 days ago"
+    },
+    {
+      innovator: innovators[1],
+      challenge: collaborations[2],
+      message: "Our research team has been working on advanced energy storage solutions and would like to collaborate on your renewable energy initiative.",
+      date: "1 week ago"
+    }
   ];
 
   const filteredCollaborations = activeFilter === 'all' 
-    ? sampleCollaborations 
-    : sampleCollaborations.filter(c => c.type === activeFilter);
+    ? collaborations 
+    : collaborations.filter(c => c.type === activeFilter);
 
   const selectedProject = selectedCollaboration 
-    ? sampleCollaborations.find(c => c.id === selectedCollaboration) 
+    ? collaborations.find(c => c.id === selectedCollaboration) 
     : null;
 
   // For demo purposes, clicking on a collaboration will navigate to the collaboration details
@@ -154,6 +184,7 @@ function App() {
 
   // Navigate to the workspace (list of collaborations)
   const handleNavigateToWorkspace = () => {
+    console.log("handleNavigateToWorkspace called in App.tsx");
     setSelectedCollaboration(null);
     setShowHomePage(false);
     setActiveFilter('all');
@@ -186,27 +217,38 @@ function App() {
     setActivePage('innovators');
   };
 
-  // Sample match requests for demo
-  const sampleMatchRequests = [
-    {
-      innovator: sampleInnovators[0],
-      challenge: sampleCollaborations[0],
-      message: "We have developed a computer vision solution that can help optimize traffic flow in urban areas. Our technology has been deployed in several cities with great results.",
-      date: "2 days ago"
-    },
-    {
-      innovator: sampleInnovators[1],
-      challenge: sampleCollaborations[2],
-      message: "Our research team has been working on advanced energy storage solutions and would like to collaborate on your renewable energy initiative.",
-      date: "1 week ago"
-    }
-  ];
-
   // Navigate to innovator profile
   const handleViewInnovatorProfile = (id: string) => {
     setSelectedInnovator(id);
     setShowHomePage(false);
     setActivePage('profile');
+  };
+
+  // Handle creating a new collaboration
+  const handleCreateCollaboration = (newCollaboration: Partial<Collaboration>) => {
+    // Generate a new ID
+    const newId = (collaborations.length + 1).toString();
+    
+    // Create the complete collaboration object
+    const completeCollaboration: Collaboration = {
+      id: newId,
+      title: newCollaboration.title || 'Untitled Collaboration',
+      description: newCollaboration.description || '',
+      participants: newCollaboration.participants || [],
+      status: newCollaboration.status || 'proposed',
+      type: newCollaboration.type || 'partnership',
+      collaborationRequests: newCollaboration.collaborationRequests || [],
+      challengeDetails: newCollaboration.challengeDetails,
+      partnershipDetails: newCollaboration.partnershipDetails
+    };
+    
+    // Add the new collaboration to the list
+    setCollaborations(prev => [...prev, completeCollaboration]);
+    
+    // Navigate to the new collaboration
+    setSelectedCollaboration(newId);
+    setShowHomePage(false);
+    setActivePage('collaborations');
   };
 
   if (showHomePage) {
@@ -230,7 +272,11 @@ function App() {
         onNavigateToPartnerships={handleNavigateToPartnerships}
         onNavigateToInnovators={handleNavigateToInnovators}
       />
-      {activePage !== 'profile' && <WorkspaceHeader />}
+      {activePage !== 'profile' && 
+        <WorkspaceHeader 
+          onCreateCollaboration={handleCreateCollaboration}
+        />
+      }
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activePage === 'collaborations' && selectedProject ? (
@@ -261,13 +307,13 @@ function App() {
           </div>
         ) : activePage === 'innovators' ? (
           <InnovatorsList 
-            innovators={sampleInnovators} 
+            innovators={innovators} 
             onViewProfile={handleViewInnovatorProfile}
           />
         ) : activePage === 'profile' && selectedInnovator ? (
           <ProfilePage 
-            user={sampleInnovators.find(i => i.id === selectedInnovator) || sampleInnovators[2]} 
-            potentialMatches={sampleInnovators.filter(i => i.id !== selectedInnovator).slice(0, 3)}
+            user={innovators.find(i => i.id === selectedInnovator) || innovators[2]} 
+            potentialMatches={innovators.filter(i => i.id !== selectedInnovator).slice(0, 3)}
             matchRequests={sampleMatchRequests}
           />
         ) : null}

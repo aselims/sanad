@@ -37,6 +37,18 @@ export interface InterestSubmission {
   expertiseText?: string;
 }
 
+export interface ChallengeDetails {
+  deadline: string;
+  reward: string;
+  eligibilityCriteria: string;
+}
+
+export interface PartnershipDetails {
+  duration: string;
+  resources: string;
+  expectedOutcomes: string;
+}
+
 export interface Collaboration {
   id: string;
   title: string;
@@ -46,6 +58,8 @@ export interface Collaboration {
   description: string;
   collaborationRequests?: CollaborationRequest[];
   type?: 'challenge' | 'partnership';
+  challengeDetails?: ChallengeDetails;
+  partnershipDetails?: PartnershipDetails;
 }
 
 export interface Innovator {
