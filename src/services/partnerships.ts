@@ -1,13 +1,39 @@
 import api from './api';
 import { Collaboration } from '../types';
 
+// Helper function to convert partnership data from the API to the Collaboration format
+const formatPartnership = (partnership: any): Collaboration => {
+  return {
+    id: partnership.id,
+    title: partnership.title,
+    participants: partnership.participants,
+    status: partnership.status,
+    description: partnership.description,
+    type: 'partnership',
+    partnershipDetails: {
+      duration: partnership.duration || '',
+      resources: partnership.resources || '',
+      expectedOutcomes: partnership.expectedOutcomes || '',
+    },
+    createdById: partnership.createdById,
+    createdAt: new Date(partnership.createdAt),
+    updatedAt: new Date(partnership.updatedAt),
+  };
+};
+
 /**
  * Get all partnerships
  * @returns Promise with the partnerships
  */
 export const getAllPartnerships = async (): Promise<Collaboration[]> => {
-  const response = await api.get('/partnerships');
-  return response.data.data;
+  try {
+    const response = await api.get('/partnerships');
+    // Convert each partnership to the Collaboration format
+    return response.data.data.map(formatPartnership);
+  } catch (error) {
+    console.error('Error fetching partnerships:', error);
+    return [];
+  }
 };
 
 /**
@@ -17,7 +43,7 @@ export const getAllPartnerships = async (): Promise<Collaboration[]> => {
  */
 export const getPartnershipById = async (id: string): Promise<Collaboration> => {
   const response = await api.get(`/partnerships/${id}`);
-  return response.data.data;
+  return formatPartnership(response.data.data);
 };
 
 /**
@@ -27,7 +53,7 @@ export const getPartnershipById = async (id: string): Promise<Collaboration> => 
  */
 export const createPartnership = async (data: Partial<Collaboration>): Promise<Collaboration> => {
   const response = await api.post('/partnerships', data);
-  return response.data.data;
+  return formatPartnership(response.data.data);
 };
 
 /**
@@ -38,7 +64,7 @@ export const createPartnership = async (data: Partial<Collaboration>): Promise<C
  */
 export const updatePartnership = async (id: string, data: Partial<Collaboration>): Promise<Collaboration> => {
   const response = await api.put(`/partnerships/${id}`, data);
-  return response.data.data;
+  return formatPartnership(response.data.data);
 };
 
 /**

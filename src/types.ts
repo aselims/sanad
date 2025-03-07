@@ -107,6 +107,8 @@ export const userToInnovator = (user: User): Innovator => {
 
 // Helper function to convert Challenge to Collaboration format for frontend
 export const challengeToCollaboration = (challenge: Challenge): Collaboration => {
+  console.log('Converting challenge to collaboration:', challenge);
+  
   return {
     id: challenge.id,
     title: challenge.title,

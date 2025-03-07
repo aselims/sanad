@@ -1,13 +1,22 @@
 import api from './api';
-import { Challenge } from '../types';
+import { Challenge, challengeToCollaboration } from '../types';
 
 /**
  * Get all challenges
  * @returns Promise with the challenges
  */
 export const getAllChallenges = async (): Promise<Challenge[]> => {
-  const response = await api.get('/challenges');
-  return response.data.data;
+  try {
+    const response = await api.get('/challenges');
+    return response.data.data.map((challenge: any) => ({
+      ...challenge,
+      createdAt: new Date(challenge.createdAt),
+      updatedAt: new Date(challenge.updatedAt)
+    }));
+  } catch (error) {
+    console.error('Error fetching challenges:', error);
+    return [];
+  }
 };
 
 /**
@@ -17,7 +26,12 @@ export const getAllChallenges = async (): Promise<Challenge[]> => {
  */
 export const getChallengeById = async (id: string): Promise<Challenge> => {
   const response = await api.get(`/challenges/${id}`);
-  return response.data.data;
+  const challenge = response.data.data;
+  return {
+    ...challenge,
+    createdAt: new Date(challenge.createdAt),
+    updatedAt: new Date(challenge.updatedAt)
+  };
 };
 
 /**
@@ -27,7 +41,12 @@ export const getChallengeById = async (id: string): Promise<Challenge> => {
  */
 export const createChallenge = async (data: Partial<Challenge>): Promise<Challenge> => {
   const response = await api.post('/challenges', data);
-  return response.data.data;
+  const challenge = response.data.data;
+  return {
+    ...challenge,
+    createdAt: new Date(challenge.createdAt),
+    updatedAt: new Date(challenge.updatedAt)
+  };
 };
 
 /**
@@ -38,7 +57,12 @@ export const createChallenge = async (data: Partial<Challenge>): Promise<Challen
  */
 export const updateChallenge = async (id: string, data: Partial<Challenge>): Promise<Challenge> => {
   const response = await api.put(`/challenges/${id}`, data);
-  return response.data.data;
+  const challenge = response.data.data;
+  return {
+    ...challenge,
+    createdAt: new Date(challenge.createdAt),
+    updatedAt: new Date(challenge.updatedAt)
+  };
 };
 
 /**
