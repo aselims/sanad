@@ -61,6 +61,15 @@ export function App() {
     return false;
   });
 
+  // Add console logs to help debug the issue
+  useEffect(() => {
+    console.log('Collaborations state updated:', collaborations);
+    console.log('Filtered collaborations:', filteredCollaborations);
+    console.log('Active filter:', activeFilter);
+    console.log('Show home page:', showHomePage);
+    console.log('Active page:', activePage);
+  }, [collaborations, filteredCollaborations, activeFilter, showHomePage, activePage]);
+
   // Navigation functions
   const handleNavigateToWorkspace = () => {
     setShowHomePage(false);
@@ -161,6 +170,39 @@ export function App() {
                     onCreateCollaboration={(collaboration) => {
                       // Handle collaboration creation
                       console.log('Creating collaboration:', collaboration);
+                      
+                      // Create a new collaboration with required fields and a unique ID
+                      const newCollaboration: Collaboration = {
+                        id: `collab-${Date.now()}`, // Generate a unique ID
+                        title: collaboration.title || 'New Collaboration',
+                        description: collaboration.description || '',
+                        participants: collaboration.participants || [],
+                        status: collaboration.status || 'proposed',
+                        type: collaboration.type || 'partnership',
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                      };
+                      
+                      // Add type-specific details if they exist
+                      if (collaboration.type === 'challenge' && collaboration.challengeDetails) {
+                        newCollaboration.challengeDetails = collaboration.challengeDetails;
+                      } else if (collaboration.partnershipDetails) {
+                        newCollaboration.partnershipDetails = collaboration.partnershipDetails;
+                      }
+                      
+                      // Add the new collaboration to the state
+                      setCollaborations(prevCollaborations => [...prevCollaborations, newCollaboration]);
+                      
+                      // Navigate to the collaborations page to show the new collaboration
+                      setShowHomePage(false);
+                      setActivePage('collaborations');
+                      
+                      // Set the appropriate filter based on the collaboration type
+                      if (collaboration.type === 'challenge') {
+                        setActiveFilter('challenges');
+                      } else {
+                        setActiveFilter('partnerships');
+                      }
                     }}
                   />
                   <CollaborationList 
