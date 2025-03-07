@@ -29,6 +29,13 @@ export interface User {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  location?: string;
+  website?: string;
+  social?: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+  };
 }
 
 export interface CollaborationRequest {
@@ -80,7 +87,7 @@ export interface Collaboration {
   updatedAt: Date;
 }
 
-export interface Innovator {
+export interface InnovatorBase {
   id: string;
   name: string;
   organization: string;
@@ -89,20 +96,99 @@ export interface Innovator {
   description: string;
   profileImage?: string;
   tags: string[];
+  email?: string;
+  location?: string;
+  website?: string;
+  social?: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+  };
 }
+
+export interface StartupInnovator extends InnovatorBase {
+  type: 'startup';
+  foundedYear?: string;
+  teamSize?: string;
+  fundingStage?: string;
+  fundingAmount?: string;
+  revenue?: string;
+  productStage?: string;
+  patents?: string[];
+  metrics?: Record<string, any>;
+}
+
+export interface InvestorInnovator extends InnovatorBase {
+  type: 'investor';
+  investmentStage?: string[];
+  ticketSize?: string;
+  portfolioSize?: string;
+  sectors?: string[];
+  investmentCriteria?: string;
+  successfulExits?: number;
+  geographicFocus?: string[];
+}
+
+export interface ResearchInnovator extends InnovatorBase {
+  type: 'research';
+  institution?: string;
+  department?: string;
+  researchAreas?: string[];
+  publications?: string[];
+  grants?: string[];
+  labSize?: string;
+}
+
+export interface IndividualInnovator extends InnovatorBase {
+  type: 'individual';
+  skills?: string[];
+  experience?: any[];
+  education?: any[];
+  certifications?: string[];
+}
+
+export type Innovator = StartupInnovator | InvestorInnovator | ResearchInnovator | IndividualInnovator;
 
 // Helper function to convert User to Innovator format for frontend
 export const userToInnovator = (user: User): Innovator => {
-  return {
+  const baseInnovator: InnovatorBase = {
     id: user.id,
     name: `${user.firstName} ${user.lastName}`,
     organization: user.organization,
     type: user.role as InnovatorType,
-    expertise: user.bio?.split(',') || [],
+    expertise: user.bio?.split(',').map(item => item.trim()) || [],
     description: user.bio || '',
     profileImage: user.profilePicture,
+    email: user.email,
     tags: [],
+    location: user.location,
+    website: user.website,
+    social: user.social,
   };
+
+  // Add type-specific fields based on the user's role
+  switch (user.role) {
+    case 'startup':
+      return {
+        ...baseInnovator,
+        type: 'startup',
+      } as StartupInnovator;
+    case 'investor':
+      return {
+        ...baseInnovator,
+        type: 'investor',
+      } as InvestorInnovator;
+    case 'research':
+      return {
+        ...baseInnovator,
+        type: 'research',
+      } as ResearchInnovator;
+    default:
+      return {
+        ...baseInnovator,
+        type: 'individual',
+      } as IndividualInnovator;
+  }
 };
 
 // Helper function to convert Challenge to Collaboration format for frontend

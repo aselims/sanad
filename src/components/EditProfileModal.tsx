@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload } from 'lucide-react';
-import { Innovator, InnovatorType } from '../types';
-import { ROLE_DISPLAY_NAMES, INNOVATOR_TYPES_ARRAY, INNOVATOR_TYPES } from '../constants/roles';
+import { Innovator, InnovatorBase, StartupInnovator, InvestorInnovator, ResearchInnovator, IndividualInnovator } from '../types';
+import { ROLE_DISPLAY_NAMES, INNOVATOR_TYPES_ARRAY, InnovatorType } from '../constants/roles';
 
 interface EditProfileModalProps {
   user: Innovator;
@@ -17,10 +17,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onSave,
 }) => {
   // Common fields for all innovator types
-  const [commonFields, setCommonFields] = useState({
+  const [commonFields, setCommonFields] = useState<Partial<InnovatorBase>>({
     name: user.name || '',
     email: user.email || '',
-    type: user.type || 'individual',
+    type: user.type,
     description: user.description || '',
     location: user.location || '',
     website: user.website || '',
@@ -29,47 +29,48 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       linkedin: user.social?.linkedin || '',
       twitter: user.social?.twitter || '',
       github: user.social?.github || '',
-    }
+    },
+    expertise: user.expertise || [],
+    tags: user.tags || [],
+    organization: user.organization || ''
   });
 
   // Type-specific fields
   const [startupFields, setStartupFields] = useState({
-    foundedYear: user.foundedYear || '',
-    teamSize: user.teamSize || '',
-    fundingStage: user.fundingStage || '',
-    fundingAmount: user.fundingAmount || '',
-    revenue: user.revenue || '',
-    productStage: user.productStage || '',
-    patents: user.patents || [],
-    metrics: user.metrics || {}
+    foundedYear: user.type === 'startup' ? (user as StartupInnovator).foundedYear || '' : '',
+    teamSize: user.type === 'startup' ? (user as StartupInnovator).teamSize || '' : '',
+    fundingStage: user.type === 'startup' ? (user as StartupInnovator).fundingStage || '' : '',
+    fundingAmount: user.type === 'startup' ? (user as StartupInnovator).fundingAmount || '' : '',
+    revenue: user.type === 'startup' ? (user as StartupInnovator).revenue || '' : '',
+    productStage: user.type === 'startup' ? (user as StartupInnovator).productStage || '' : '',
+    patents: user.type === 'startup' ? (user as StartupInnovator).patents || [] : [],
+    metrics: user.type === 'startup' ? (user as StartupInnovator).metrics || {} : {}
   });
 
   const [investorFields, setInvestorFields] = useState({
-    investmentStage: user.investmentStage || [],
-    ticketSize: user.ticketSize || '',
-    portfolioSize: user.portfolioSize || '',
-    sectors: user.sectors || [],
-    investmentCriteria: user.investmentCriteria || '',
-    successfulExits: user.successfulExits || 0,
-    geographicFocus: user.geographicFocus || []
+    investmentStage: user.type === 'investor' ? (user as InvestorInnovator).investmentStage || [] : [],
+    ticketSize: user.type === 'investor' ? (user as InvestorInnovator).ticketSize || '' : '',
+    portfolioSize: user.type === 'investor' ? (user as InvestorInnovator).portfolioSize || '' : '',
+    sectors: user.type === 'investor' ? (user as InvestorInnovator).sectors || [] : [],
+    investmentCriteria: user.type === 'investor' ? (user as InvestorInnovator).investmentCriteria || '' : '',
+    successfulExits: user.type === 'investor' ? (user as InvestorInnovator).successfulExits || 0 : 0,
+    geographicFocus: user.type === 'investor' ? (user as InvestorInnovator).geographicFocus || [] : []
   });
 
   const [researchFields, setResearchFields] = useState({
-    institution: user.institution || '',
-    department: user.department || '',
-    researchAreas: user.researchAreas || [],
-    publications: user.publications || [],
-    grants: user.grants || [],
-    patents: user.patents || [],
-    labSize: user.labSize || ''
+    institution: user.type === 'research' ? (user as ResearchInnovator).institution || '' : '',
+    department: user.type === 'research' ? (user as ResearchInnovator).department || '' : '',
+    researchAreas: user.type === 'research' ? (user as ResearchInnovator).researchAreas || [] : [],
+    publications: user.type === 'research' ? (user as ResearchInnovator).publications || [] : [],
+    grants: user.type === 'research' ? (user as ResearchInnovator).grants || [] : [],
+    labSize: user.type === 'research' ? (user as ResearchInnovator).labSize || '' : ''
   });
 
   const [individualFields, setIndividualFields] = useState({
-    expertise: user.expertise || [],
-    skills: user.skills || [],
-    experience: user.experience || [],
-    education: user.education || [],
-    certifications: user.certifications || []
+    skills: user.type === 'individual' ? (user as IndividualInnovator).skills || [] : [],
+    experience: user.type === 'individual' ? (user as IndividualInnovator).experience || [] : [],
+    education: user.type === 'individual' ? (user as IndividualInnovator).education || [] : [],
+    certifications: user.type === 'individual' ? (user as IndividualInnovator).certifications || [] : []
   });
 
   const handleCommonFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -255,20 +256,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <h4 className="text-lg font-medium text-gray-900">Professional Information</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="expertise" className="block text-sm font-medium text-gray-700">Areas of Expertise</label>
-                <input
-                  type="text"
-                  name="expertise"
-                  value={individualFields.expertise.join(', ')}
-                  onChange={(e) => setIndividualFields(prev => ({
-                    ...prev,
-                    expertise: e.target.value.split(',').map(item => item.trim())
-                  }))}
-                  placeholder="Separate areas with commas"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
-              <div>
                 <label htmlFor="skills" className="block text-sm font-medium text-gray-700">Skills</label>
                 <input
                   type="text"
@@ -294,26 +281,67 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    let typeSpecificData = {};
+    const baseFields = {
+      name: commonFields.name,
+      email: commonFields.email,
+      description: commonFields.description,
+      location: commonFields.location,
+      website: commonFields.website,
+      profileImage: commonFields.profileImage,
+      social: commonFields.social,
+      expertise: commonFields.expertise,
+      tags: commonFields.tags,
+      organization: commonFields.organization
+    };
+
+    let updatedUser: Partial<Innovator>;
+    
     switch (commonFields.type) {
       case 'startup':
-        typeSpecificData = startupFields;
+        updatedUser = Object.assign({}, baseFields, {
+          type: 'startup' as const,
+          foundedYear: startupFields.foundedYear,
+          teamSize: startupFields.teamSize,
+          fundingStage: startupFields.fundingStage,
+          fundingAmount: startupFields.fundingAmount,
+          revenue: startupFields.revenue,
+          productStage: startupFields.productStage,
+          patents: startupFields.patents,
+          metrics: startupFields.metrics
+        }) as Partial<StartupInnovator>;
         break;
       case 'investor':
-        typeSpecificData = investorFields;
+        updatedUser = Object.assign({}, baseFields, {
+          type: 'investor' as const,
+          investmentStage: investorFields.investmentStage,
+          ticketSize: investorFields.ticketSize,
+          portfolioSize: investorFields.portfolioSize,
+          sectors: investorFields.sectors,
+          investmentCriteria: investorFields.investmentCriteria,
+          successfulExits: investorFields.successfulExits,
+          geographicFocus: investorFields.geographicFocus
+        }) as Partial<InvestorInnovator>;
         break;
       case 'research':
-        typeSpecificData = researchFields;
+        updatedUser = Object.assign({}, baseFields, {
+          type: 'research' as const,
+          institution: researchFields.institution,
+          department: researchFields.department,
+          researchAreas: researchFields.researchAreas,
+          publications: researchFields.publications,
+          grants: researchFields.grants,
+          labSize: researchFields.labSize
+        }) as Partial<ResearchInnovator>;
         break;
-      case 'individual':
-        typeSpecificData = individualFields;
-        break;
+      default:
+        updatedUser = Object.assign({}, baseFields, {
+          type: 'individual' as const,
+          skills: individualFields.skills,
+          experience: individualFields.experience,
+          education: individualFields.education,
+          certifications: individualFields.certifications
+        }) as Partial<IndividualInnovator>;
     }
-    
-    const updatedUser: Partial<Innovator> = {
-      ...commonFields,
-      ...typeSpecificData
-    };
     
     onSave(updatedUser);
     onClose();
@@ -425,7 +453,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     <input
                       type="url"
                       name="social.linkedin"
-                      value={commonFields.social.linkedin}
+                      value={commonFields.social?.linkedin || ''}
                       onChange={handleCommonFieldChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
@@ -436,7 +464,18 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                     <input
                       type="url"
                       name="social.twitter"
-                      value={commonFields.social.twitter}
+                      value={commonFields.social?.twitter || ''}
+                      onChange={handleCommonFieldChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="social.github" className="block text-sm font-medium text-gray-700">GitHub</label>
+                    <input
+                      type="url"
+                      name="social.github"
+                      value={commonFields.social?.github || ''}
                       onChange={handleCommonFieldChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
