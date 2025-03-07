@@ -7,7 +7,7 @@ interface HeaderProps {
   onNavigateToChallenges?: () => void;
   onNavigateToPartnerships?: () => void;
   onNavigateToInnovators?: () => void;
-  onBackToHome?: () => void;
+  onNavigateToHome?: () => void;
   onNavigateToProfile?: () => void;
   onNavigateToAuth?: () => void;
 }
@@ -17,7 +17,7 @@ export function Header({
   onNavigateToChallenges,
   onNavigateToPartnerships,
   onNavigateToInnovators,
-  onBackToHome,
+  onNavigateToHome,
   onNavigateToProfile,
   onNavigateToAuth
 }: HeaderProps) {
@@ -47,10 +47,9 @@ export function Header({
     }
   };
 
-  const handleHomeClick = () => {
-    console.log("Home clicked");
-    if (onBackToHome) {
-      onBackToHome();
+  const handleLogoClick = () => {
+    if (onNavigateToHome) {
+      onNavigateToHome();
     }
   };
 
@@ -95,7 +94,7 @@ export function Header({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <button 
-              onClick={handleHomeClick} 
+              onClick={handleLogoClick} 
               className="text-2xl font-bold text-indigo-600 focus:outline-none cursor-pointer"
             >
               SANAD

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { WorkspaceHeader } from './components/WorkspaceHeader';
@@ -11,6 +11,8 @@ import AuthPage from './components/auth/AuthPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import type { Collaboration, Innovator } from './types';
+import { getAllCollaborations } from './services/collaborations';
+import { getAllInnovators } from './services/innovators';
 
 export function App() {
   const navigate = useNavigate();
@@ -21,48 +23,35 @@ export function App() {
   const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile'>('collaborations');
   const [selectedInnovator, setSelectedInnovator] = useState<string | null>(null);
   
-  // Sample collaborations data
-  const [collaborations, setCollaborations] = useState<Collaboration[]>([
-    {
-      id: '1',
-      title: 'Smart City Transportation Initiative',
-      description: 'Collaboration between the Ministry of Transport and local startups to implement AI-driven traffic management solutions.',
-      participants: ['Ministry of Transport', 'TechStart Inc.', 'Urban Planning Institute'],
-      status: 'active',
-      challengeId: '1',
-      type: 'challenge'
-    },
-    {
-      id: '2',
-      title: 'Healthcare AI Research Partnership',
-      description: 'Joint research initiative between universities and healthcare providers to develop AI solutions for early disease detection.',
-      participants: ['National University', 'Central Hospital', 'AI Health Solutions'],
-      status: 'active',
-      type: 'partnership'
-    }
-  ]);
+  // State for API data
+  const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
+  const [innovators, setInnovators] = useState<Innovator[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample innovators data
-  const [innovators, setInnovators] = useState<Innovator[]>([
-    {
-      id: '1',
-      name: 'Dr. Sarah Ahmed',
-      organization: 'National University',
-      type: 'research',
-      expertise: ['AI', 'Machine Learning', 'Healthcare'],
-      description: 'Leading researcher in AI applications for healthcare with over 15 years of experience.',
-      tags: ['AI', 'Healthcare', 'Research']
-    },
-    {
-      id: '2',
-      name: 'TechStart Inc.',
-      organization: 'TechStart Inc.',
-      type: 'startup',
-      expertise: ['IoT', 'Smart Cities', 'Data Analytics'],
-      description: 'Innovative startup focused on smart city solutions using IoT and data analytics.',
-      tags: ['IoT', 'Smart Cities', 'Startup']
-    }
-  ]);
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [collaborationsData, innovatorsData] = await Promise.all([
+          getAllCollaborations(),
+          getAllInnovators()
+        ]);
+        
+        setCollaborations(collaborationsData);
+        setInnovators(innovatorsData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
   // Filter collaborations based on active filter
   const filteredCollaborations = collaborations.filter(collaboration => {
@@ -114,6 +103,7 @@ export function App() {
 
   const handleBackToHome = () => {
     setShowHomePage(true);
+    setActivePage('collaborations');
     setSelectedCollaboration(null);
     setSelectedInnovator(null);
   };
@@ -133,20 +123,29 @@ export function App() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
-      
-      <Route path="/" element={
+      <Route path="/*" element={
         <>
           <Header 
+            onNavigateToHome={handleBackToHome}
             onNavigateToWorkspace={handleNavigateToWorkspace}
             onNavigateToChallenges={handleNavigateToChallenges}
             onNavigateToPartnerships={handleNavigateToPartnerships}
             onNavigateToInnovators={handleNavigateToInnovators}
-            onBackToHome={handleBackToHome}
-            onNavigateToProfile={isAuthenticated ? handleNavigateToProfile : undefined}
-            onNavigateToAuth={!isAuthenticated ? handleNavigateToAuth : undefined}
+            onNavigateToProfile={handleNavigateToProfile}
+            onNavigateToAuth={handleNavigateToAuth}
           />
           
-          {showHomePage ? (
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+          ) : error ? (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            </div>
+          ) : showHomePage ? (
             <HomePage 
               onNavigateToWorkspace={handleNavigateToWorkspace}
               onNavigateToCollaboration={handleNavigateToCollaboration}

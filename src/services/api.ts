@@ -28,12 +28,14 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    console.error('API Error:', error);
+    
     // Handle 401 Unauthorized errors (token expired or invalid)
     if (error.response && error.response.status === 401) {
       // Clear local storage and redirect to login
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = '/auth';
     }
     return Promise.reject(error);
   }

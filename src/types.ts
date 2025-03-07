@@ -1,3 +1,5 @@
+import { InnovatorType } from './constants/roles';
+
 export interface Challenge {
   id: string;
   title: string;
@@ -5,15 +7,28 @@ export interface Challenge {
   organization: string;
   type: 'government' | 'corporate' | 'individual';
   status: 'open' | 'in-progress' | 'completed';
+  deadline?: string;
+  reward?: string;
+  eligibilityCriteria?: string;
+  createdById?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface User {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: InnovatorType | 'admin';
   organization: string;
-  type: 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual';
-  expertise: string[];
+  position?: string;
+  bio?: string;
+  profilePicture?: string;
+  isVerified: boolean;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CollaborationRequest {
@@ -30,7 +45,7 @@ export interface InterestSubmission {
   organization: string;
   message: string;
   expertise: string[];
-  collaboratorType?: 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual';
+  collaboratorType?: InnovatorType;
   foundingYear?: string;
   researchArea?: string;
   investmentFocus?: string;
@@ -60,15 +75,53 @@ export interface Collaboration {
   type?: 'challenge' | 'partnership';
   challengeDetails?: ChallengeDetails;
   partnershipDetails?: PartnershipDetails;
+  createdById?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Innovator {
   id: string;
   name: string;
   organization: string;
-  type: 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual';
+  type: InnovatorType;
   expertise: string[];
   description: string;
   profileImage?: string;
   tags: string[];
 }
+
+// Helper function to convert User to Innovator format for frontend
+export const userToInnovator = (user: User): Innovator => {
+  return {
+    id: user.id,
+    name: `${user.firstName} ${user.lastName}`,
+    organization: user.organization,
+    type: user.role as InnovatorType,
+    expertise: user.bio?.split(',') || [],
+    description: user.bio || '',
+    profileImage: user.profilePicture,
+    tags: [],
+  };
+};
+
+// Helper function to convert Challenge to Collaboration format for frontend
+export const challengeToCollaboration = (challenge: Challenge): Collaboration => {
+  return {
+    id: challenge.id,
+    title: challenge.title,
+    participants: [challenge.organization],
+    status: challenge.status === 'open' ? 'proposed' : 
+            challenge.status === 'in-progress' ? 'active' : 'completed',
+    description: challenge.description,
+    type: 'challenge',
+    challengeDetails: {
+      deadline: challenge.deadline || '',
+      reward: challenge.reward || '',
+      eligibilityCriteria: challenge.eligibilityCriteria || '',
+    },
+    createdById: challenge.createdById,
+    createdAt: challenge.createdAt,
+    updatedAt: challenge.updatedAt,
+  };
+};
