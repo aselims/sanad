@@ -99,6 +99,7 @@ export interface InnovatorBase {
   email?: string;
   location?: string;
   website?: string;
+  position?: string;
   social?: {
     linkedin?: string;
     twitter?: string;
@@ -153,8 +154,10 @@ export type Innovator = StartupInnovator | InvestorInnovator | ResearchInnovator
 export const userToInnovator = (user: User): Innovator => {
   const baseInnovator: InnovatorBase = {
     id: user.id,
-    name: `${user.firstName} ${user.lastName}`,
-    organization: user.organization,
+    name: user.firstName && user.lastName 
+      ? `${user.firstName} ${user.lastName}` 
+      : user.email.split('@')[0], // Fallback to username part of email if name not available
+    organization: user.organization || '',
     type: user.role as InnovatorType,
     expertise: user.bio?.split(',').map(item => item.trim()) || [],
     description: user.bio || '',
@@ -163,6 +166,7 @@ export const userToInnovator = (user: User): Innovator => {
     tags: [],
     location: user.location,
     website: user.website,
+    position: user.position,
     social: user.social,
   };
 

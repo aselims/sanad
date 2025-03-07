@@ -25,6 +25,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     location: user.location || '',
     website: user.website || '',
     profileImage: user.profileImage || '',
+    position: user.position || '',
     social: {
       linkedin: user.social?.linkedin || '',
       twitter: user.social?.twitter || '',
@@ -398,6 +399,29 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="organization" className="block text-sm font-medium text-gray-700">Organization</label>
+                    <input
+                      type="text"
+                      name="organization"
+                      value={commonFields.organization}
+                      onChange={handleCommonFieldChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="position" className="block text-sm font-medium text-gray-700">Position/Title</label>
+                    <input
+                      type="text"
+                      name="position"
+                      value={commonFields.position}
+                      onChange={handleCommonFieldChange}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      placeholder="e.g., CEO, Research Director, Project Manager"
+                    />
                   </div>
 
                   <div>

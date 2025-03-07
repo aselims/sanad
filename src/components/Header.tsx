@@ -143,19 +143,30 @@ export function Header({
                       <UserCircle className="h-6 w-6" />
                     )}
                     <span className="ml-2 text-sm font-medium hidden md:block">
-                      {user?.firstName} {user?.lastName}
+                      {user?.firstName && user?.lastName 
+                        ? `${user.firstName} ${user.lastName}` 
+                        : user?.email?.split('@')[0] || 'User'}
                     </span>
                   </button>
                   
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-10">
                       <button
                         onClick={handleProfileClick}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <div className="flex items-center">
                           <UserCircle className="h-4 w-4 mr-2" />
-                          Profile
+                          <span>Your Profile</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => {}}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <div className="flex items-center">
+                          <Settings className="h-4 w-4 mr-2" />
+                          <span>Settings</span>
                         </div>
                       </button>
                       <button
@@ -164,7 +175,7 @@ export function Header({
                       >
                         <div className="flex items-center">
                           <LogOut className="h-4 w-4 mr-2" />
-                          Logout
+                          <span>Sign out</span>
                         </div>
                       </button>
                     </div>

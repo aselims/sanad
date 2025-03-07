@@ -195,7 +195,9 @@ export function App() {
                   <ProfilePage 
                     user={{
                       id: user?.id || 'current-user',
-                      name: user?.name || 'Current User',
+                      name: user?.firstName && user?.lastName 
+                        ? `${user.firstName} ${user.lastName}` 
+                        : user?.name || 'User',
                       type: user?.role as 'individual' || 'individual',
                       organization: user?.organization || 'SANAD Platform',
                       description: user?.bio || 'SANAD Platform user',
