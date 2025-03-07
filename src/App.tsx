@@ -12,12 +12,12 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import type { Collaboration, Innovator } from './types';
 
-function App() {
+export function App() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [selectedCollaboration, setSelectedCollaboration] = useState<string | null>(null);
   const [showHomePage, setShowHomePage] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'challenge' | 'partnership'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'challenges' | 'partnerships'>('all');
   const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile'>('collaborations');
   const [selectedInnovator, setSelectedInnovator] = useState<string | null>(null);
   
@@ -64,6 +64,14 @@ function App() {
     }
   ]);
 
+  // Filter collaborations based on active filter
+  const filteredCollaborations = collaborations.filter(collaboration => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'challenges' && collaboration.type === 'challenge') return true;
+    if (activeFilter === 'partnerships' && collaboration.type === 'partnership') return true;
+    return false;
+  });
+
   // Navigation functions
   const handleNavigateToWorkspace = () => {
     setShowHomePage(false);
@@ -73,25 +81,21 @@ function App() {
   };
 
   const handleNavigateToCollaboration = (id: string) => {
+    setShowHomePage(false);
+    setActivePage('collaborations');
     setSelectedCollaboration(id);
-    setShowHomePage(false);
-    setActivePage('collaborations');
-  };
-
-  const handleNavigateToCollaborations = (filter: 'all' | 'challenge' | 'partnership' = 'all') => {
-    setShowHomePage(false);
-    setActivePage('collaborations');
-    setActiveFilter(filter);
-    setSelectedCollaboration(null);
-    setSelectedInnovator(null);
   };
 
   const handleNavigateToChallenges = () => {
-    handleNavigateToCollaborations('challenge');
+    setShowHomePage(false);
+    setActivePage('collaborations');
+    setActiveFilter('challenges');
   };
 
   const handleNavigateToPartnerships = () => {
-    handleNavigateToCollaborations('partnership');
+    setShowHomePage(false);
+    setActivePage('collaborations');
+    setActiveFilter('partnerships');
   };
 
   const handleNavigateToInnovators = () => {
@@ -126,12 +130,6 @@ function App() {
     setSelectedInnovator(id);
   };
 
-  // Filter collaborations based on active filter
-  const filteredCollaborations = collaborations.filter(collab => {
-    if (activeFilter === 'all') return true;
-    return collab.type === activeFilter;
-  });
-
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
@@ -161,11 +159,14 @@ function App() {
               {activePage === 'collaborations' && !selectedCollaboration && (
                 <>
                   <WorkspaceHeader 
-                    activeFilter={activeFilter}
-                    onFilterChange={setActiveFilter}
+                    onCreateCollaboration={(collaboration) => {
+                      // Handle collaboration creation
+                      console.log('Creating collaboration:', collaboration);
+                    }}
                   />
                   <CollaborationList 
                     collaborations={filteredCollaborations} 
+                    onViewDetails={handleNavigateToCollaboration}
                   />
                 </>
               )}
@@ -186,14 +187,22 @@ function App() {
               
               {activePage === 'innovators' && selectedInnovator && (
                 <ProfilePage 
-                  onBack={() => setSelectedInnovator(null)}
+                  user={innovators.find(i => i.id === selectedInnovator)!}
                 />
               )}
               
               {activePage === 'profile' && (
                 <ProtectedRoute>
                   <ProfilePage 
-                    onBack={handleNavigateToWorkspace}
+                    user={{
+                      id: user?.id || 'current-user',
+                      name: user?.name || 'Current User',
+                      type: user?.role as 'individual' || 'individual',
+                      organization: user?.organization || 'SANAD Platform',
+                      description: user?.bio || 'SANAD Platform user',
+                      expertise: user?.skills || ['Technology', 'Innovation'],
+                      tags: user?.interests || ['Sustainable Development', 'Digital Transformation']
+                    }}
                   />
                 </ProtectedRoute>
               )}

@@ -12,7 +12,6 @@ import {
   Target,
   Zap
 } from 'lucide-react';
-import { Header } from './Header';
 
 interface HomePageProps {
   onNavigateToWorkspace: () => void;
@@ -47,12 +46,6 @@ export function HomePage({
 
   return (
     <div className="min-h-screen bg-white">
-      <Header 
-        onNavigateToChallenges={onNavigateToChallenges}
-        onNavigateToPartnerships={onNavigateToPartnerships}
-        onNavigateToInnovators={onNavigateToInnovators}
-      />
-      
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-indigo-600 to-blue-500 py-20">
         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-10"></div>

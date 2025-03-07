@@ -1,9 +1,17 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { ALL_ROLES, INNOVATOR_TYPES, UserRoleType } from '../constants/roles';
 
+// Keep the enum for database compatibility, but use the constants for values
 export enum UserRole {
-  ADMIN = 'admin',
-  INNOVATOR = 'innovator',
-  ORGANIZATION = 'organization',
+  ADMIN = ALL_ROLES.ADMIN,
+  STARTUP = INNOVATOR_TYPES.STARTUP,
+  RESEARCH = INNOVATOR_TYPES.RESEARCH,
+  CORPORATE = INNOVATOR_TYPES.CORPORATE,
+  GOVERNMENT = INNOVATOR_TYPES.GOVERNMENT,
+  INVESTOR = INNOVATOR_TYPES.INVESTOR,
+  INDIVIDUAL = INNOVATOR_TYPES.INDIVIDUAL,
+  INNOVATOR = INNOVATOR_TYPES.INDIVIDUAL, // Legacy support
+  ORGANIZATION = INNOVATOR_TYPES.ORGANIZATION,
 }
 
 @Entity('users')
@@ -26,7 +34,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.INNOVATOR,
+    default: UserRole.INDIVIDUAL,
   })
   role: UserRole;
 

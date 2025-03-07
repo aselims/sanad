@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { RegisterData } from '../../services/auth';
+import { INNOVATOR_TYPES, ROLE_DISPLAY_NAMES, INNOVATOR_TYPES_ARRAY } from '../../constants/roles';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -14,7 +15,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginClick }) 
     lastName: '',
     email: '',
     password: '',
-    role: 'innovator',
+    role: INNOVATOR_TYPES.INDIVIDUAL,
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,8 +131,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginClick }) 
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            <option value="innovator">Innovator</option>
-            <option value="organization">Organization</option>
+            {INNOVATOR_TYPES_ARRAY.map(role => (
+              <option key={role} value={role}>
+                {ROLE_DISPLAY_NAMES[role]}
+              </option>
+            ))}
           </select>
         </div>
         

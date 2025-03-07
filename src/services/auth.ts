@@ -1,11 +1,12 @@
 import api from './api';
+import { InnovatorType, UserRoleType } from '../constants/roles';
 
 export interface RegisterData {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
-  role?: 'innovator' | 'organization' | 'admin';
+  role?: UserRoleType;
 }
 
 export interface LoginData {
