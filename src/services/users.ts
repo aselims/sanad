@@ -60,6 +60,24 @@ export const updateCurrentUserProfile = async (data: Partial<User>): Promise<Use
     const updatedUser = { ...currentUser, ...response.data.data };
     localStorage.setItem('user', JSON.stringify(updatedUser));
     
+    // Also update any additional profile data in a separate storage if needed
+    // This is useful for storing data that might not be part of the User model
+    // but is part of the Innovator model in the frontend
+    const additionalProfileData = {
+      profileImage: data.profilePicture,
+      website: data.website,
+      location: data.location,
+      phone: data.phone,
+      social: data.social,
+      // Add any other fields that are not part of the User model
+    };
+    
+    // Store additional profile data
+    localStorage.setItem('profileData', JSON.stringify({
+      ...JSON.parse(localStorage.getItem('profileData') || '{}'),
+      ...additionalProfileData
+    }));
+    
     return updatedUser;
   } catch (error) {
     console.error('Error updating current user profile:', error);

@@ -106,6 +106,9 @@ export function ProfilePage({
         lastName: updatedUser.name?.split(' ').slice(1).join(' '),
         organization: updatedUser.organization,
         bio: updatedUser.description,
+        role: updatedUser.type,
+        position: updatedUser.position,
+        // Add any other fields that the API supports
       };
       
       // Update the user profile via API
