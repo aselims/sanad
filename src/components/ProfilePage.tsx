@@ -16,9 +16,14 @@ import {
   Link as LinkIcon,
   Star,
   Target,
-  ThumbsUp
+  ThumbsUp,
+  Edit
 } from 'lucide-react';
-import { Innovator, Collaboration } from '../types';
+import { Innovator, Collaboration, User as UserType } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import ProtectedAction from './auth/ProtectedAction';
+import EditProfileModal from './EditProfileModal';
+import { connectWithUser, sendMessageToUser, updateCurrentUserProfile } from '../services/users';
 
 interface ProfilePageProps {
   user: Innovator;
@@ -36,11 +41,99 @@ export function ProfilePage({
   potentialMatches = [], 
   matchRequests = [] 
 }: ProfilePageProps) {
+  const { user: currentUser, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests'>('profile');
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [profileData, setProfileData] = useState<Innovator>(user);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Check if this is the current user's profile
+  const isOwnProfile = currentUser && currentUser.id === user.id;
+
+  // Function to handle connect action
+  const handleConnect = async () => {
+    if (!isAuthenticated) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await connectWithUser(profileData.id);
+      console.log('Successfully connected with', profileData.name);
+      // Show success message or update UI
+    } catch (error) {
+      console.error('Error connecting with user:', error);
+      setError('Failed to connect with user. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to handle message action
+  const handleMessage = async () => {
+    if (!isAuthenticated) return;
+    
+    // In a real app, you would open a message modal here
+    console.log('Opening message dialog for', profileData.name);
+    
+    // Example of sending a message
+    try {
+      const message = "Hello, I'd like to connect with you!";
+      await sendMessageToUser(profileData.id, message);
+      console.log('Message sent successfully');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
+  // Function to handle edit profile action
+  const handleEditProfile = () => {
+    setShowEditModal(true);
+  };
+
+  // Function to handle save profile changes
+  const handleSaveProfile = async (updatedUser: Partial<Innovator>) => {
+    if (!currentUser) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Convert Innovator format to User format for the API
+      const userData: Partial<UserType> = {
+        firstName: updatedUser.name?.split(' ')[0],
+        lastName: updatedUser.name?.split(' ').slice(1).join(' '),
+        organization: updatedUser.organization,
+        bio: updatedUser.description,
+      };
+      
+      // Update the user profile via API
+      const result = await updateCurrentUserProfile(userData);
+      
+      if (result) {
+        // Update the local state with the new profile data
+        setProfileData(prevData => ({
+          ...prevData,
+          ...updatedUser
+        }));
+        
+        console.log('Profile updated successfully');
+      } else {
+        setError('Failed to update profile. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError('An error occurred while updating your profile.');
+    } finally {
+      setIsLoading(false);
+      setShowEditModal(false);
+    }
+  };
 
   // Function to render different content based on user type
   const renderTypeSpecificFields = () => {
-    switch (user.type) {
+    switch (profileData.type) {
       case 'investor':
         return (
           <div className="space-y-6">
@@ -247,7 +340,7 @@ export function ProfilePage({
               <h3 className="text-lg font-medium text-gray-900">Professional Background</h3>
               <div className="mt-2 space-y-3">
                 <p className="text-sm text-gray-600">
-                  {user.description}
+                  {profileData.description}
                 </p>
               </div>
             </div>
@@ -255,7 +348,7 @@ export function ProfilePage({
             <div>
               <h3 className="text-lg font-medium text-gray-900">Areas of Expertise</h3>
               <div className="mt-2 flex flex-wrap gap-2">
-                {user.expertise.map((skill, index) => (
+                {profileData.expertise.map((skill, index) => (
                   <span 
                     key={index} 
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800"
@@ -283,15 +376,15 @@ export function ProfilePage({
             <dl>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">Full name / Organization</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{user.name}</dd>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{profileData.name}</dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">Type</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 capitalize">{user.type}</dd>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 capitalize">{profileData.type}</dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">Email address</dt>
-                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">contact@{user.organization.toLowerCase().replace(/\s+/g, '')}.com</dd>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">contact@{profileData.organization.toLowerCase().replace(/\s+/g, '')}.com</dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">Location</dt>
@@ -300,7 +393,7 @@ export function ProfilePage({
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">About</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {user.description}
+                  {profileData.description}
                 </dd>
               </div>
             </dl>
@@ -311,9 +404,9 @@ export function ProfilePage({
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
-              {user.type === 'investor' ? 'Investment Information' : 
-               user.type === 'startup' ? 'Company Information' :
-               user.type === 'research' ? 'Research Information' : 'Professional Information'}
+              {profileData.type === 'investor' ? 'Investment Information' : 
+               profileData.type === 'startup' ? 'Company Information' :
+               profileData.type === 'research' ? 'Research Information' : 'Professional Information'}
             </h3>
           </div>
           <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
@@ -471,32 +564,81 @@ export function ProfilePage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+      
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
         <div className="px-4 py-5 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between">
           <div className="flex items-center">
             <div className="h-20 w-20 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center">
-              {user.type === 'investor' ? (
+              {profileData.type === 'investor' ? (
                 <DollarSign className="h-10 w-10 text-white" />
-              ) : user.type === 'startup' ? (
+              ) : profileData.type === 'startup' ? (
                 <Briefcase className="h-10 w-10 text-white" />
-              ) : user.type === 'research' ? (
+              ) : profileData.type === 'research' ? (
                 <Award className="h-10 w-10 text-white" />
               ) : (
                 <User className="h-10 w-10 text-white" />
               )}
             </div>
             <div className="ml-4">
-              <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
-              <p className="text-sm text-gray-500 capitalize">{user.type}</p>
+              <h2 className="text-2xl font-bold text-gray-900">{profileData.name}</h2>
+              <p className="text-sm text-gray-500 capitalize">{profileData.type}</p>
             </div>
           </div>
           <div className="mt-4 md:mt-0 flex space-x-3">
-            <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              Connect
-            </button>
-            <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              Message
-            </button>
+            {isOwnProfile ? (
+              // Edit profile button for own profile
+              <button 
+                onClick={handleEditProfile}
+                disabled={isLoading}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <span className="inline-flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </span>
+                ) : (
+                  <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </>
+                )}
+              </button>
+            ) : (
+              // Connect and Message buttons for other profiles
+              <>
+                <ProtectedAction
+                  onAction={handleConnect}
+                  buttonClassName="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  actionName={`connect with ${profileData.name}`}
+                >
+                  {isLoading ? (
+                    <span className="inline-flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Connecting...
+                    </span>
+                  ) : "Connect"}
+                </ProtectedAction>
+                <ProtectedAction
+                  onAction={handleMessage}
+                  buttonClassName="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  actionName={`send a message to ${profileData.name}`}
+                >
+                  Message
+                </ProtectedAction>
+              </>
+            )}
           </div>
         </div>
         <div className="border-t border-gray-200">
@@ -549,6 +691,14 @@ export function ProfilePage({
       {activeTab === 'profile' && renderProfileContent()}
       {activeTab === 'potential-matches' && renderPotentialMatchesContent()}
       {activeTab === 'match-requests' && renderMatchRequestsContent()}
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        user={profileData}
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleSaveProfile}
+      />
     </div>
   );
 } 

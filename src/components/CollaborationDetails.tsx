@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { Collaboration, CollaborationRequest, InterestSubmission } from '../types';
 import { ExpressInterestModal } from './ExpressInterestModal';
+import ProtectedAction from './auth/ProtectedAction';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual';
 
@@ -50,35 +51,31 @@ function CollaborationRequestCard({ request, onExpressInterest }: {
   onExpressInterest: (request: CollaborationRequest) => void;
 }) {
   return (
-    <div className="bg-white rounded-lg shadow p-4 border border-yellow-200">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-gray-900 flex items-center">
-          <Briefcase className="h-4 w-4 mr-2" />
-          {request.role}
-        </h4>
-        <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-          Open Position
+    <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="font-semibold text-gray-900">{request.role}</h4>
+        <span className={`px-2 py-0.5 text-xs rounded-full ${
+          request.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+        }`}>
+          {request.status}
         </span>
       </div>
       <p className="text-sm text-gray-600 mb-3">{request.description}</p>
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-1 mb-3">
         {request.expertise.map((skill, index) => (
-          <span 
-            key={index}
-            className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700 flex items-center gap-1"
-          >
-            <Award className="h-3 w-3" />
+          <span key={index} className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
             {skill}
           </span>
         ))}
       </div>
-      <button 
-        onClick={() => onExpressInterest(request)}
-        className="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
+      <ProtectedAction
+        onAction={() => onExpressInterest(request)}
+        buttonClassName="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
+        actionName="express interest in this position"
       >
         <UserPlus className="h-4 w-4 mr-2" />
         Express Interest
-      </button>
+      </ProtectedAction>
     </div>
   );
 }
@@ -246,13 +243,14 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
             <p className="text-sm text-gray-600 mb-4">
               Interested in collaborating on this initiative? Join as a partner to contribute your expertise and resources.
             </p>
-            <button 
-              onClick={() => setShowInitiativeModal(true)}
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center"
+            <ProtectedAction 
+              onAction={() => setShowInitiativeModal(true)}
+              buttonClassName="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center"
+              actionName="express interest in this initiative"
             >
               <Handshake className="h-4 w-4 mr-2" />
               Express Initiative Interest
-            </button>
+            </ProtectedAction>
           </div>
 
           {/* Open Positions */}
