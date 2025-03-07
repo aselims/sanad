@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   Building, 
@@ -47,24 +47,40 @@ export function ProfilePage({
   const [profileData, setProfileData] = useState<Innovator>(user);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
 
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === user.id;
+
+  // Reset activeTab to 'profile' if a non-authenticated user tries to access a protected tab
+  useEffect(() => {
+    if ((!isAuthenticated || !isOwnProfile) && 
+        (activeTab === 'potential-matches' || activeTab === 'match-requests')) {
+      setActiveTab('profile');
+    }
+  }, [isAuthenticated, isOwnProfile, activeTab]);
 
   // Function to handle connect action
   const handleConnect = async () => {
     if (!isAuthenticated) return;
     
     setIsLoading(true);
+    setConnectionStatus('pending');
     setError(null);
     
     try {
       await connectWithUser(profileData.id);
       console.log('Successfully connected with', profileData.name);
-      // Show success message or update UI
+      // Show success message
+      setConnectionStatus('success');
+      // Reset status after 3 seconds
+      setTimeout(() => {
+        setConnectionStatus('idle');
+      }, 3000);
     } catch (error) {
       console.error('Error connecting with user:', error);
       setError('Failed to connect with user. Please try again.');
+      setConnectionStatus('error');
     } finally {
       setIsLoading(false);
     }
@@ -625,14 +641,14 @@ export function ProfilePage({
               </button>
             ) : (
               // Connect and Message buttons for other profiles
-              <>
+              <div className="mt-6 flex flex-col sm:flex-row sm:space-x-4">
                 <ProtectedAction
                   onAction={handleConnect}
-                  buttonClassName="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  buttonClassName="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-3 sm:mb-0"
                   actionName={`connect with ${profileData.name}`}
                 >
                   {isLoading ? (
-                    <span className="inline-flex items-center">
+                    <span className="flex items-center">
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -641,6 +657,30 @@ export function ProfilePage({
                     </span>
                   ) : "Connect"}
                 </ProtectedAction>
+                
+                {/* Connection status notification */}
+                {connectionStatus === 'success' && (
+                  <div className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md z-50">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>Connection request sent to {profileData.name}!</span>
+                    </div>
+                  </div>
+                )}
+                
+                {connectionStatus === 'error' && (
+                  <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md z-50">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      <span>Failed to send connection request. Please try again.</span>
+                    </div>
+                  </div>
+                )}
+                
                 <ProtectedAction
                   onAction={handleMessage}
                   buttonClassName="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -648,11 +688,11 @@ export function ProfilePage({
                 >
                   Message
                 </ProtectedAction>
-              </>
+              </div>
             )}
           </div>
         </div>
-        <div className="border-t border-gray-200">
+        <div className="border-b border-gray-200">
           <div className="flex">
             <button
               onClick={() => setActiveTab('profile')}
@@ -664,44 +704,66 @@ export function ProfilePage({
             >
               Profile
             </button>
-            <button
-              onClick={() => setActiveTab('potential-matches')}
-              className={`px-4 py-4 text-sm font-medium ${
-                activeTab === 'potential-matches'
-                  ? 'text-indigo-600 border-b-2 border-indigo-500'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'
-              }`}
-            >
-              Potential Matches
-              {potentialMatches.length > 0 && (
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                  {potentialMatches.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('match-requests')}
-              className={`px-4 py-4 text-sm font-medium ${
-                activeTab === 'match-requests'
-                  ? 'text-indigo-600 border-b-2 border-indigo-500'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'
-              }`}
-            >
-              Match Requests
-              {matchRequests.length > 0 && (
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  {matchRequests.length}
-                </span>
-              )}
-            </button>
+            
+            {/* Only show these tabs for authenticated users viewing their own profile */}
+            {isAuthenticated && isOwnProfile && (
+              <>
+                <button
+                  onClick={() => setActiveTab('potential-matches')}
+                  className={`px-4 py-4 text-sm font-medium ${
+                    activeTab === 'potential-matches'
+                      ? 'text-indigo-600 border-b-2 border-indigo-500'
+                      : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'
+                  }`}
+                >
+                  Potential Matches
+                  {potentialMatches.length > 0 && (
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      {potentialMatches.length}
+                    </span>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('match-requests')}
+                  className={`px-4 py-4 text-sm font-medium ${
+                    activeTab === 'match-requests'
+                      ? 'text-indigo-600 border-b-2 border-indigo-500'
+                      : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'
+                  }`}
+                >
+                  Match Requests
+                  {matchRequests.length > 0 && (
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      {matchRequests.length}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Tab content */}
-      {activeTab === 'profile' && renderProfileContent()}
-      {activeTab === 'potential-matches' && renderPotentialMatchesContent()}
-      {activeTab === 'match-requests' && renderMatchRequestsContent()}
+      <div className="py-6">
+        {activeTab === 'profile' && renderProfileContent()}
+        
+        {/* Only render these tabs for authenticated users viewing their own profile */}
+        {isAuthenticated && isOwnProfile && (
+          <>
+            {activeTab === 'potential-matches' && renderPotentialMatchesContent()}
+            {activeTab === 'match-requests' && renderMatchRequestsContent()}
+          </>
+        )}
+        
+        {/* If a non-authenticated user tries to access these tabs, redirect to profile */}
+        {(!isAuthenticated || !isOwnProfile) && (activeTab === 'potential-matches' || activeTab === 'match-requests') && (
+          <div className="text-center py-10">
+            <p className="text-gray-500">You need to be logged in and viewing your own profile to access this section.</p>
+          </div>
+        )}
+      </div>
 
       {/* Edit Profile Modal */}
       <EditProfileModal
