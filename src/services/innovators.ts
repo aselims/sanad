@@ -27,8 +27,46 @@ export const getInnovatorById = async (id: string): Promise<Innovator> => {
  * @returns Promise with the matching innovators
  */
 export const searchInnovators = async (query: string): Promise<Innovator[]> => {
-  const response = await api.get(`/users/search?q=${encodeURIComponent(query)}`);
-  return response.data.data.map(userToInnovator);
+  try {
+    console.log(`Searching innovators for: ${query}`);
+    const response = await api.get(`/users/search?q=${encodeURIComponent(query)}`);
+    const innovators = response.data.data.map(userToInnovator);
+    console.log(`Found ${innovators.length} innovators matching "${query}"`);
+    return innovators;
+  } catch (error) {
+    console.error(`Error searching innovators for '${query}':`, error);
+    
+    // Log more detailed error information
+    if (error.response) {
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
+    
+    // Fallback to client-side search if the API endpoint fails
+    try {
+      console.log('Falling back to client-side search for innovators...');
+      const allInnovators = await getAllInnovators();
+      const lowerQuery = query.toLowerCase();
+      
+      const filtered = allInnovators.filter(innovator => 
+        innovator.name.toLowerCase().includes(lowerQuery) || 
+        innovator.description.toLowerCase().includes(lowerQuery) ||
+        innovator.organization.toLowerCase().includes(lowerQuery) ||
+        innovator.type.toLowerCase().includes(lowerQuery) ||
+        innovator.expertise.some(exp => exp.toLowerCase().includes(lowerQuery))
+      );
+      
+      console.log(`Fallback search found ${filtered.length} innovators for '${query}'`);
+      return filtered;
+    } catch (fallbackError) {
+      console.error(`Fallback search for innovators also failed for '${query}':`, fallbackError);
+      return [];
+    }
+  }
 };
 
 /**

@@ -12,6 +12,9 @@ import {
   Target,
   Zap
 } from 'lucide-react';
+import { searchInnovators } from '../services/innovators';
+import { searchCollaborations } from '../services/collaborations';
+import { Innovator, Collaboration } from '../types';
 
 interface HomePageProps {
   onNavigateToWorkspace: () => void;
@@ -29,13 +32,77 @@ export function HomePage({
   onNavigateToInnovators = onNavigateToWorkspace
 }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<{
+    innovators: Innovator[];
+    collaborations: Collaboration[];
+  }>({ innovators: [], collaborations: [] });
+  const [searchError, setSearchError] = useState<string | null>(null);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      onNavigateToWorkspace();
+    
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    setSearchError(null);
+    
+    try {
+      console.log(`Performing search for: "${searchQuery}"`);
+      
+      // Search for both innovators and collaborations in parallel
+      const results = await Promise.allSettled([
+        searchInnovators(searchQuery),
+        searchCollaborations(searchQuery)
+      ]);
+      
+      // Process results, handling potential failures
+      const innovatorsResult = results[0];
+      const collaborationsResult = results[1];
+      
+      const innovators = innovatorsResult.status === 'fulfilled' ? innovatorsResult.value : [];
+      const collaborations = collaborationsResult.status === 'fulfilled' ? collaborationsResult.value : [];
+      
+      // Log any errors that occurred
+      if (innovatorsResult.status === 'rejected') {
+        console.error('Error searching innovators:', innovatorsResult.reason);
+      }
+      
+      if (collaborationsResult.status === 'rejected') {
+        console.error('Error searching collaborations:', collaborationsResult.reason);
+      }
+      
+      setSearchResults({
+        innovators,
+        collaborations
+      });
+      
+      // If no results found, show a message
+      if (innovators.length === 0 && collaborations.length === 0) {
+        setSearchError(`No results found for "${searchQuery}"`);
+      }
+      
+      // If both searches failed, show a more specific error
+      if (innovatorsResult.status === 'rejected' && collaborationsResult.status === 'rejected') {
+        setSearchError('Search failed. Please try again later or try a different search term.');
+      }
+    } catch (error) {
+      console.error('Error during search:', error);
+      setSearchError('An error occurred while searching. Please try again.');
+    } finally {
+      setIsSearching(false);
     }
   };
+
+  // Function to clear search results
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults({ innovators: [], collaborations: [] });
+    setSearchError(null);
+  };
+
+  // Check if there are any search results
+  const hasSearchResults = searchResults.innovators.length > 0 || searchResults.collaborations.length > 0;
 
   // Log the navigation functions to verify they exist
   console.log("HomePage navigation functions:", {
@@ -75,11 +142,108 @@ export function HomePage({
                 <button 
                   type="submit"
                   className="absolute inset-y-0 right-0 px-4 text-white bg-indigo-700 rounded-r-lg hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  disabled={isSearching}
                 >
-                  Search
+                  {isSearching ? 'Searching...' : 'Search'}
                 </button>
               </div>
             </form>
+            
+            {/* Search Results */}
+            {(hasSearchResults || searchError) && (
+              <div className="mt-8 bg-white rounded-lg shadow-xl p-6 text-left max-w-4xl mx-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {hasSearchResults 
+                      ? `Search Results for "${searchQuery}"` 
+                      : `Search Results`}
+                  </h2>
+                  <button 
+                    onClick={clearSearch}
+                    className="text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    Clear Results
+                  </button>
+                </div>
+                
+                {/* Innovators Results */}
+                {searchResults.innovators.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                      Innovators ({searchResults.innovators.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {searchResults.innovators.map(innovator => (
+                        <div 
+                          key={innovator.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition duration-150"
+                          onClick={() => onNavigateToInnovators()}
+                        >
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                              {innovator.type === 'startup' ? (
+                                <Rocket className="h-6 w-6 text-indigo-600" />
+                              ) : innovator.type === 'research' ? (
+                                <GraduationCap className="h-6 w-6 text-indigo-600" />
+                              ) : innovator.type === 'investor' ? (
+                                <DollarSign className="h-6 w-6 text-indigo-600" />
+                              ) : (
+                                <Users className="h-6 w-6 text-indigo-600" />
+                              )}
+                            </div>
+                            <div className="ml-4">
+                              <h4 className="text-sm font-medium text-gray-900">{innovator.name}</h4>
+                              <p className="text-sm text-gray-500 capitalize">{innovator.type}</p>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-500 line-clamp-2">{innovator.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Collaborations Results */}
+                {searchResults.collaborations.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                      Collaborations ({searchResults.collaborations.length})
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {searchResults.collaborations.map(collaboration => (
+                        <div 
+                          key={collaboration.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition duration-150"
+                          onClick={() => onNavigateToCollaboration(collaboration.id)}
+                        >
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                              {collaboration.type === 'challenge' ? (
+                                <Lightbulb className="h-6 w-6 text-indigo-600" />
+                              ) : (
+                                <Building className="h-6 w-6 text-indigo-600" />
+                              )}
+                            </div>
+                            <div className="ml-4">
+                              <h4 className="text-sm font-medium text-gray-900">{collaboration.title}</h4>
+                              <p className="text-sm text-gray-500 capitalize">{collaboration.type}</p>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-500 line-clamp-2">{collaboration.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* No Results Message */}
+                {searchError && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">{searchError}</p>
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* CTA Buttons */}
             <div className="flex flex-wrap justify-center gap-4">

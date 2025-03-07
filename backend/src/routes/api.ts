@@ -343,6 +343,115 @@ router.get('/partnerships/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Search users
+router.get('/users/search', async (req: Request, res: Response) => {
+  try {
+    const query = req.query.q as string;
+    
+    if (!query) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Search query is required'
+      });
+    }
+    
+    // Get all users from the database
+    const users = await AppDataSource.getRepository(User).find();
+    
+    // Filter users based on the search query
+    const lowerQuery = query.toLowerCase();
+    const filteredUsers = users.filter(user => 
+      user.firstName.toLowerCase().includes(lowerQuery) ||
+      user.lastName.toLowerCase().includes(lowerQuery) ||
+      user.email.toLowerCase().includes(lowerQuery) ||
+      user.organization?.toLowerCase().includes(lowerQuery) ||
+      user.bio?.toLowerCase().includes(lowerQuery) ||
+      user.role.toLowerCase().includes(lowerQuery)
+    );
+    
+    res.status(200).json({
+      status: 'success',
+      data: filteredUsers
+    });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to search users'
+    });
+  }
+});
+
+// Search collaborations (challenges and partnerships)
+router.get('/collaborations/search', async (req: Request, res: Response) => {
+  try {
+    const query = req.query.q as string;
+    
+    if (!query) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Search query is required'
+      });
+    }
+    
+    // Get all challenges and partnerships from the database
+    const challenges = await AppDataSource.getRepository(Challenge).find();
+    const partnerships = await AppDataSource.getRepository(Partnership).find();
+    
+    // Filter challenges based on the search query
+    const lowerQuery = query.toLowerCase();
+    const filteredChallenges = challenges.filter(challenge => 
+      challenge.title.toLowerCase().includes(lowerQuery) ||
+      challenge.description.toLowerCase().includes(lowerQuery) ||
+      challenge.organization.toLowerCase().includes(lowerQuery)
+    );
+    
+    // Filter partnerships based on the search query
+    // Note: Partnership entity doesn't have an organization field, so we only search in title, description, and participants
+    const filteredPartnerships = partnerships.filter(partnership => 
+      partnership.title.toLowerCase().includes(lowerQuery) ||
+      partnership.description.toLowerCase().includes(lowerQuery) ||
+      partnership.participants.some(participant => participant.toLowerCase().includes(lowerQuery))
+    );
+    
+    // Combine and format the results
+    const results = [
+      ...filteredChallenges.map(challenge => ({
+        id: challenge.id,
+        title: challenge.title,
+        description: challenge.description,
+        participants: [challenge.organization], // Convert organization to participants array for consistency
+        type: 'challenge',
+        status: challenge.status,
+        createdAt: challenge.createdAt,
+        updatedAt: challenge.updatedAt
+      })),
+      ...filteredPartnerships.map(partnership => ({
+        id: partnership.id,
+        title: partnership.title,
+        description: partnership.description,
+        participants: partnership.participants,
+        type: 'partnership',
+        status: partnership.status,
+        createdAt: partnership.createdAt,
+        updatedAt: partnership.updatedAt
+      }))
+    ];
+    
+    res.status(200).json({
+      status: 'success',
+      data: results
+    });
+  } catch (error) {
+    console.error('Error searching collaborations:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to search collaborations',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Mount routes
 router.use('/auth', authRoutes);
 

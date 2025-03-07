@@ -1,6 +1,8 @@
-import { Collaboration, Challenge, challengeToCollaboration } from '../types';
+import { Collaboration } from '../types';
+import { challengeToCollaboration } from '../types';
 import { getAllChallenges } from './challenges';
 import { getAllPartnerships } from './partnerships';
+import api from './api';
 
 /**
  * Get all collaborations (both challenges and partnerships)
@@ -69,19 +71,61 @@ export const getCollaborationsByStatus = async (status: 'proposed' | 'active' | 
  */
 export const searchCollaborations = async (query: string): Promise<Collaboration[]> => {
   try {
-    const allCollaborations = await getAllCollaborations();
-    const lowerQuery = query.toLowerCase();
+    console.log(`Searching collaborations for: ${query}`);
+    const response = await api.get(`/collaborations/search?q=${encodeURIComponent(query)}`);
     
-    const filtered = allCollaborations.filter(collab => 
-      collab.title.toLowerCase().includes(lowerQuery) || 
-      collab.description.toLowerCase().includes(lowerQuery) ||
-      collab.participants.some(p => p.toLowerCase().includes(lowerQuery))
-    );
+    // Map the response data to ensure it matches the Collaboration interface
+    const collaborations = response.data.data.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      participants: item.participants || [],
+      status: item.status,
+      type: item.type,
+      createdAt: new Date(item.createdAt),
+      updatedAt: new Date(item.updatedAt),
+      // Add any other fields that might be needed
+      ...(item.type === 'challenge' && item.challengeDetails ? { challengeDetails: item.challengeDetails } : {}),
+      ...(item.type === 'partnership' && item.partnershipDetails ? { partnershipDetails: item.partnershipDetails } : {})
+    }));
     
-    console.log(`Search results for '${query}':`, filtered.length);
-    return filtered;
+    console.log(`Found ${collaborations.length} collaborations matching "${query}"`);
+    return collaborations;
   } catch (error) {
     console.error(`Error searching collaborations for '${query}':`, error);
-    return [];
+    
+    // Log more detailed error information
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error response data:', error.response.data);
+      console.error('Error response status:', error.response.status);
+      console.error('Error response headers:', error.response.headers);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Error request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error message:', error.message);
+    }
+    
+    // Fallback to client-side search if the API endpoint fails
+    try {
+      console.log('Falling back to client-side search...');
+      const allCollaborations = await getAllCollaborations();
+      const lowerQuery = query.toLowerCase();
+      
+      const filtered = allCollaborations.filter(collab => 
+        collab.title.toLowerCase().includes(lowerQuery) || 
+        collab.description.toLowerCase().includes(lowerQuery) ||
+        collab.participants.some(p => p.toLowerCase().includes(lowerQuery))
+      );
+      
+      console.log(`Fallback search found ${filtered.length} results for '${query}'`);
+      return filtered;
+    } catch (fallbackError) {
+      console.error(`Fallback search also failed for '${query}':`, fallbackError);
+      return [];
+    }
   }
 }; 
