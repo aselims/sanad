@@ -10,10 +10,12 @@ import {
   ArrowRight,
   Globe,
   Target,
-  Zap
+  Zap,
+  Bot,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
-import { searchInnovators } from '../services/innovators';
-import { searchCollaborations } from '../services/collaborations';
+import { performNormalSearch, performAISearch, SearchResults } from '../services/search';
 import { Innovator, Collaboration } from '../types';
 
 interface HomePageProps {
@@ -35,11 +37,13 @@ export function HomePage({
 }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<{
-    innovators: Innovator[];
-    collaborations: Collaboration[];
-  }>({ innovators: [], collaborations: [] });
+  const [searchResults, setSearchResults] = useState<SearchResults>({ 
+    innovators: [], 
+    collaborations: [],
+    aiResults: []
+  });
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [isAISearch, setIsAISearch] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,43 +54,19 @@ export function HomePage({
     setSearchError(null);
     
     try {
-      console.log(`Performing search for: "${searchQuery}"`);
+      console.log(`Performing ${isAISearch ? 'AI' : 'normal'} search for: "${searchQuery}"`);
       
-      // Search for both innovators and collaborations in parallel
-      const results = await Promise.allSettled([
-        searchInnovators(searchQuery),
-        searchCollaborations(searchQuery)
-      ]);
+      // Use the appropriate search function based on the toggle state
+      const results = isAISearch 
+        ? await performAISearch(searchQuery)
+        : await performNormalSearch(searchQuery);
       
-      // Process results, handling potential failures
-      const innovatorsResult = results[0];
-      const collaborationsResult = results[1];
-      
-      const innovators = innovatorsResult.status === 'fulfilled' ? innovatorsResult.value : [];
-      const collaborations = collaborationsResult.status === 'fulfilled' ? collaborationsResult.value : [];
-      
-      // Log any errors that occurred
-      if (innovatorsResult.status === 'rejected') {
-        console.error('Error searching innovators:', innovatorsResult.reason);
-      }
-      
-      if (collaborationsResult.status === 'rejected') {
-        console.error('Error searching collaborations:', collaborationsResult.reason);
-      }
-      
-      setSearchResults({
-        innovators,
-        collaborations
-      });
+      setSearchResults(results);
       
       // If no results found, show a message
-      if (innovators.length === 0 && collaborations.length === 0) {
+      if (results.innovators.length === 0 && results.collaborations.length === 0 && 
+          (!results.aiResults || results.aiResults.length === 0)) {
         setSearchError(`No results found for "${searchQuery}"`);
-      }
-      
-      // If both searches failed, show a more specific error
-      if (innovatorsResult.status === 'rejected' && collaborationsResult.status === 'rejected') {
-        setSearchError('Search failed. Please try again later or try a different search term.');
       }
     } catch (error) {
       console.error('Error during search:', error);
@@ -99,20 +79,29 @@ export function HomePage({
   // Function to clear search results
   const clearSearch = () => {
     setSearchQuery('');
-    setSearchResults({ innovators: [], collaborations: [] });
+    setSearchResults({ innovators: [], collaborations: [], aiResults: [] });
     setSearchError(null);
   };
-
+  
   // Check if there are any search results
-  const hasSearchResults = searchResults.innovators.length > 0 || searchResults.collaborations.length > 0;
-
+  const hasSearchResults = searchResults.innovators.length > 0 || 
+                          searchResults.collaborations.length > 0 || 
+                          (searchResults.aiResults && searchResults.aiResults.length > 0);
+  
   // Log the navigation functions to verify they exist
   console.log("HomePage navigation functions:", {
+    onNavigateToWorkspace,
+    onNavigateToCollaboration,
     onNavigateToChallenges,
     onNavigateToPartnerships,
     onNavigateToInnovators,
     onNavigateToBlog
   });
+
+  // Function to toggle between normal and AI search
+  const toggleSearchMode = () => {
+    setIsAISearch(!isAISearch);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -129,16 +118,41 @@ export function HomePage({
               Empowering innovators to find the right partners and bring ideas to life through collaboration.
             </p>
             
+            {/* Search Mode Toggle */}
+            <div className="flex justify-center mb-4">
+              <button
+                type="button"
+                onClick={toggleSearchMode}
+                className="flex items-center text-white bg-indigo-700 hover:bg-indigo-800 rounded-full px-4 py-2 transition-all duration-200"
+              >
+                {isAISearch ? (
+                  <>
+                    <Bot className="h-4 w-4 mr-2" />
+                    <span className="text-sm font-medium">AI Chat Search</span>
+                    <ToggleRight className="h-5 w-5 ml-2" />
+                  </>
+                ) : (
+                  <>
+                    <Search className="h-4 w-4 mr-2" />
+                    <span className="text-sm font-medium">Normal Search</span>
+                    <ToggleLeft className="h-5 w-5 ml-2" />
+                  </>
+                )}
+              </button>
+            </div>
+            
             {/* Search Bar */}
             <form onSubmit={handleSearch} className="max-w-3xl mx-auto mb-8">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+                  {isAISearch ? <Bot className="h-5 w-5 text-gray-400" /> : <Search className="h-5 w-5 text-gray-400" />}
                 </div>
                 <input
                   type="text"
                   className="block w-full pl-10 pr-3 py-4 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white shadow-lg text-gray-900 placeholder-gray-500"
-                  placeholder="Search for startups, research projects, funding, or collaboration opportunities..."
+                  placeholder={isAISearch 
+                    ? "Ask a question like 'Find healthcare innovators in Dubai'" 
+                    : "Search for startups, research projects, funding, or collaboration opportunities..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -147,7 +161,7 @@ export function HomePage({
                   className="absolute inset-y-0 right-0 px-4 text-white bg-indigo-700 rounded-r-lg hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-300"
                   disabled={isSearching}
                 >
-                  {isSearching ? 'Searching...' : 'Search'}
+                  {isSearching ? 'Searching...' : isAISearch ? 'Ask AI' : 'Search'}
                 </button>
               </div>
             </form>
@@ -168,6 +182,91 @@ export function HomePage({
                     Clear Results
                   </button>
                 </div>
+                
+                {/* AI-specific results display */}
+                {isAISearch && searchResults.aiResults && searchResults.aiResults.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                      <Bot className="h-5 w-5 mr-2 text-indigo-600" />
+                      AI-Enhanced Results
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      {searchResults.aiResults.map((result) => (
+                        <div 
+                          key={`${result.type}-${result.id}`} 
+                          className="border border-indigo-200 bg-indigo-50 rounded-lg p-4 hover:bg-indigo-100 transition-colors"
+                        >
+                          <div className="flex items-start">
+                            <div className={`rounded-full p-2 mr-3 ${
+                              result.type === 'user' 
+                                ? 'bg-green-100 text-green-700' 
+                                : result.type === 'challenge'
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              {result.type === 'user' ? (
+                                <Users className="h-5 w-5" />
+                              ) : result.type === 'challenge' ? (
+                                <Lightbulb className="h-5 w-5" />
+                              ) : (
+                                <Rocket className="h-5 w-5" />
+                              )}
+                            </div>
+                            
+                            <div className="flex-1">
+                              <div className="flex justify-between">
+                                <h4 className="text-md font-medium text-gray-900">
+                                  {result.title || result.name}
+                                </h4>
+                                {result.relevanceScore && (
+                                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-indigo-100 text-indigo-800">
+                                    Relevance: {result.relevanceScore}
+                                  </span>
+                                )}
+                              </div>
+                              
+                              <p className="mt-1 text-sm text-gray-600">{result.description}</p>
+                              
+                              {/* Highlights */}
+                              {result.highlights && Object.keys(result.highlights).length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-xs font-medium text-gray-500 mb-1">Matched in:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {Object.entries(result.highlights).map(([field, values]) => (
+                                      <span 
+                                        key={field} 
+                                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800"
+                                      >
+                                        {field}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <button
+                                onClick={() => {
+                                  if (result.type === 'user') {
+                                    // Navigate to innovator profile
+                                    onNavigateToInnovators();
+                                  } else {
+                                    // Navigate to collaboration
+                                    onNavigateToCollaboration(result.id);
+                                  }
+                                }}
+                                className="mt-3 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                              >
+                                View details
+                                <ArrowRight className="ml-1 h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Innovators Results */}
                 {searchResults.innovators.length > 0 && (

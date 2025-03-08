@@ -452,6 +452,43 @@ router.get('/collaborations/search', async (req: Request, res: Response) => {
   }
 });
 
+// AI-powered search endpoint
+router.get('/ai-search', async (req: Request, res: Response) => {
+  try {
+    const query = req.query.q as string;
+    
+    if (!query) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Search query is required'
+      });
+    }
+    
+    // Import the AI search service
+    const { aiSearch } = await import('../services/ai-search.service');
+    
+    // Perform AI-enhanced search
+    const results = await aiSearch(query);
+    
+    // Return the results
+    res.status(200).json({
+      status: 'success',
+      data: results,
+      meta: {
+        count: results.length,
+        query
+      }
+    });
+  } catch (error) {
+    console.error('Error in AI search:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to perform AI search',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Mount routes
 router.use('/auth', authRoutes);
 
