@@ -9,7 +9,7 @@ import type { Collaboration, CollaborationRequest, InterestSubmission } from '..
 import { ExpressInterestModal } from './ExpressInterestModal';
 import ProtectedAction from './auth/ProtectedAction';
 
-type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual';
+type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
 interface CollaborationDetailsProps {
   collaboration: Collaboration;

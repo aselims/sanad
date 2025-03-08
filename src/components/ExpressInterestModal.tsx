@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import type { CollaborationRequest, InterestSubmission } from '../types';
 
-type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual';
+type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 type ModalType = 'position' | 'initiative';
 
 interface ExpressInterestModalProps {
@@ -42,18 +42,22 @@ export function ExpressInterestModal({
   const getCollaboratorTypeLabel = () => {
     switch (collaboratorType) {
       case 'startup':
-        return 'Startup Name';
+        return 'Startup';
       case 'research':
         return 'Research Institution';
       case 'corporate':
-        return 'Company Name';
+        return 'Corporate';
       case 'government':
-        return 'Government Agency';
+        return 'Government';
       case 'investor':
-        return 'Investment Firm';
+        return 'Investor';
+      case 'accelerator':
+        return 'Accelerator';
+      case 'incubator':
+        return 'Incubator';
       case 'individual':
       default:
-        return 'Organization (if applicable)';
+        return 'Individual';
     }
   };
 
@@ -114,15 +118,17 @@ export function ExpressInterestModal({
     
     return (
       <div className="mb-6">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">I am representing a:</h3>
-        <div className="grid grid-cols-2 gap-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          I am a:
+        </label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <button
             type="button"
-            className={`px-3 py-2 text-sm rounded-md ${
-              collaboratorType === 'startup' 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'startup'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
             onClick={() => {
               onCollaboratorTypeChange('startup');
               setFormData({ ...formData, collaboratorType: 'startup' });
@@ -132,25 +138,25 @@ export function ExpressInterestModal({
           </button>
           <button
             type="button"
-            className={`px-3 py-2 text-sm rounded-md ${
-              collaboratorType === 'research' 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'research'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
             onClick={() => {
               onCollaboratorTypeChange('research');
               setFormData({ ...formData, collaboratorType: 'research' });
             }}
           >
-            Research Institution
+            Research
           </button>
           <button
             type="button"
-            className={`px-3 py-2 text-sm rounded-md ${
-              collaboratorType === 'corporate' 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'corporate'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
             onClick={() => {
               onCollaboratorTypeChange('corporate');
               setFormData({ ...formData, collaboratorType: 'corporate' });
@@ -160,25 +166,25 @@ export function ExpressInterestModal({
           </button>
           <button
             type="button"
-            className={`px-3 py-2 text-sm rounded-md ${
-              collaboratorType === 'government' 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'government'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
             onClick={() => {
               onCollaboratorTypeChange('government');
               setFormData({ ...formData, collaboratorType: 'government' });
             }}
           >
-            Government Agency
+            Government
           </button>
           <button
             type="button"
-            className={`px-3 py-2 text-sm rounded-md ${
-              collaboratorType === 'investor' 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'investor'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
             onClick={() => {
               onCollaboratorTypeChange('investor');
               setFormData({ ...formData, collaboratorType: 'investor' });
@@ -188,11 +194,39 @@ export function ExpressInterestModal({
           </button>
           <button
             type="button"
-            className={`px-3 py-2 text-sm rounded-md ${
-              collaboratorType === 'individual' 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'accelerator'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+            onClick={() => {
+              onCollaboratorTypeChange('accelerator');
+              setFormData({ ...formData, collaboratorType: 'accelerator' });
+            }}
+          >
+            Accelerator
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'incubator'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+            onClick={() => {
+              onCollaboratorTypeChange('incubator');
+              setFormData({ ...formData, collaboratorType: 'incubator' });
+            }}
+          >
+            Incubator
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              collaboratorType === 'individual'
+                ? 'bg-indigo-100 text-indigo-700 border-indigo-300'
+                : 'bg-white text-gray-700 border-gray-300'
+            } border hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
             onClick={() => {
               onCollaboratorTypeChange('individual');
               setFormData({ ...formData, collaboratorType: 'individual' });

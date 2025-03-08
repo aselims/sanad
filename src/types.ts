@@ -148,7 +148,29 @@ export interface IndividualInnovator extends InnovatorBase {
   certifications?: string[];
 }
 
-export type Innovator = StartupInnovator | InvestorInnovator | ResearchInnovator | IndividualInnovator;
+export interface AcceleratorInnovator extends InnovatorBase {
+  type: 'accelerator';
+  foundedYear?: string;
+  portfolioSize?: string;
+  focusAreas?: string[];
+  successfulStartups?: number;
+  programDuration?: string;
+  investmentAmount?: string;
+  mentorNetwork?: string[];
+}
+
+export interface IncubatorInnovator extends InnovatorBase {
+  type: 'incubator';
+  foundedYear?: string;
+  portfolioSize?: string;
+  focusAreas?: string[];
+  successfulStartups?: number;
+  programDuration?: string;
+  facilities?: string[];
+  mentorNetwork?: string[];
+}
+
+export type Innovator = StartupInnovator | InvestorInnovator | ResearchInnovator | IndividualInnovator | AcceleratorInnovator | IncubatorInnovator;
 
 // Helper function to convert User to Innovator format for frontend
 export const userToInnovator = (user: User): Innovator => {
@@ -187,6 +209,16 @@ export const userToInnovator = (user: User): Innovator => {
         ...baseInnovator,
         type: 'research',
       } as ResearchInnovator;
+    case 'accelerator':
+      return {
+        ...baseInnovator,
+        type: 'accelerator',
+      } as AcceleratorInnovator;
+    case 'incubator':
+      return {
+        ...baseInnovator,
+        type: 'incubator',
+      } as IncubatorInnovator;
     default:
       return {
         ...baseInnovator,

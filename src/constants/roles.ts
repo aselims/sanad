@@ -16,6 +16,8 @@ export const INNOVATOR_TYPES = {
   INVESTOR: 'investor',
   INDIVIDUAL: 'individual',
   ORGANIZATION: 'organization',
+  ACCELERATOR: 'accelerator',
+  INCUBATOR: 'incubator',
 } as const;
 
 // Create a type from the object values
@@ -51,4 +53,6 @@ export const ROLE_DISPLAY_NAMES: Record<UserRoleType, string> = {
   [INNOVATOR_TYPES.INVESTOR]: 'Investor',
   [INNOVATOR_TYPES.INDIVIDUAL]: 'Individual',
   [INNOVATOR_TYPES.ORGANIZATION]: 'Organization',
+  [INNOVATOR_TYPES.ACCELERATOR]: 'Accelerator',
+  [INNOVATOR_TYPES.INCUBATOR]: 'Incubator',
 }; 

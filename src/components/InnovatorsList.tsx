@@ -1,6 +1,6 @@
 import React from 'react';
 import { Innovator } from '../types';
-import { Building, User, Briefcase, GraduationCap, DollarSign } from 'lucide-react';
+import { Building, User, Briefcase, GraduationCap, DollarSign, Zap, Lightbulb } from 'lucide-react';
 
 interface InnovatorsListProps {
   innovators: Innovator[];
@@ -19,6 +19,10 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
         return <GraduationCap className="h-5 w-5 text-purple-500" />;
       case 'investor':
         return <DollarSign className="h-5 w-5 text-green-500" />;
+      case 'accelerator':
+        return <Zap className="h-5 w-5 text-amber-500" />;
+      case 'incubator':
+        return <Lightbulb className="h-5 w-5 text-orange-500" />;
       case 'individual':
       default:
         return <User className="h-5 w-5 text-gray-500" />;
