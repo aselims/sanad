@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Innovator } from '../types';
-import { Building, User, Briefcase, GraduationCap, DollarSign, Zap, Lightbulb } from 'lucide-react';
+import { Building, User, Briefcase, GraduationCap, DollarSign, Zap, Lightbulb, Landmark, Users } from 'lucide-react';
+import { INNOVATOR_TYPES, ROLE_DISPLAY_NAMES } from '../constants/roles';
 
 interface InnovatorsListProps {
   innovators: Innovator[];
@@ -8,6 +9,9 @@ interface InnovatorsListProps {
 }
 
 export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProps) {
+  // State for active filter
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+
   // Function to get the appropriate icon based on innovator type
   const getInnovatorIcon = (type: string) => {
     switch (type) {
@@ -19,13 +23,16 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
         return <GraduationCap className="h-5 w-5 text-purple-500" />;
       case 'investor':
         return <DollarSign className="h-5 w-5 text-green-500" />;
+      case 'government':
+        return <Landmark className="h-5 w-5 text-red-500" />;
       case 'accelerator':
         return <Zap className="h-5 w-5 text-amber-500" />;
       case 'incubator':
         return <Lightbulb className="h-5 w-5 text-orange-500" />;
       case 'individual':
-      default:
         return <User className="h-5 w-5 text-gray-500" />;
+      default:
+        return <Users className="h-5 w-5 text-gray-500" />;
     }
   };
 
@@ -47,6 +54,29 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
     }
   };
 
+  // Filter innovators based on active filter
+  const filteredInnovators = activeFilter === 'all' 
+    ? innovators 
+    : innovators.filter(innovator => innovator.type === activeFilter);
+
+  // Get count of each innovator type
+  const getTypeCount = (type: string) => {
+    return innovators.filter(innovator => innovator.type === type).length;
+  };
+
+  // Array of all innovator types for the filter
+  const innovatorTypes = [
+    { id: 'all', label: 'All Innovators', count: innovators.length },
+    { id: 'startup', label: ROLE_DISPLAY_NAMES.startup, count: getTypeCount('startup') },
+    { id: 'research', label: ROLE_DISPLAY_NAMES.research, count: getTypeCount('research') },
+    { id: 'corporate', label: ROLE_DISPLAY_NAMES.corporate, count: getTypeCount('corporate') },
+    { id: 'government', label: ROLE_DISPLAY_NAMES.government, count: getTypeCount('government') },
+    { id: 'investor', label: ROLE_DISPLAY_NAMES.investor, count: getTypeCount('investor') },
+    { id: 'individual', label: ROLE_DISPLAY_NAMES.individual, count: getTypeCount('individual') },
+    { id: 'accelerator', label: ROLE_DISPLAY_NAMES.accelerator, count: getTypeCount('accelerator') },
+    { id: 'incubator', label: ROLE_DISPLAY_NAMES.incubator, count: getTypeCount('incubator') },
+  ];
+
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-gray-900">Innovators Directory</h2>
@@ -55,8 +85,35 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
         and individual experts who are part of the SANAD innovation ecosystem.
       </p>
       
+      {/* Innovator Type Filter */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-max">
+            <nav className="flex border-b border-gray-200">
+              {innovatorTypes.map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setActiveFilter(type.id)}
+                  className={`px-4 py-3 text-sm font-medium whitespace-nowrap flex items-center space-x-1
+                    ${activeFilter === type.id
+                      ? 'border-b-2 border-indigo-500 text-indigo-600'
+                      : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                >
+                  {type.id !== 'all' && getInnovatorIcon(type.id)}
+                  <span>{type.label}</span>
+                  <span className="ml-1.5 py-0.5 px-2 rounded-full text-xs bg-gray-100 text-gray-600">
+                    {type.count}
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {innovators.map((innovator) => (
+        {filteredInnovators.map((innovator) => (
           <div 
             key={innovator.id} 
             className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
@@ -97,6 +154,13 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
           </div>
         ))}
       </div>
+      
+      {/* Show message when no innovators match the filter */}
+      {filteredInnovators.length === 0 && (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <p className="text-gray-500 text-lg">No innovators found for this filter.</p>
+        </div>
+      )}
     </div>
   );
 } 
