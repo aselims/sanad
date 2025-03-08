@@ -30,7 +30,8 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
   };
 
   // Function to get background color based on innovator type
-  const getProfileBackground = (image: string) => {
+  const getProfileBackground = (image?: string) => {
+    if (!image) return 'bg-gradient-to-r from-gray-400 to-gray-500';
     if (image === 'blue-gradient') return 'bg-gradient-to-r from-blue-400 to-indigo-500';
     if (image === 'purple-gradient') return 'bg-gradient-to-r from-purple-400 to-pink-500';
     if (image === 'green-gradient') return 'bg-gradient-to-r from-green-400 to-emerald-500';
