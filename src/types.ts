@@ -36,6 +36,7 @@ export interface User {
     twitter?: string;
     github?: string;
   };
+  expertise?: string[];
 }
 
 export interface CollaborationRequest {
@@ -181,8 +182,8 @@ export const userToInnovator = (user: User): Innovator => {
       : user.email.split('@')[0], // Fallback to username part of email if name not available
     organization: user.organization || '',
     type: user.role as InnovatorType,
-    expertise: user.bio?.split(',').map(item => item.trim()) || [],
-    description: user.bio || '',
+    expertise: user.expertise || [], // Use dedicated expertise field if available
+    description: user.bio || '', // Use bio for description
     profileImage: user.profilePicture,
     email: user.email,
     tags: [],

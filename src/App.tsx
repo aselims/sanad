@@ -252,8 +252,10 @@ export function App() {
                       type: user?.role as 'individual' || 'individual',
                       organization: user?.organization || 'SANAD Platform',
                       description: user?.bio || 'SANAD Platform user',
-                      expertise: user?.skills || ['Technology', 'Innovation'],
-                      tags: user?.interests || ['Sustainable Development', 'Digital Transformation']
+                      email: user?.email || '',
+                      expertise: user?.expertise || [],
+                      tags: user?.interests || ['Sustainable Development', 'Digital Transformation'],
+                      position: user?.position || ''
                     }}
                   />
                 </ProtectedRoute>
