@@ -11,6 +11,8 @@ export enum UserRole {
   INDIVIDUAL = 'individual',
   INNOVATOR = 'individual', // Legacy support
   ORGANIZATION = 'organization',
+  ACCELERATOR = 'accelerator',
+  INCUBATOR = 'incubator',
 }
 
 @Entity('users')

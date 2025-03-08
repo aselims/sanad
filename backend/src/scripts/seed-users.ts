@@ -93,6 +93,54 @@ const innovatorSeedData = [
     position: 'Executive Director',
     bio: 'Leading national research and development initiatives at KACST.',
   },
+  // Accelerator innovator
+  {
+    firstName: 'Nadia',
+    lastName: 'Al-Qahtani',
+    email: 'accelerator@example.com',
+    password: 'Accelerator123!',
+    role: UserRole.ACCELERATOR,
+    organization: 'Riyadh Accelerator',
+    position: 'Program Director',
+    bio: 'Leading a startup accelerator program that helps early-stage companies scale rapidly through mentorship and funding.',
+  },
+  // Incubator innovator
+  {
+    firstName: 'Tariq',
+    lastName: 'Al-Mansour',
+    email: 'incubator@example.com',
+    password: 'Incubator123!',
+    role: UserRole.INCUBATOR,
+    organization: 'Jeddah Innovation Incubator',
+    position: 'Executive Director',
+    bio: 'Managing an incubator that provides resources, space, and support for early-stage startups to develop their ideas.',
+  },
+];
+
+// New users to add even if admin exists
+const newInnovatorTypes = [
+  // Accelerator innovator
+  {
+    firstName: 'Nadia',
+    lastName: 'Al-Qahtani',
+    email: 'accelerator@example.com',
+    password: 'Accelerator123!',
+    role: UserRole.ACCELERATOR,
+    organization: 'Riyadh Accelerator',
+    position: 'Program Director',
+    bio: 'Leading a startup accelerator program that helps early-stage companies scale rapidly through mentorship and funding.',
+  },
+  // Incubator innovator
+  {
+    firstName: 'Tariq',
+    lastName: 'Al-Mansour',
+    email: 'incubator@example.com',
+    password: 'Incubator123!',
+    role: UserRole.INCUBATOR,
+    organization: 'Jeddah Innovation Incubator',
+    position: 'Executive Director',
+    bio: 'Managing an incubator that provides resources, space, and support for early-stage startups to develop their ideas.',
+  },
 ];
 
 // Function to seed the database
@@ -139,7 +187,35 @@ const seedUsers = async () => {
       
       logger.info('User seeding completed successfully');
     } else {
-      logger.info('Admin user already exists, skipping user seeding');
+      logger.info('Admin user already exists, checking for new innovator types');
+      
+      // Add new innovator types even if admin exists
+      for (const userData of newInnovatorTypes) {
+        // Check if user already exists
+        const existingUser = await userRepository.findOne({ where: { email: userData.email } });
+        if (existingUser) {
+          logger.info(`User ${userData.email} already exists, skipping`);
+          continue;
+        }
+        
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+        
+        // Create and save the user
+        const user = new User();
+        user.firstName = userData.firstName;
+        user.lastName = userData.lastName;
+        user.email = userData.email;
+        user.password = hashedPassword;
+        user.role = userData.role;
+        user.organization = userData.organization;
+        user.position = userData.position;
+        user.bio = userData.bio;
+        user.isVerified = true; // All seed users are verified
+        
+        await userRepository.save(user);
+        logger.info(`Created user: ${userData.firstName} ${userData.lastName} (${userData.role})`);
+      }
     }
     
     // Close the database connection

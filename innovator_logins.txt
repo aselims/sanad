@@ -1,0 +1,37 @@
+# Innovator Login Credentials
+# Use these credentials to test different innovator roles in the application
+
+## Startup
+Email: startup@example.com
+Password: Startup123!
+
+## Research Institution
+Email: research@example.com
+Password: Research123!
+
+## Corporate
+Email: corporate@example.com
+Password: Corporate123!
+
+## Government
+Email: government@example.com
+Password: Government123!
+
+## Investor
+Email: investor@example.com
+Password: Investor123!
+
+## Individual
+Email: individual@example.com
+Password: Individual123!
+
+## Accelerator
+Email: accelerator@example.com
+Password: Accelerator123!
+
+## Incubator
+Email: incubator@example.com
+Password: Incubator123!
+
+# Note: These are test credentials only. In a production environment, 
+# use secure, unique passwords and proper authentication methods. 
