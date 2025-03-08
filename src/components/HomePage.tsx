@@ -22,6 +22,7 @@ interface HomePageProps {
   onNavigateToChallenges?: () => void;
   onNavigateToPartnerships?: () => void;
   onNavigateToInnovators?: () => void;
+  onNavigateToBlog?: () => void;
 }
 
 export function HomePage({ 
@@ -29,7 +30,8 @@ export function HomePage({
   onNavigateToCollaboration,
   onNavigateToChallenges = onNavigateToWorkspace,
   onNavigateToPartnerships = onNavigateToWorkspace,
-  onNavigateToInnovators = onNavigateToWorkspace
+  onNavigateToInnovators = onNavigateToWorkspace,
+  onNavigateToBlog = onNavigateToWorkspace
 }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -108,7 +110,8 @@ export function HomePage({
   console.log("HomePage navigation functions:", {
     onNavigateToChallenges,
     onNavigateToPartnerships,
-    onNavigateToInnovators
+    onNavigateToInnovators,
+    onNavigateToBlog
   });
 
   return (
@@ -541,7 +544,7 @@ export function HomePage({
               <ul className="space-y-2 text-gray-400">
                 <li><button onClick={onNavigateToWorkspace} className="hover:text-white">How It Works</button></li>
                 <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Success Stories</button></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Blog</button></li>
+                <li><button onClick={onNavigateToBlog} className="hover:text-white">Blog</button></li>
                 <li><button onClick={onNavigateToWorkspace} className="hover:text-white">FAQ</button></li>
               </ul>
             </div>

@@ -7,6 +7,7 @@ import { CollaborationDetails } from './components/CollaborationDetails';
 import { HomePage } from './components/HomePage';
 import { InnovatorsList } from './components/InnovatorsList';
 import { ProfilePage } from './components/ProfilePage';
+import { Blog } from './components/Blog';
 import AuthPage from './components/auth/AuthPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
@@ -20,7 +21,7 @@ export function App() {
   const [selectedCollaboration, setSelectedCollaboration] = useState<string | null>(null);
   const [showHomePage, setShowHomePage] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'challenges' | 'partnerships'>('all');
-  const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile'>('collaborations');
+  const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile' | 'blog'>('collaborations');
   const [selectedInnovator, setSelectedInnovator] = useState<string | null>(null);
   
   // State for API data
@@ -110,6 +111,13 @@ export function App() {
     setSelectedInnovator(null);
   };
 
+  const handleNavigateToBlog = () => {
+    setShowHomePage(false);
+    setActivePage('blog');
+    setSelectedCollaboration(null);
+    setSelectedInnovator(null);
+  };
+
   const handleBackToHome = () => {
     setShowHomePage(true);
     setActivePage('collaborations');
@@ -161,6 +169,7 @@ export function App() {
               onNavigateToChallenges={handleNavigateToChallenges}
               onNavigateToPartnerships={handleNavigateToPartnerships}
               onNavigateToInnovators={handleNavigateToInnovators}
+              onNavigateToBlog={handleNavigateToBlog}
             />
           ) : (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -248,6 +257,10 @@ export function App() {
                     }}
                   />
                 </ProtectedRoute>
+              )}
+              
+              {activePage === 'blog' && (
+                <Blog onNavigateBack={handleBackToHome} />
               )}
             </div>
           )}

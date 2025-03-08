@@ -1,0 +1,28 @@
+{
+  "posts": [
+    {
+      "title": "Why I Introduced Ta'awanu (or Sanad)?!",
+      "slug": "why-started",
+      "date": "2024-10-15",
+      "excerpt": "collaboration is always a good thing, and we need more of it. Why waste resources reinventing the wheel when teams could be working together, combining their strengths, and building on top of each other's expertise? "
+    },
+    {
+      "title": "Getting Started with SANAD",
+      "slug": "getting-started",
+      "date": "2023-10-15",
+      "excerpt": "Learn how to make the most of the SANAD platform for your innovation needs."
+    },
+    {
+      "title": "Success Story: Smart City Transportation Initiative",
+      "slug": "success-story-transportation",
+      "date": "2023-09-28",
+      "excerpt": "How a collaboration between startups and government led to innovative traffic solutions."
+    },
+    {
+      "title": "The Future of Open Innovation",
+      "slug": "future-of-open-innovation",
+      "date": "2023-09-10",
+      "excerpt": "Exploring trends and opportunities in collaborative innovation ecosystems."
+    }
+  ]
+} 

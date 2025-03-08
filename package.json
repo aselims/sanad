@@ -13,10 +13,12 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "axios": "^1.8.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.2.0"
   },
   "devDependencies": {
