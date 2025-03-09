@@ -25,6 +25,14 @@ interface HomePageProps {
   onNavigateToPartnerships?: () => void;
   onNavigateToInnovators?: () => void;
   onNavigateToBlog?: () => void;
+  onNavigateToHowItWorks?: () => void;
+  onNavigateToSuccessStories?: () => void;
+  onNavigateToFAQ?: () => void;
+  onNavigateToSupport?: () => void;
+  onNavigateToContactUs?: () => void;
+  onNavigateToTerms?: () => void;
+  onNavigateToPrivacy?: () => void;
+  onNavigateToCookies?: () => void;
 }
 
 export function HomePage({ 
@@ -33,7 +41,15 @@ export function HomePage({
   onNavigateToChallenges = onNavigateToWorkspace,
   onNavigateToPartnerships = onNavigateToWorkspace,
   onNavigateToInnovators = onNavigateToWorkspace,
-  onNavigateToBlog = onNavigateToWorkspace
+  onNavigateToBlog = onNavigateToWorkspace,
+  onNavigateToHowItWorks = onNavigateToWorkspace,
+  onNavigateToSuccessStories = onNavigateToWorkspace,
+  onNavigateToFAQ = onNavigateToWorkspace,
+  onNavigateToSupport = onNavigateToWorkspace,
+  onNavigateToContactUs = onNavigateToWorkspace,
+  onNavigateToTerms = onNavigateToWorkspace,
+  onNavigateToPrivacy = onNavigateToWorkspace,
+  onNavigateToCookies = onNavigateToWorkspace
 }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -95,7 +111,15 @@ export function HomePage({
     onNavigateToChallenges,
     onNavigateToPartnerships,
     onNavigateToInnovators,
-    onNavigateToBlog
+    onNavigateToBlog,
+    onNavigateToHowItWorks,
+    onNavigateToSuccessStories,
+    onNavigateToFAQ,
+    onNavigateToSupport,
+    onNavigateToContactUs,
+    onNavigateToTerms,
+    onNavigateToPrivacy,
+    onNavigateToCookies
   });
 
   // Function to toggle between normal and AI search
@@ -595,26 +619,40 @@ export function HomePage({
         </div>
       </section>
       
-      {/* Call to Action */}
-      <section className="py-16 bg-gradient-to-r from-indigo-600 to-blue-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Start Collaborating?</h2>
-          <p className="text-xl text-indigo-100 max-w-3xl mx-auto mb-8">
-            Join SANAD today and be part of a growing ecosystem of innovators creating solutions for tomorrow's challenges.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button 
-              onClick={onNavigateToWorkspace}
-              className="px-8 py-4 bg-white text-indigo-700 rounded-lg shadow-md hover:bg-gray-50 font-medium text-lg"
-            >
-              Create an Account
-            </button>
-            <button 
-              onClick={onNavigateToWorkspace}
-              className="px-8 py-4 bg-indigo-800 text-white rounded-lg shadow-md hover:bg-indigo-900 font-medium text-lg"
-            >
-              Browse Challenges
-            </button>
+      {/* Why SANAD Section */}
+      <section className="py-20 bg-gradient-to-r from-indigo-600 to-blue-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-10 shadow-xl">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-3xl font-bold text-white mb-6">Why SANAD?</h2>
+              
+              <div className="mb-8">
+                <p className="text-2xl font-semibold text-white mb-4">
+                  95% of startups fail; Not because they lack good ideas, but because they lack the right connections.
+                </p>
+                <p className="text-xl text-indigo-100 mb-6">
+                  SANAD helps startups, researchers, and businesses join forces, share resources, and discover synergies before wasting time and effort reinventing the wheel.
+                </p>
+                <p className="text-2xl font-bold text-white mt-8">
+                  🚀 Why compete alone when you can build together?
+                </p>
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-4 mt-10">
+                <button 
+                  onClick={onNavigateToWorkspace}
+                  className="px-8 py-4 bg-white text-indigo-700 rounded-lg shadow-md hover:bg-gray-50 font-medium text-lg transition-all duration-200 transform hover:scale-105"
+                >
+                  Create an Account
+                </button>
+                <button 
+                  onClick={onNavigateToChallenges}
+                  className="px-8 py-4 bg-indigo-800 text-white rounded-lg shadow-md hover:bg-indigo-900 font-medium text-lg transition-all duration-200 transform hover:scale-105"
+                >
+                  Browse Challenges
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -641,27 +679,27 @@ export function HomePage({
             <div>
               <h3 className="text-lg font-semibold mb-4">Resources</h3>
               <ul className="space-y-2 text-gray-400">
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">How It Works</button></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Success Stories</button></li>
+                <li><button onClick={onNavigateToHowItWorks} className="hover:text-white">How It Works</button></li>
+                <li><button onClick={onNavigateToSuccessStories} className="hover:text-white">Success Stories</button></li>
                 <li><button onClick={onNavigateToBlog} className="hover:text-white">Blog</button></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">FAQ</button></li>
+                <li><button onClick={onNavigateToFAQ} className="hover:text-white">FAQ</button></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <ul className="space-y-2 text-gray-400">
                 <li><a href="mailto:info@sanad.com" className="hover:text-white">info@sanad.com</a></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Support</button></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">Contact Us</button></li>
+                <li><button onClick={onNavigateToSupport} className="hover:text-white">Support</button></li>
+                <li><button onClick={onNavigateToContactUs} className="hover:text-white">Contact Us</button></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400">© 2023 SANAD. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <button onClick={onNavigateToWorkspace} className="text-gray-400 hover:text-white">Terms</button>
-              <button onClick={onNavigateToWorkspace} className="text-gray-400 hover:text-white">Privacy</button>
-              <button onClick={onNavigateToWorkspace} className="text-gray-400 hover:text-white">Cookies</button>
+              <button onClick={onNavigateToTerms} className="text-gray-400 hover:text-white">Terms</button>
+              <button onClick={onNavigateToPrivacy} className="text-gray-400 hover:text-white">Privacy</button>
+              <button onClick={onNavigateToCookies} className="text-gray-400 hover:text-white">Cookies</button>
             </div>
           </div>
         </div>

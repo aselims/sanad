@@ -14,6 +14,12 @@ import { useAuth } from './contexts/AuthContext';
 import type { Collaboration, Innovator } from './types';
 import { getAllCollaborations } from './services/collaborations';
 import { getAllInnovators } from './services/innovators';
+import { HowItWorks } from './components/HowItWorks';
+import { SuccessStories } from './components/SuccessStories';
+import { FAQ } from './components/FAQ';
+import { Support } from './components/Support';
+import { ContactUs } from './components/ContactUs';
+import { LegalPage } from './components/LegalPages';
 
 export function App() {
   const navigate = useNavigate();
@@ -29,6 +35,14 @@ export function App() {
   const [innovators, setInnovators] = useState<Innovator[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Add state for additional pages
+  const [activeLegalPage, setActiveLegalPage] = useState<'terms' | 'privacy' | 'cookies' | null>(null);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showSuccessStories, setShowSuccessStories] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
+  const [showContactUs, setShowContactUs] = useState(false);
 
   // Fetch data from API
   useEffect(() => {
@@ -137,13 +151,87 @@ export function App() {
     setSelectedInnovator(id);
   };
 
+  // Add navigation functions for the new pages
+  const handleNavigateToHome = () => {
+    setShowHomePage(true);
+    setActivePage('collaborations');
+    setSelectedCollaboration(null);
+    setSelectedInnovator(null);
+    setActiveLegalPage(null);
+    setShowHowItWorks(false);
+    setShowSuccessStories(false);
+    setShowFAQ(false);
+    setShowSupport(false);
+    setShowContactUs(false);
+  };
+
+  const handleNavigateToHowItWorks = () => {
+    setShowHomePage(false);
+    setShowHowItWorks(true);
+    setShowSuccessStories(false);
+    setShowFAQ(false);
+    setShowSupport(false);
+    setShowContactUs(false);
+    setActiveLegalPage(null);
+  };
+
+  const handleNavigateToSuccessStories = () => {
+    setShowHomePage(false);
+    setShowHowItWorks(false);
+    setShowSuccessStories(true);
+    setShowFAQ(false);
+    setShowSupport(false);
+    setShowContactUs(false);
+    setActiveLegalPage(null);
+  };
+
+  const handleNavigateToFAQ = () => {
+    setShowHomePage(false);
+    setShowHowItWorks(false);
+    setShowSuccessStories(false);
+    setShowFAQ(true);
+    setShowSupport(false);
+    setShowContactUs(false);
+    setActiveLegalPage(null);
+  };
+
+  const handleNavigateToSupport = () => {
+    setShowHomePage(false);
+    setShowHowItWorks(false);
+    setShowSuccessStories(false);
+    setShowFAQ(false);
+    setShowSupport(true);
+    setShowContactUs(false);
+    setActiveLegalPage(null);
+  };
+
+  const handleNavigateToContactUs = () => {
+    setShowHomePage(false);
+    setShowHowItWorks(false);
+    setShowSuccessStories(false);
+    setShowFAQ(false);
+    setShowSupport(false);
+    setShowContactUs(true);
+    setActiveLegalPage(null);
+  };
+
+  const handleNavigateToLegalPage = (pageType: 'terms' | 'privacy' | 'cookies') => {
+    setShowHomePage(false);
+    setShowHowItWorks(false);
+    setShowSuccessStories(false);
+    setShowFAQ(false);
+    setShowSupport(false);
+    setShowContactUs(false);
+    setActiveLegalPage(pageType);
+  };
+
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/*" element={
         <>
           <Header 
-            onNavigateToHome={handleBackToHome}
+            onNavigateToHome={handleNavigateToHome}
             onNavigateToWorkspace={handleNavigateToWorkspace}
             onNavigateToChallenges={handleNavigateToChallenges}
             onNavigateToPartnerships={handleNavigateToPartnerships}
@@ -170,7 +258,27 @@ export function App() {
               onNavigateToPartnerships={handleNavigateToPartnerships}
               onNavigateToInnovators={handleNavigateToInnovators}
               onNavigateToBlog={handleNavigateToBlog}
+              onNavigateToHowItWorks={handleNavigateToHowItWorks}
+              onNavigateToSuccessStories={handleNavigateToSuccessStories}
+              onNavigateToFAQ={handleNavigateToFAQ}
+              onNavigateToSupport={handleNavigateToSupport}
+              onNavigateToContactUs={handleNavigateToContactUs}
+              onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+              onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+              onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
             />
+          ) : showHowItWorks ? (
+            <HowItWorks onBack={handleNavigateToHome} />
+          ) : showSuccessStories ? (
+            <SuccessStories onBack={handleNavigateToHome} />
+          ) : showFAQ ? (
+            <FAQ onBack={handleNavigateToHome} />
+          ) : showSupport ? (
+            <Support onBack={handleNavigateToHome} />
+          ) : showContactUs ? (
+            <ContactUs onBack={handleNavigateToHome} />
+          ) : activeLegalPage ? (
+            <LegalPage onBack={handleNavigateToHome} pageType={activeLegalPage} />
           ) : (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               {activePage === 'collaborations' && !selectedCollaboration && (
