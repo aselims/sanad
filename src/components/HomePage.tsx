@@ -409,7 +409,7 @@ export function HomePage({
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="bg-white p-8 rounded-xl shadow-md">
               <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4 mx-auto">
                 <Lightbulb className="h-6 w-6 text-indigo-600" />
@@ -437,6 +437,16 @@ export function HomePage({
               <h3 className="text-xl font-semibold text-gray-900 mb-2 text-center">3. Collaborate & Innovate</h3>
               <p className="text-gray-600 text-center">
                 Work together in a structured environment with tools designed to help your collaboration succeed.
+              </p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-xl shadow-md">
+              <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+                <DollarSign className="h-6 w-6 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2 text-center">4. Success-driven model</h3>
+              <p className="text-gray-600 text-center">
+                Partners contribute just 1% of revenue generated from successful collaborations. You only pay when you succeed.
               </p>
             </div>
           </div>
