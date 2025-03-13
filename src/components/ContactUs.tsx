@@ -129,7 +129,7 @@ export function ContactUs({ onBack }: ContactUsProps) {
                     <div>
                       <h3 className="font-medium text-gray-900">Our Office</h3>
                       <p className="text-gray-600 mt-1">
-                        SANAD Headquarters<br />
+                        Saned Headquarters<br />
                         Dubai Digital Park<br />
                         Dubai Silicon Oasis<br />
                         Dubai, United Arab Emirates
@@ -158,9 +158,9 @@ export function ContactUs({ onBack }: ContactUsProps) {
                     <div>
                       <h3 className="font-medium text-gray-900">Email</h3>
                       <p className="text-gray-600 mt-1">
-                        General Inquiries: info@sanad.com<br />
-                        Support: support@sanad.com<br />
-                        Partnerships: partnerships@sanad.com
+                        General Inquiries: info@Saned.com<br />
+                        Support: support@Saned.com<br />
+                        Partnerships: partnerships@Saned.com
                       </p>
                     </div>
                   </div>

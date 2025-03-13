@@ -8,7 +8,7 @@ The Ministry of Transport faced increasing challenges with traffic congestion in
 
 ## The Collaboration
 
-Through SANAD, the Ministry connected with three innovative startups:
+Through Saned, the Ministry connected with three innovative startups:
 
 - **TrafficAI**: Specialists in artificial intelligence for traffic prediction
 - **SmartSensors**: Developers of low-cost IoT traffic sensors
@@ -39,7 +39,7 @@ The collaboration yielded impressive results:
 Several factors contributed to the success of this collaboration:
 
 - Clear roles and responsibilities
-- Regular communication through SANAD's platform
+- Regular communication through Saned's platform
 - Agile approach to development and implementation
 - Complementary expertise of all partners
 - Strong support from leadership
@@ -48,4 +48,4 @@ Several factors contributed to the success of this collaboration:
 
 Building on this success, the collaboration has expanded to include additional features such as public transportation optimization and emergency vehicle prioritization.
 
-This case demonstrates how SANAD can bring together diverse stakeholders to create innovative solutions to complex challenges. 
+This case demonstrates how Saned can bring together diverse stakeholders to create innovative solutions to complex challenges. 

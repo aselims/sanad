@@ -9,12 +9,12 @@ const innovatorSeedData = [
   {
     firstName: 'Admin',
     lastName: 'User',
-    email: 'admin@sanad.sa',
+    email: 'admin@Saned.sa',
     password: 'Admin123!',
     role: UserRole.ADMIN,
-    organization: 'SANAD Platform',
+    organization: 'Saned Platform',
     position: 'System Administrator',
-    bio: 'Managing the SANAD platform and its users.',
+    bio: 'Managing the Saned platform and its users.',
   },
   // Startup innovator
   {
@@ -154,7 +154,7 @@ const seedUsers = async () => {
     const userRepository = AppDataSource.getRepository(User);
     
     // Check if admin user already exists to avoid duplicates
-    const existingAdmin = await userRepository.findOne({ where: { email: 'admin@sanad.sa' } });
+    const existingAdmin = await userRepository.findOne({ where: { email: 'admin@Saned.sa' } });
     
     if (!existingAdmin) {
       // Process and insert all users

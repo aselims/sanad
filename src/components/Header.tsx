@@ -97,7 +97,7 @@ export function Header({
               onClick={handleLogoClick} 
               className="text-2xl font-bold text-indigo-600 focus:outline-none cursor-pointer"
             >
-              SANAD
+              Saned
             </button>
           </div>
           

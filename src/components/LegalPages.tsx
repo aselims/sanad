@@ -23,22 +23,22 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
   const renderTermsContent = () => (
     <div className="prose prose-indigo max-w-none">
       <p>
-        Welcome to SANAD. By accessing or using our platform, you agree to be bound by these Terms of Service.
+        Welcome to Saned. By accessing or using our platform, you agree to be bound by these Terms of Service.
       </p>
       
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing or using the SANAD platform, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
+        By accessing or using the Saned platform, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
       </p>
       
       <h2>2. Use License</h2>
       <p>
-        Permission is granted to temporarily use the SANAD platform for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
+        Permission is granted to temporarily use the Saned platform for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
       </p>
       <ul>
         <li>Modify or copy the materials;</li>
         <li>Use the materials for any commercial purpose;</li>
-        <li>Attempt to decompile or reverse engineer any software contained on the SANAD platform;</li>
+        <li>Attempt to decompile or reverse engineer any software contained on the Saned platform;</li>
         <li>Remove any copyright or other proprietary notations from the materials; or</li>
         <li>Transfer the materials to another person or "mirror" the materials on any other server.</li>
       </ul>
@@ -50,12 +50,12 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
       
       <h2>4. User Content</h2>
       <p>
-        Users may post content to the platform, including but not limited to profiles, project descriptions, and comments. You retain ownership of your content, but grant SANAD a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, adapt, publish, translate, and distribute your content in any existing or future media.
+        Users may post content to the platform, including but not limited to profiles, project descriptions, and comments. You retain ownership of your content, but grant Saned a worldwide, non-exclusive, royalty-free license to use, reproduce, modify, adapt, publish, translate, and distribute your content in any existing or future media.
       </p>
       
       <h2>5. Intellectual Property</h2>
       <p>
-        The SANAD platform and its original content, features, and functionality are owned by SANAD and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
+        The Saned platform and its original content, features, and functionality are owned by Saned and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
       </p>
       
       <h2>6. Termination</h2>
@@ -65,17 +65,17 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
       
       <h2>7. Limitation of Liability</h2>
       <p>
-        In no event shall SANAD, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the platform.
+        In no event shall Saned, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the platform.
       </p>
       
       <h2>8. Changes to Terms</h2>
       <p>
-        SANAD reserves the right, at its sole discretion, to modify or replace these Terms at any time. It is your responsibility to check these Terms periodically for changes.
+        Saned reserves the right, at its sole discretion, to modify or replace these Terms at any time. It is your responsibility to check these Terms periodically for changes.
       </p>
       
       <h2>9. Contact Us</h2>
       <p>
-        If you have any questions about these Terms, please contact us at legal@sanad.com.
+        If you have any questions about these Terms, please contact us at legal@Saned.com.
       </p>
     </div>
   );
@@ -83,7 +83,7 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
   const renderPrivacyContent = () => (
     <div className="prose prose-indigo max-w-none">
       <p>
-        At SANAD, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+        At Saned, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
       </p>
       
       <h2>1. Information We Collect</h2>
@@ -150,7 +150,7 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
       
       <h2>7. Contact Us</h2>
       <p>
-        If you have any questions about this Privacy Policy, please contact us at privacy@sanad.com.
+        If you have any questions about this Privacy Policy, please contact us at privacy@Saned.com.
       </p>
     </div>
   );
@@ -158,7 +158,7 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
   const renderCookiesContent = () => (
     <div className="prose prose-indigo max-w-none">
       <p>
-        This Cookie Policy explains how SANAD uses cookies and similar technologies to recognize you when you visit our platform.
+        This Cookie Policy explains how Saned uses cookies and similar technologies to recognize you when you visit our platform.
       </p>
       
       <h2>1. What are Cookies?</h2>
@@ -199,7 +199,7 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
       
       <h2>7. Contact Us</h2>
       <p>
-        If you have any questions about this Cookie Policy, please contact us at privacy@sanad.com.
+        If you have any questions about this Cookie Policy, please contact us at privacy@Saned.com.
       </p>
     </div>
   );

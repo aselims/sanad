@@ -1,8 +1,8 @@
-# SANAD - Innovation Collaboration Platform
+# Saned - Innovation Collaboration Platform
 
-SANAD is a modern web platform designed to connect innovators, researchers, startups, corporations, and investors to collaborate on challenges and partnerships. The platform facilitates innovation by providing a structured environment for posting challenges, forming partnerships, and connecting with potential collaborators.
+Saned is a modern web platform designed to connect innovators, researchers, startups, corporations, and investors to collaborate on challenges and partnerships. The platform facilitates innovation by providing a structured environment for posting challenges, forming partnerships, and connecting with potential collaborators.
 
-![SANAD Platform](https://via.placeholder.com/800x400?text=SANAD+Platform)
+![Saned Platform](https://via.placeholder.com/800x400?text=Saned+Platform)
 
 ## 🌟 Features
 
@@ -22,7 +22,7 @@ SANAD is a modern web platform designed to connect innovators, researchers, star
 
 ## 🛠️ Tech Stack
 
-SANAD is built using modern web technologies:
+Saned is built using modern web technologies:
 
 - **Frontend**:
   - React.js (v18+) - UI library
@@ -57,8 +57,8 @@ SANAD is built using modern web technologies:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/sanad-platform.git
-   cd sanad-platform
+   git clone https://github.com/yourusername/Saned-platform.git
+   cd Saned-platform
    ```
 
 2. Install dependencies:
@@ -80,7 +80,7 @@ SANAD is built using modern web technologies:
 ### Project Structure
 
 ```
-sanad-platform/
+Saned-platform/
 ├── public/                 # Static files
 ├── src/                    # Source code
 │   ├── components/         # React components
@@ -101,7 +101,7 @@ sanad-platform/
 
 ## 🔄 Workflow
 
-1. **Home Page**: Users start at the landing page where they can learn about SANAD and navigate to different sections.
+1. **Home Page**: Users start at the landing page where they can learn about Saned and navigate to different sections.
 
 2. **Challenges & Partnerships**: Users can browse existing challenges and partnerships or create new ones.
 
@@ -121,7 +121,7 @@ sanad-platform/
 
 ## 🤝 Contributing
 
-We welcome contributions to SANAD! Please feel free to submit issues and pull requests.
+We welcome contributions to Saned! Please feel free to submit issues and pull requests.
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -135,4 +135,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📞 Contact
 
-For any questions or feedback, please reach out to us at contact@sanad-platform.com 
+For any questions or feedback, please reach out to us at contact@Saned-platform.com 

@@ -358,8 +358,8 @@ export function App() {
                         ? `${user.firstName} ${user.lastName}` 
                         : user?.name || 'User',
                       type: user?.role as 'individual' || 'individual',
-                      organization: user?.organization || 'SANAD Platform',
-                      description: user?.bio || 'SANAD Platform user',
+                      organization: user?.organization || 'Saned Platform',
+                      description: user?.bio || 'Saned Platform user',
                       email: user?.email || '',
                       expertise: user?.expertise || [],
                       tags: user?.interests || ['Sustainable Development', 'Digital Transformation'],

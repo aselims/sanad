@@ -38,7 +38,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick }) => 
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Login to SANAD</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Login to Saned</h2>
       
       {(formError || error) && (
         <div className="bg-red-50 text-red-700 p-3 rounded-md mb-4">
