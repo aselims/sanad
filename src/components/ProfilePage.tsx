@@ -517,6 +517,21 @@ export function ProfilePage({
     // Calculate matches using the new matching logic
     const matchResults = findPotentialMatches(user, matches);
 
+    // Sort matches: liked profiles at the top, then others (excluding disliked)
+    const sortedMatches = matchResults
+      .filter(match => matchPreferences[match.innovator.id] !== 'dislike') // Hide disliked profiles
+      .sort((a, b) => {
+        // Sort liked profiles to the top
+        if (matchPreferences[a.innovator.id] === 'like' && matchPreferences[b.innovator.id] !== 'like') {
+          return -1;
+        }
+        if (matchPreferences[a.innovator.id] !== 'like' && matchPreferences[b.innovator.id] === 'like') {
+          return 1;
+        }
+        // For profiles with the same preference status, sort by match score
+        return b.matchScore - a.matchScore;
+      });
+
     return (
       <div className="space-y-6">
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -524,13 +539,20 @@ export function ProfilePage({
             <h3 className="text-lg leading-6 font-medium text-gray-900">AI-Suggested Matches</h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
               Innovators that match your interests and requirements based on AI analysis.
+              {Object.values(matchPreferences).filter(pref => pref === 'dislike').length > 0 && (
+                <span className="ml-1 text-gray-400 italic">
+                  (Disliked profiles are hidden)
+                </span>
+              )}
             </p>
           </div>
           <div className="border-t border-gray-200">
             <ul className="divide-y divide-gray-200">
-              {matchResults.length > 0 ? (
-                matchResults.map((match) => (
-                  <li key={match.innovator.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+              {sortedMatches.length > 0 ? (
+                sortedMatches.map((match) => (
+                  <li key={match.innovator.id} className={`px-4 py-4 sm:px-6 hover:bg-gray-50 ${
+                    matchPreferences[match.innovator.id] === 'like' ? 'bg-green-50' : ''
+                  }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -551,6 +573,11 @@ export function ProfilePage({
                         <div className="flex items-center">
                           <Star className="h-5 w-5 text-yellow-400" />
                           <span className="ml-1 text-sm text-gray-600">{match.matchScore}% Match</span>
+                          {matchPreferences[match.innovator.id] === 'like' && (
+                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              Liked
+                            </span>
+                          )}
                         </div>
                         <div className="mt-2">
                           <button 
@@ -634,7 +661,7 @@ export function ProfilePage({
                           </span>
                         ) : (
                           <>
-                            {matchPreferences[match.innovator.id] === 'dislike' ? 'Disliked' : 'Dislike'}
+                            Hide
                           </>
                         )}
                       </button>

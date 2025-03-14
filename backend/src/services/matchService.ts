@@ -22,23 +22,35 @@ export class MatchService {
       where: { id: Not(userId) }
     });
 
+    // Get existing matches for this user
+    const existingMatches = await this.matchRepository.find({
+      where: { userId }
+    });
+
+    // Create a map of existing matches by targetUserId for quick lookup
+    const existingMatchesMap = new Map<string, Match>();
+    existingMatches.forEach(match => {
+      existingMatchesMap.set(match.targetUserId, match);
+    });
+
     // Use the matching algorithm to find potential matches
     const matches = findPotentialMatches(currentUser, allUsers);
 
     // Save matches to database
     const savedMatches = await Promise.all(
       matches.map(async (match: MatchResult) => {
-        const existingMatch = await this.matchRepository.findOne({
-          where: {
-            userId,
-            targetUserId: match.innovator.id
-          }
-        });
+        // Check if we already have this match in our map
+        const existingMatch = existingMatchesMap.get(match.innovator.id);
 
         if (existingMatch) {
-          return existingMatch;
+          // Update match score and other attributes if needed
+          existingMatch.matchScore = match.matchScore;
+          existingMatch.sharedTags = match.sharedTags;
+          existingMatch.highlight = match.highlight;
+          return this.matchRepository.save(existingMatch);
         }
 
+        // Create a new match
         const newMatch = this.matchRepository.create({
           id: uuidv4(), // Explicitly generate UUID
           userId,
@@ -52,7 +64,15 @@ export class MatchService {
       })
     );
 
-    return savedMatches;
+    // Also include any previously saved matches that might not be in the current top matches
+    // This ensures we don't lose liked/disliked preferences
+    const additionalMatches = existingMatches.filter(
+      existingMatch => !savedMatches.some(
+        (savedMatch: Match) => savedMatch.targetUserId === existingMatch.targetUserId
+      )
+    );
+
+    return [...savedMatches, ...additionalMatches];
   }
 
   async saveMatchPreference(
