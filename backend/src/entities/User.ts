@@ -51,6 +51,15 @@ export class User {
   @Column({ nullable: true })
   position: string;
 
+  @Column({ nullable: true })
+  location: string;
+
+  @Column('simple-array', { nullable: true })
+  tags: string[];
+
+  @Column('simple-array', { nullable: true })
+  interests: string[];
+
   @Column({ default: false })
   isVerified: boolean;
 

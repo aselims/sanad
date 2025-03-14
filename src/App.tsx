@@ -225,9 +225,43 @@ export function App() {
     setActiveLegalPage(pageType);
   };
 
+  // Add a function to handle profile navigation by ID
+  const handleNavigateToProfileById = (id: string) => {
+    navigate(`/profile/${id}`);
+  };
+
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
+      
+      {/* Add a specific route for profile/:id */}
+      <Route path="/profile/:id" element={
+        <>
+          <Header 
+            onNavigateToHome={handleNavigateToHome}
+            onNavigateToWorkspace={handleNavigateToWorkspace}
+            onNavigateToChallenges={handleNavigateToChallenges}
+            onNavigateToPartnerships={handleNavigateToPartnerships}
+            onNavigateToInnovators={handleNavigateToInnovators}
+            onNavigateToProfile={handleNavigateToProfile}
+            onNavigateToAuth={handleNavigateToAuth}
+          />
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+            </div>
+          ) : error ? (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            </div>
+          ) : (
+            <ProfilePageWrapper innovators={innovators} />
+          )}
+        </>
+      } />
+      
       <Route path="/*" element={
         <>
           <Header 
@@ -378,6 +412,33 @@ export function App() {
       } />
     </Routes>
   );
+}
+
+// Create a wrapper component to handle the profile page with URL params
+function ProfilePageWrapper({ innovators }: { innovators: Innovator[] }) {
+  const navigate = useNavigate();
+  const location = window.location.pathname;
+  const id = location.split('/profile/')[1];
+  
+  // Find the innovator by ID
+  const innovator = innovators.find(i => i.id === id);
+  
+  if (!innovator) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+          Profile not found. <button 
+            onClick={() => navigate('/')}
+            className="underline text-indigo-600 hover:text-indigo-800"
+          >
+            Go back home
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return <ProfilePage user={innovator} />;
 }
 
 export default App;

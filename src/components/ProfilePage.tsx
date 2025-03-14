@@ -17,13 +17,17 @@ import {
   Star,
   Target,
   ThumbsUp,
-  Edit
+  Edit,
+  Zap
 } from 'lucide-react';
 import { Innovator, Collaboration, User as UserType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import ProtectedAction from './auth/ProtectedAction';
 import EditProfileModal from './EditProfileModal';
 import { connectWithUser, sendMessageToUser, updateCurrentUserProfile } from '../services/users';
+import { findPotentialMatches } from '../utils/matchUtils';
+import { getPotentialMatches, saveMatchPreference } from '../services/matches';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfilePageProps {
   user: Innovator;
@@ -42,12 +46,17 @@ export function ProfilePage({
   matchRequests = [] 
 }: ProfilePageProps) {
   const { user: currentUser, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests'>('profile');
   const [showEditModal, setShowEditModal] = useState(false);
   const [profileData, setProfileData] = useState<Innovator>(user);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [matches, setMatches] = useState<Innovator[]>([]);
+  const [isLoadingMatches, setIsLoadingMatches] = useState(false);
+  const [matchPreferences, setMatchPreferences] = useState<Record<string, 'like' | 'dislike'>>({});
+  const [preferenceStatus, setPreferenceStatus] = useState<{id: string, status: 'saving' | 'success' | 'error' | null}>({id: '', status: null});
 
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === user.id;
@@ -59,6 +68,25 @@ export function ProfilePage({
       setActiveTab('profile');
     }
   }, [isAuthenticated, isOwnProfile, activeTab]);
+
+  // Add useEffect to fetch matches when tab changes
+  useEffect(() => {
+    const fetchMatches = async () => {
+      if (activeTab === 'potential-matches' && isAuthenticated && isOwnProfile) {
+        setIsLoadingMatches(true);
+        try {
+          const potentialMatches = await getPotentialMatches(user.id);
+          setMatches(potentialMatches);
+        } catch (error) {
+          console.error('Error fetching potential matches:', error);
+        } finally {
+          setIsLoadingMatches(false);
+        }
+      }
+    };
+
+    fetchMatches();
+  }, [activeTab, isAuthenticated, isOwnProfile, user.id]);
 
   // Function to handle connect action
   const handleConnect = async () => {
@@ -148,6 +176,38 @@ export function ProfilePage({
       setIsLoading(false);
       setShowEditModal(false);
     }
+  };
+
+  // Function to handle match preference
+  const handleMatchPreference = async (targetUserId: string, preference: 'like' | 'dislike') => {
+    try {
+      setPreferenceStatus({id: targetUserId, status: 'saving'});
+      await saveMatchPreference(user.id, targetUserId, preference);
+      setMatchPreferences(prev => ({
+        ...prev,
+        [targetUserId]: preference
+      }));
+      setPreferenceStatus({id: targetUserId, status: 'success'});
+      
+      // Reset status after 2 seconds
+      setTimeout(() => {
+        setPreferenceStatus({id: '', status: null});
+      }, 2000);
+    } catch (error) {
+      console.error('Error saving match preference:', error);
+      setPreferenceStatus({id: targetUserId, status: 'error'});
+      
+      // Reset error status after 3 seconds
+      setTimeout(() => {
+        setPreferenceStatus({id: '', status: null});
+      }, 3000);
+    }
+  };
+
+  // Function to navigate to a user's profile
+  const handleViewProfile = (innovatorId: string) => {
+    console.log(`Navigating to profile: /profile/${innovatorId}`);
+    navigate(`/profile/${innovatorId}`);
   };
 
   // Function to render different content based on user type
@@ -446,6 +506,17 @@ export function ProfilePage({
 
   // Function to render potential matches tab content
   const renderPotentialMatchesContent = () => {
+    if (isLoadingMatches) {
+      return (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+
+    // Calculate matches using the new matching logic
+    const matchResults = findPotentialMatches(user, matches);
+
     return (
       <div className="space-y-6">
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -457,55 +528,129 @@ export function ProfilePage({
           </div>
           <div className="border-t border-gray-200">
             <ul className="divide-y divide-gray-200">
-              {potentialMatches.length > 0 ? (
-                potentialMatches.map((match) => (
-                  <li key={match.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
+              {matchResults.length > 0 ? (
+                matchResults.map((match) => (
+                  <li key={match.innovator.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                          {match.type === 'startup' ? (
+                          {match.innovator.type === 'startup' ? (
                             <Briefcase className="h-6 w-6 text-indigo-600" />
-                          ) : match.type === 'research' ? (
+                          ) : match.innovator.type === 'research' ? (
                             <Award className="h-6 w-6 text-purple-600" />
                           ) : (
                             <User className="h-6 w-6 text-gray-600" />
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{match.name}</div>
-                          <div className="text-sm text-gray-500 capitalize">{match.type}</div>
+                          <div className="text-sm font-medium text-gray-900">{match.innovator.name}</div>
+                          <div className="text-sm text-gray-500 capitalize">{match.innovator.type}</div>
                         </div>
                       </div>
                       <div>
                         <div className="flex items-center">
                           <Star className="h-5 w-5 text-yellow-400" />
-                          <span className="ml-1 text-sm text-gray-600">92% Match</span>
+                          <span className="ml-1 text-sm text-gray-600">{match.matchScore}% Match</span>
                         </div>
                         <div className="mt-2">
-                          <button className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                          <button 
+                            onClick={() => handleViewProfile(match.innovator.id)}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
                             View Profile
                           </button>
                         </div>
                       </div>
                     </div>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-600 line-clamp-2">{match.description}</p>
+                    
+                    {/* Highlight section */}
+                    <div className="mt-2 p-2 bg-amber-50 border border-amber-100 rounded-md">
+                      <p className="text-sm flex items-start">
+                        <Zap className="h-4 w-4 text-amber-500 mr-1 flex-shrink-0 mt-0.5" />
+                        <span className="text-gray-700">{match.highlight}</span>
+                      </p>
                     </div>
+
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600 line-clamp-2">{match.innovator.description}</p>
+                    </div>
+                    
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {match.expertise.slice(0, 3).map((skill, index) => (
+                      {match.sharedTags.slice(0, 3).map((tag, index) => (
                         <span 
                           key={index} 
                           className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800"
                         >
-                          {skill}
+                          {tag}
                         </span>
                       ))}
-                      {match.expertise.length > 3 && (
+                      {match.sharedTags.length > 3 && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                          +{match.expertise.length - 3} more
+                          +{match.sharedTags.length - 3} more
                         </span>
                       )}
                     </div>
+
+                    <div className="mt-4 flex space-x-3">
+                      <button
+                        onClick={() => handleMatchPreference(match.innovator.id, 'like')}
+                        disabled={preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving'}
+                        className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md ${
+                          matchPreferences[match.innovator.id] === 'like'
+                            ? 'text-white bg-green-600 hover:bg-green-700'
+                            : 'text-gray-700 bg-white hover:bg-gray-50 border-gray-300'
+                        }`}
+                      >
+                        {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving' ? (
+                          <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Saving...
+                          </span>
+                        ) : (
+                          <>
+                            {matchPreferences[match.innovator.id] === 'like' ? 'Liked' : 'Like'}
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleMatchPreference(match.innovator.id, 'dislike')}
+                        disabled={preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving'}
+                        className={`inline-flex items-center px-3 py-1.5 border border-transparent text-sm leading-4 font-medium rounded-md ${
+                          matchPreferences[match.innovator.id] === 'dislike'
+                            ? 'text-white bg-red-600 hover:bg-red-700'
+                            : 'text-gray-700 bg-white hover:bg-gray-50 border-gray-300'
+                        }`}
+                      >
+                        {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving' ? (
+                          <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Saving...
+                          </span>
+                        ) : (
+                          <>
+                            {matchPreferences[match.innovator.id] === 'dislike' ? 'Disliked' : 'Dislike'}
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Show feedback message when preference is saved */}
+                    {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'success' && (
+                      <div className="mt-2 text-sm text-green-600">
+                        Preference saved successfully!
+                      </div>
+                    )}
+                    {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'error' && (
+                      <div className="mt-2 text-sm text-red-600">
+                        Error saving preference. Please try again.
+                      </div>
+                    )}
                   </li>
                 ))
               ) : (
@@ -717,9 +862,9 @@ export function ProfilePage({
                   }`}
                 >
                   Potential Matches
-                  {potentialMatches.length > 0 && (
+                  {matches.length > 0 && (
                     <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                      {potentialMatches.length}
+                      {matches.length}
                     </span>
                   )}
                 </button>

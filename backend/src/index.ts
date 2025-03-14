@@ -8,6 +8,7 @@ import { initializePassport } from './config/passport';
 import logger from './utils/logger';
 import apiRoutes from './routes/api';
 import { errorHandler, AppError } from './middlewares/errorHandler';
+import matchRoutes from './routes/matchRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +34,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Routes
 app.use('/api', apiRoutes);
+app.use('/api/matches', matchRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
