@@ -96,7 +96,7 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
     
     console.log(`Found ${collaborations.length} collaborations matching "${query}"`);
     return collaborations;
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error searching collaborations for '${query}':`, error);
     
     // Log more detailed error information
@@ -132,5 +132,21 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
       console.error(`Fallback search also failed for '${query}':`, fallbackError);
       return [];
     }
+  }
+};
+
+/**
+ * Save a vote for a collaboration
+ * @param collaborationId The ID of the collaboration
+ * @param voteType The type of vote ('up' or 'down')
+ * @returns Promise with the updated collaboration
+ */
+export const saveVote = async (collaborationId: string, voteType: 'up' | 'down'): Promise<any> => {
+  try {
+    const response = await api.post(`/collaborations/${collaborationId}/vote`, { voteType });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error saving vote:', error);
+    throw error;
   }
 }; 

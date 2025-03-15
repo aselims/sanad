@@ -4,11 +4,12 @@ import {
   MessageSquare, Target, BarChart, Link,
   UserPlus, Briefcase, Award, Handshake,
   Clock, DollarSign, AlertCircle, Lightbulb,
-  Tag, Zap
+  Tag, Zap, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import type { Collaboration, CollaborationRequest, InterestSubmission } from '../types';
 import { ExpressInterestModal } from './ExpressInterestModal';
 import ProtectedAction from './auth/ProtectedAction';
+import { saveVote } from '../services/collaborations';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
@@ -87,6 +88,11 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
   const [selectedRequest, setSelectedRequest] = useState<CollaborationRequest | null>(null);
   const [collaboratorType, setCollaboratorType] = useState<CollaboratorType>('individual');
   const [showInitiativeModal, setShowInitiativeModal] = useState(false);
+  const [votes, setVotes] = useState({ 
+    upvotes: collaboration.upvotes || 0, 
+    downvotes: collaboration.downvotes || 0 
+  });
+  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
 
   const handleExpressInterest = (request: CollaborationRequest) => {
     setSelectedRequest(request);
@@ -97,6 +103,41 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
     console.log('Interest submitted:', submission);
     // Show success message
     alert('Your interest has been submitted successfully! The collaboration team will review your application and contact you soon.');
+  };
+
+  const handleVote = async (voteType: 'up' | 'down') => {
+    // If user already voted this way, remove the vote
+    if (userVote === voteType) {
+      setVotes(prev => ({
+        ...prev,
+        [voteType === 'up' ? 'upvotes' : 'downvotes']: Math.max(0, prev[voteType === 'up' ? 'upvotes' : 'downvotes'] - 1)
+      }));
+      setUserVote(null);
+    } 
+    // If user voted the opposite way, switch the vote
+    else if (userVote !== null) {
+      setVotes(prev => ({
+        upvotes: voteType === 'up' ? prev.upvotes + 1 : Math.max(0, prev.upvotes - 1),
+        downvotes: voteType === 'down' ? prev.downvotes + 1 : Math.max(0, prev.downvotes - 1)
+      }));
+      setUserVote(voteType);
+    } 
+    // If user hasn't voted yet, add a new vote
+    else {
+      setVotes(prev => ({
+        ...prev,
+        [voteType === 'up' ? 'upvotes' : 'downvotes']: prev[voteType === 'up' ? 'upvotes' : 'downvotes'] + 1
+      }));
+      setUserVote(voteType);
+    }
+
+    // Save the vote to the database
+    try {
+      await saveVote(collaboration.id, voteType);
+    } catch (error) {
+      console.error('Failed to save vote:', error);
+      // Optionally revert the UI state if the API call fails
+    }
   };
 
   return (
@@ -144,8 +185,31 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
             )}
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{collaboration.title}</h1>
-        <p className="text-gray-600">{collaboration.description}</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{collaboration.title}</h1>
+            <p className="text-gray-600">{collaboration.description}</p>
+          </div>
+          <div className="flex items-center gap-2 ml-4">
+            <button 
+              onClick={() => handleVote('up')}
+              className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'up' ? 'text-green-600' : 'text-gray-400'}`}
+              aria-label="Upvote"
+            >
+              <ThumbsUp className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-medium text-gray-600">{votes.upvotes}</span>
+            
+            <button 
+              onClick={() => handleVote('down')}
+              className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'down' ? 'text-red-600' : 'text-gray-400'}`}
+              aria-label="Downvote"
+            >
+              <ThumbsDown className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-medium text-gray-600">{votes.downvotes}</span>
+          </div>
+        </div>
       </div>
 
       {/* Main content */}

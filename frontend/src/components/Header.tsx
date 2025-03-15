@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Bell, UserCircle, LogOut, Settings } from 'lucide-react';
+import { Menu, Bell, UserCircle, LogOut, Settings, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderProps {
@@ -25,7 +25,9 @@ export function Header({
 }: HeaderProps) {
   const { isAuthenticated, user, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Create handler functions that check if the callbacks exist before calling them
   const handleChallengesClick = () => {
@@ -83,11 +85,15 @@ export function Header({
     logout();
   };
 
-  // Close user menu when clicking outside
+  // Close user menu and mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && 
+          !(event.target as Element).closest('.mobile-menu-button')) {
+        setShowMobileMenu(false);
       }
     };
 
@@ -205,12 +211,50 @@ export function Header({
                 Login / Register
               </button>
             )}
-            <button className="md:hidden text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer">
-              <Menu className="h-6 w-6" />
+            <button 
+              className="md:hidden text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer mobile-menu-button"
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+            >
+              {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
       </div>
+      
+      {/* Mobile menu */}
+      {showMobileMenu && (
+        <div 
+          className="md:hidden bg-white border-t border-gray-200 shadow-lg z-20"
+          ref={mobileMenuRef}
+        >
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            <button
+              onClick={handleChallengesClick}
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+            >
+              Challenges
+            </button>
+            <button
+              onClick={handlePartnershipsClick}
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+            >
+              Partnerships
+            </button>
+            <button
+              onClick={handleIdeasClick}
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+            >
+              Ideas
+            </button>
+            <button
+              onClick={handleInnovatorsClick}
+              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+            >
+              Innovators
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

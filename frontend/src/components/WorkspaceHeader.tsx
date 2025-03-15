@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Filter, Lightbulb, Users, Rocket } from 'lucide-react';
+import { Plus, Filter, Lightbulb, Users, Rocket, Search, Grid, List } from 'lucide-react';
 import { NewCollaborationModal } from './NewCollaborationModal';
 import { Collaboration } from '../types';
 import ProtectedAction from './auth/ProtectedAction';
@@ -9,12 +9,18 @@ interface WorkspaceHeaderProps {
   onCreateCollaboration: (collaboration: Partial<Collaboration>) => void;
   activeFilter?: 'all' | 'challenges' | 'partnerships' | 'ideas';
   onFilterChange?: (filter: 'all' | 'challenges' | 'partnerships' | 'ideas') => void;
+  onSearch?: (query: string) => void;
+  viewMode?: 'grid' | 'list';
+  onViewModeChange?: (mode: 'grid' | 'list') => void;
 }
 
 export function WorkspaceHeader({ 
   onCreateCollaboration,
   activeFilter = 'all',
-  onFilterChange
+  onFilterChange,
+  onSearch,
+  viewMode = 'grid',
+  onViewModeChange
 }: WorkspaceHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAuthenticated } = useAuth();
@@ -40,6 +46,22 @@ export function WorkspaceHeader({
     }
   };
 
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const query = formData.get('query') as string;
+    
+    if (onSearch) {
+      onSearch(query);
+    }
+  };
+
+  const toggleViewMode = () => {
+    if (onViewModeChange) {
+      onViewModeChange(viewMode === 'grid' ? 'list' : 'grid');
+    }
+  };
+
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,49 +81,74 @@ export function WorkspaceHeader({
             </ProtectedAction>
           </div>
           
-          <div className="flex flex-wrap gap-2 mb-6">
-            <button 
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <form onSubmit={handleSearch} className="relative flex-grow">
+              <input
+                type="text"
+                name="query"
+                placeholder="Search collaborations..."
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            </form>
+            
+            <button
+              onClick={toggleViewMode}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              {viewMode === 'grid' ? (
+                <>
+                  <List className="h-5 w-5 mr-2" />
+                  List View
+                </>
+              ) : (
+                <>
+                  <Grid className="h-5 w-5 mr-2" />
+                  Grid View
+                </>
+              )}
+            </button>
+          </div>
+          
+          <div className="flex items-center border-b border-gray-200">
+            <button
               onClick={() => handleFilterClick('all')}
-              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
-                activeFilter === 'all' 
-                  ? 'bg-gray-900 text-white' 
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              className={`px-4 py-2 text-sm font-medium ${
+                activeFilter === 'all'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Filter className="h-4 w-4 mr-1.5" />
               All
             </button>
-            <button 
+            <button
               onClick={() => handleFilterClick('challenges')}
-              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
-                activeFilter === 'challenges' 
-                  ? 'bg-purple-600 text-white' 
-                  : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+              className={`px-4 py-2 text-sm font-medium ${
+                activeFilter === 'challenges'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Lightbulb className="h-4 w-4 mr-1.5" />
               Challenges
             </button>
-            <button 
+            <button
               onClick={() => handleFilterClick('partnerships')}
-              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
-                activeFilter === 'partnerships' 
-                  ? 'bg-indigo-600 text-white' 
-                  : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
+              className={`px-4 py-2 text-sm font-medium ${
+                activeFilter === 'partnerships'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Users className="h-4 w-4 mr-1.5" />
               Partnerships
             </button>
-            <button 
+            <button
               onClick={() => handleFilterClick('ideas')}
-              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
-                activeFilter === 'ideas' 
-                  ? 'bg-amber-600 text-white' 
-                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+              className={`px-4 py-2 text-sm font-medium ${
+                activeFilter === 'ideas'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Rocket className="h-4 w-4 mr-1.5" />
               Ideas
             </button>
           </div>

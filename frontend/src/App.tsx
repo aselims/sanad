@@ -51,6 +51,9 @@ export function App() {
   const [cameFromSearch, setCameFromSearch] = useState<boolean>(false);
   const [lastSearchQuery, setLastSearchQuery] = useState<string>('');
 
+  // Add state for view mode
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
@@ -283,9 +286,13 @@ export function App() {
     navigate(`/profile/${id}`);
   };
 
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+  };
+
   return (
     <Routes>
-      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/auth" element={<AuthPage onSuccess={handleBackToHome} />} />
       
       {/* Add a specific route for profile/:id */}
       <Route path="/profile/:id" element={
@@ -433,10 +440,13 @@ export function App() {
                     }}
                     onFilterChange={setActiveFilter}
                     activeFilter={activeFilter}
+                    viewMode={viewMode}
+                    onViewModeChange={handleViewModeChange}
                   />
                   <CollaborationList 
                     collaborations={filteredCollaborations} 
                     onViewDetails={handleNavigateToCollaboration}
+                    viewMode={viewMode}
                   />
                 </>
               )}

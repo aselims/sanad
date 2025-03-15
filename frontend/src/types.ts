@@ -97,6 +97,8 @@ export interface Collaboration {
   createdById?: string;
   createdAt: Date;
   updatedAt: Date;
+  upvotes?: number;
+  downvotes?: number;
 }
 
 export interface InnovatorBase {

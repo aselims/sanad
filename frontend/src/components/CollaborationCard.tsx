@@ -1,6 +1,7 @@
-import React from 'react';
-import { Users, Calendar, ArrowRight, UserPlus, Target, Handshake, Lightbulb } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, Calendar, ArrowRight, UserPlus, Target, Handshake, Lightbulb, ThumbsUp, ThumbsDown } from 'lucide-react';
 import type { Collaboration } from '../types';
+import { saveVote } from '../services/collaborations';
 
 interface CollaborationCardProps {
   collaboration: Collaboration;
@@ -9,6 +10,43 @@ interface CollaborationCardProps {
 
 export function CollaborationCard({ collaboration, onViewDetails }: CollaborationCardProps) {
   const openRequests = collaboration.collaborationRequests?.filter(r => r.status === 'open').length || 0;
+  const [votes, setVotes] = useState({ upvotes: collaboration.upvotes || 0, downvotes: collaboration.downvotes || 0 });
+  const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
+
+  const handleVote = async (voteType: 'up' | 'down') => {
+    // If user already voted this way, remove the vote
+    if (userVote === voteType) {
+      setVotes(prev => ({
+        ...prev,
+        [voteType === 'up' ? 'upvotes' : 'downvotes']: Math.max(0, prev[voteType === 'up' ? 'upvotes' : 'downvotes'] - 1)
+      }));
+      setUserVote(null);
+    } 
+    // If user voted the opposite way, switch the vote
+    else if (userVote !== null) {
+      setVotes(prev => ({
+        upvotes: voteType === 'up' ? prev.upvotes + 1 : Math.max(0, prev.upvotes - 1),
+        downvotes: voteType === 'down' ? prev.downvotes + 1 : Math.max(0, prev.downvotes - 1)
+      }));
+      setUserVote(voteType);
+    } 
+    // If user hasn't voted yet, add a new vote
+    else {
+      setVotes(prev => ({
+        ...prev,
+        [voteType === 'up' ? 'upvotes' : 'downvotes']: prev[voteType === 'up' ? 'upvotes' : 'downvotes'] + 1
+      }));
+      setUserVote(voteType);
+    }
+
+    // Save the vote to the database
+    try {
+      await saveVote(collaboration.id, voteType);
+    } catch (error) {
+      console.error('Failed to save vote:', error);
+      // Optionally revert the UI state if the API call fails
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -85,13 +123,35 @@ export function CollaborationCard({ collaboration, onViewDetails }: Collaboratio
           )}
         </div>
         
-        <button
-          onClick={() => onViewDetails(collaboration.id)}
-          className="flex items-center text-indigo-600 hover:text-indigo-700"
-        >
-          View Workspace
-          <ArrowRight className="h-4 w-4 ml-1" />
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => handleVote('up')}
+              className={`p-1 rounded-full hover:bg-gray-100 ${userVote === 'up' ? 'text-green-600' : 'text-gray-400'}`}
+              aria-label="Upvote"
+            >
+              <ThumbsUp className="h-4 w-4" />
+            </button>
+            <span className="text-xs font-medium text-gray-600">{votes.upvotes}</span>
+            
+            <button 
+              onClick={() => handleVote('down')}
+              className={`p-1 rounded-full hover:bg-gray-100 ${userVote === 'down' ? 'text-red-600' : 'text-gray-400'}`}
+              aria-label="Downvote"
+            >
+              <ThumbsDown className="h-4 w-4" />
+            </button>
+            <span className="text-xs font-medium text-gray-600">{votes.downvotes}</span>
+          </div>
+          
+          <button
+            onClick={() => onViewDetails(collaboration.id)}
+            className="flex items-center text-indigo-600 hover:text-indigo-700"
+          >
+            View Workspace
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </button>
+        </div>
       </div>
     </div>
   );

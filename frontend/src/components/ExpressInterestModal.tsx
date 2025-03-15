@@ -36,13 +36,30 @@ export function ExpressInterestModal({
     collaboratorType: collaboratorType
   });
 
-  // Set the collaborator type based on the logged-in user's role when the component mounts
+  // Set the collaborator type and populate user data when the component mounts
   useEffect(() => {
-    if (isAuthenticated && user && isInnovatorType(user.role) && onCollaboratorTypeChange) {
-      onCollaboratorTypeChange(user.role as CollaboratorType);
-      setFormData(prev => ({ ...prev, collaboratorType: user.role as CollaboratorType }));
+    if (isAuthenticated && user) {
+      // Set collaborator type based on user role if it's an innovator type
+      if (isInnovatorType(user.role) && onCollaboratorTypeChange) {
+        onCollaboratorTypeChange(user.role as CollaboratorType);
+      }
+      
+      // Pre-populate form data with user information
+      setFormData(prev => ({ 
+        ...prev, 
+        name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : prev.name,
+        email: user.email || prev.email,
+        organization: user.organization || prev.organization,
+        collaboratorType: isInnovatorType(user.role) ? user.role as CollaboratorType : prev.collaboratorType,
+        // Pre-populate additional fields if they exist
+        foundingYear: user.foundingYear || prev.foundingYear,
+        researchArea: user.researchArea || prev.researchArea,
+        investmentFocus: user.investmentFocus || prev.investmentFocus,
+        expertiseText: user.expertise ? (Array.isArray(user.expertise) ? user.expertise.join(', ') : user.expertise) : prev.expertiseText,
+        // Don't pre-populate message field - this should be entered by the user
+      }));
     }
-  }, [isAuthenticated, user, onCollaboratorTypeChange, collaboratorType]);
+  }, [isAuthenticated, user, onCollaboratorTypeChange]);
 
   // Update form data when collaborator type changes
   useEffect(() => {
@@ -84,9 +101,14 @@ export function ExpressInterestModal({
       case 'startup':
         return (
           <div>
-            <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
-              Founding Year
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
+                Founding Year
+              </label>
+              {isAuthenticated && user?.foundingYear && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="number"
               id="foundingYear"
@@ -99,9 +121,14 @@ export function ExpressInterestModal({
       case 'research':
         return (
           <div>
-            <label htmlFor="researchArea" className="block text-sm font-medium text-gray-700">
-              Primary Research Area
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="researchArea" className="block text-sm font-medium text-gray-700">
+                Primary Research Area
+              </label>
+              {isAuthenticated && user?.researchArea && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="text"
               id="researchArea"
@@ -114,9 +141,14 @@ export function ExpressInterestModal({
       case 'investor':
         return (
           <div>
-            <label htmlFor="investmentFocus" className="block text-sm font-medium text-gray-700">
-              Investment Focus
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="investmentFocus" className="block text-sm font-medium text-gray-700">
+                Investment Focus
+              </label>
+              {isAuthenticated && user?.investmentFocus && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="text"
               id="investmentFocus"
@@ -129,9 +161,14 @@ export function ExpressInterestModal({
       case 'accelerator':
         return (
           <div>
-            <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
-              Founding Year
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
+                Founding Year
+              </label>
+              {isAuthenticated && user?.foundingYear && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="number"
               id="foundingYear"
@@ -139,9 +176,14 @@ export function ExpressInterestModal({
               value={formData.foundingYear || ''}
               onChange={(e) => setFormData({ ...formData, foundingYear: e.target.value })}
             />
-            <label htmlFor="investmentFocus" className="block text-sm font-medium text-gray-700 mt-4">
-              Program Focus
-            </label>
+            <div className="flex items-center justify-between mt-4">
+              <label htmlFor="investmentFocus" className="block text-sm font-medium text-gray-700">
+                Program Focus
+              </label>
+              {isAuthenticated && user?.investmentFocus && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="text"
               id="investmentFocus"
@@ -154,9 +196,14 @@ export function ExpressInterestModal({
       case 'incubator':
         return (
           <div>
-            <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
-              Founding Year
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
+                Founding Year
+              </label>
+              {isAuthenticated && user?.foundingYear && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="number"
               id="foundingYear"
@@ -164,9 +211,14 @@ export function ExpressInterestModal({
               value={formData.foundingYear || ''}
               onChange={(e) => setFormData({ ...formData, foundingYear: e.target.value })}
             />
-            <label htmlFor="investmentFocus" className="block text-sm font-medium text-gray-700 mt-4">
-              Incubation Focus
-            </label>
+            <div className="flex items-center justify-between mt-4">
+              <label htmlFor="investmentFocus" className="block text-sm font-medium text-gray-700">
+                Incubation Focus
+              </label>
+              {isAuthenticated && user?.investmentFocus && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="text"
               id="investmentFocus"
@@ -179,9 +231,14 @@ export function ExpressInterestModal({
       case 'corporate':
         return (
           <div>
-            <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
-              Industry
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="foundingYear" className="block text-sm font-medium text-gray-700">
+                Industry
+              </label>
+              {isAuthenticated && user?.foundingYear && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="text"
               id="industry"
@@ -195,9 +252,14 @@ export function ExpressInterestModal({
       case 'government':
         return (
           <div>
-            <label htmlFor="department" className="block text-sm font-medium text-gray-700">
-              Department/Agency
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                Department/Agency
+              </label>
+              {isAuthenticated && user?.researchArea && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="text"
               id="department"
@@ -211,9 +273,14 @@ export function ExpressInterestModal({
       case 'individual':
         return (
           <div>
-            <label htmlFor="expertise" className="block text-sm font-medium text-gray-700">
-              Professional Background
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="expertise" className="block text-sm font-medium text-gray-700">
+                Professional Background
+              </label>
+              {isAuthenticated && user?.researchArea && (
+                <span className="text-xs text-gray-500">From your profile</span>
+              )}
+            </div>
             <input
               type="text"
               id="expertise"
@@ -426,9 +493,14 @@ export function ExpressInterestModal({
     
     return (
       <div>
-        <label htmlFor="expertise" className="block text-sm font-medium text-gray-700">
-          Areas of Expertise
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="expertise" className="block text-sm font-medium text-gray-700">
+            Areas of Expertise
+          </label>
+          {isAuthenticated && user?.expertise && (
+            <span className="text-xs text-gray-500">From your profile</span>
+          )}
+        </div>
         <input
           type="text"
           id="expertise"
@@ -481,9 +553,14 @@ export function ExpressInterestModal({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                {collaboratorType === 'individual' ? 'Full Name' : 'Contact Person'}
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  {collaboratorType === 'individual' ? 'Full Name' : 'Contact Person'}
+                </label>
+                {isAuthenticated && user?.firstName && user?.lastName && (
+                  <span className="text-xs text-gray-500">From your profile</span>
+                )}
+              </div>
               <input
                 type="text"
                 id="name"
@@ -495,9 +572,14 @@ export function ExpressInterestModal({
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email
+                </label>
+                {isAuthenticated && user?.email && (
+                  <span className="text-xs text-gray-500">From your profile</span>
+                )}
+              </div>
               <input
                 type="email"
                 id="email"
@@ -511,9 +593,14 @@ export function ExpressInterestModal({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="organization" className="block text-sm font-medium text-gray-700">
-                {getCollaboratorTypeLabel()}
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="organization" className="block text-sm font-medium text-gray-700">
+                  {getCollaboratorTypeLabel()}
+                </label>
+                {isAuthenticated && user?.organization && (
+                  <span className="text-xs text-gray-500">From your profile</span>
+                )}
+              </div>
               <input
                 type="text"
                 id="organization"
