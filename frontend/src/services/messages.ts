@@ -1,5 +1,6 @@
 import api from './api';
 import { Message, Conversation } from '../types';
+import { getUserById } from './users';
 
 /**
  * Send a message to another user
@@ -9,6 +10,12 @@ import { Message, Conversation } from '../types';
  */
 export const sendMessage = async (recipientId: string, content: string): Promise<Message> => {
   try {
+    // First check if the recipient allows messages
+    const recipient = await getUserById(recipientId);
+    if (recipient && recipient.allowMessages === false) {
+      throw new Error('This user has disabled direct messages.');
+    }
+    
     const response = await api.post('/messages', { recipientId, content });
     return response.data.data;
   } catch (error) {

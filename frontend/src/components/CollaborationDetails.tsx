@@ -141,365 +141,375 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg">
-      {/* Header */}
-      <div className="border-b border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={onBack}
-            className="flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            {cameFromSearch ? 'Back to Search Results' : 'Back to Workspace'}
-          </button>
-          <div className="flex items-center gap-2">
-            {openRequests.length > 0 && (
-              <span className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800 flex items-center gap-1">
-                <UserPlus className="h-4 w-4" />
-                {openRequests.length} Open Positions
-              </span>
-            )}
-            <span className={`px-3 py-1 text-sm rounded-full ${
-              collaboration.status === 'proposed'
-                ? 'bg-blue-100 text-blue-800'
-                : collaboration.status === 'active'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-gray-100 text-gray-800'
-            }`}>
-              {collaboration.status}
-            </span>
-            {collaboration.type && (
-              <span className={`px-3 py-1 text-sm rounded-full ${
-                collaboration.type === 'challenge'
-                  ? 'bg-purple-100 text-purple-800'
-                  : collaboration.type === 'idea'
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-indigo-100 text-indigo-800'
-              }`}>
-                {collaboration.type === 'challenge' 
-                  ? 'Challenge' 
-                  : collaboration.type === 'idea'
-                  ? 'Idea'
-                  : 'Partnership'}
-              </span>
-            )}
-          </div>
-        </div>
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{collaboration.title}</h1>
-            <p className="text-gray-600">{collaboration.description}</p>
-          </div>
-          <div className="flex items-center gap-2 ml-4">
-            <button 
-              onClick={() => handleVote('up')}
-              className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'up' ? 'text-green-600' : 'text-gray-400'}`}
-              aria-label="Upvote"
-            >
-              <ThumbsUp className="h-5 w-5" />
-            </button>
-            <span className="text-sm font-medium text-gray-600">{votes.upvotes}</span>
-            
-            <button 
-              onClick={() => handleVote('down')}
-              className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'down' ? 'text-red-600' : 'text-gray-400'}`}
-              aria-label="Downvote"
-            >
-              <ThumbsDown className="h-5 w-5" />
-            </button>
-            <span className="text-sm font-medium text-gray-600">{votes.downvotes}</span>
-          </div>
-        </div>
-      </div>
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={onBack}
+          className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          {cameFromSearch ? 'Back to Search Results' : 'Back to Workspace'}
+        </button>
 
-      {/* Main content */}
-      <div className="grid grid-cols-3 gap-6 p-6">
-        {/* Left column - Participants & Collaboration Requests */}
-        <div className="col-span-1 space-y-6">
-          {/* Participants */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              Current Participants
-            </h2>
-            <div className="space-y-3">
-              {collaboration.participants.map((participant, index) => (
-                <div key={index} className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
-                    <span className="text-sm text-indigo-600 font-medium">
-                      {participant.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{participant}</p>
-                    <p className="text-xs text-gray-500">{index === 0 ? 'Proposer' : 'Partner'}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Type-specific details */}
-          {collaboration.type === 'challenge' && collaboration.challengeDetails && (
-            <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Target className="h-5 w-5 mr-2 text-purple-600" />
-                Challenge Details
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <Calendar className="h-5 w-5 text-purple-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Deadline</p>
-                    <p className="text-sm text-gray-600">{collaboration.challengeDetails.deadline}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Award className="h-5 w-5 text-purple-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Reward</p>
-                    <p className="text-sm text-gray-600">{collaboration.challengeDetails.reward}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Users className="h-5 w-5 text-purple-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Eligibility Criteria</p>
-                    <p className="text-sm text-gray-600">{collaboration.challengeDetails.eligibilityCriteria}</p>
-                  </div>
-                </div>
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          {/* Header */}
+          <div className="border-b border-gray-200 p-6 pb-4">
+            <div className="flex justify-between items-start mb-2">
+              <h1 className="text-2xl font-bold text-gray-900">{collaboration.title}</h1>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handleVote('up')}
+                  className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'up' ? 'text-green-600' : 'text-gray-400'}`}
+                  aria-label="Upvote"
+                >
+                  <ThumbsUp className="h-5 w-5" />
+                </button>
+                <span className="text-gray-700 font-medium">{votes.upvotes}</span>
+                <button 
+                  onClick={() => handleVote('down')}
+                  className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'down' ? 'text-red-600' : 'text-gray-400'}`}
+                  aria-label="Downvote"
+                >
+                  <ThumbsDown className="h-5 w-5" />
+                </button>
+                <span className="text-gray-700 font-medium">{votes.downvotes}</span>
               </div>
             </div>
-          )}
-
-          {collaboration.type === 'partnership' && collaboration.partnershipDetails && (
-            <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Handshake className="h-5 w-5 mr-2 text-indigo-600" />
-                Partnership Details
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <Clock className="h-5 w-5 text-indigo-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Duration</p>
-                    <p className="text-sm text-gray-600">{collaboration.partnershipDetails.duration}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <DollarSign className="h-5 w-5 text-indigo-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Resources</p>
-                    <p className="text-sm text-gray-600">{collaboration.partnershipDetails.resources}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Target className="h-5 w-5 text-indigo-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Expected Outcomes</p>
-                    <p className="text-sm text-gray-600">{collaboration.partnershipDetails.expectedOutcomes}</p>
-                  </div>
-                </div>
-              </div>
+            <p className="text-gray-600 mb-3">{collaboration.description}</p>
+            <div className="flex flex-wrap gap-2">
+              {collaboration.status && (
+                <span className={`px-3 py-1 text-sm rounded-full ${
+                  collaboration.status === 'proposed'
+                    ? 'bg-blue-100 text-blue-800'
+                    : collaboration.status === 'active'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {collaboration.status}
+                </span>
+              )}
+              {collaboration.type && (
+                <span className={`px-3 py-1 text-sm rounded-full ${
+                  collaboration.type === 'challenge'
+                    ? 'bg-purple-100 text-purple-800'
+                    : collaboration.type === 'idea'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-indigo-100 text-indigo-800'
+                }`}>
+                  {collaboration.type === 'challenge' 
+                    ? 'Challenge' 
+                    : collaboration.type === 'idea'
+                    ? 'Idea'
+                    : 'Partnership'}
+                </span>
+              )}
+              {openRequests.length > 0 && (
+                <span className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800 flex items-center gap-1">
+                  <UserPlus className="h-4 w-4 mr-1" />
+                  {openRequests.length} Open Position{openRequests.length > 1 ? 's' : ''}
+                </span>
+              )}
             </div>
-          )}
+          </div>
 
-          {collaboration.type === 'idea' && collaboration.ideaDetails && (
-            <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Lightbulb className="h-5 w-5 mr-2 text-amber-600" />
-                Idea Details
-              </h2>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <Tag className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Category</p>
-                    <p className="text-sm text-gray-600">{collaboration.ideaDetails.category}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Briefcase className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Development Stage</p>
-                    <p className="text-sm text-gray-600">
-                      {collaboration.ideaDetails.stage === 'concept' ? 'Concept (Just an idea)' :
-                       collaboration.ideaDetails.stage === 'prototype' ? 'Prototype (Early development)' :
-                       collaboration.ideaDetails.stage === 'validated' ? 'Validated (Tested with users)' :
-                       'Scaling (Ready to grow)'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Users className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Target Audience</p>
-                    <p className="text-sm text-gray-600">{collaboration.ideaDetails.targetAudience}</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Zap className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Potential Impact</p>
-                    <p className="text-sm text-gray-600">{collaboration.ideaDetails.potentialImpact}</p>
-                  </div>
-                </div>
-                {collaboration.ideaDetails.resourcesNeeded && (
+          {/* Main content */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
+            {/* Left column - Details */}
+            <div className="space-y-6 md:col-span-1">
+              {/* Basic Info */}
+              <div className="bg-gray-50 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Details</h3>
+                <div className="space-y-4">
+                  {collaboration.createdById && (
+                    <div className="flex items-start">
+                      <Users className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Created by</p>
+                        <p className="text-sm text-gray-500">User #{collaboration.createdById}</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-start">
-                    <DollarSign className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
+                    <Calendar className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Resources Needed</p>
-                      <p className="text-sm text-gray-600">{collaboration.ideaDetails.resourcesNeeded}</p>
+                      <p className="text-sm font-medium text-gray-900">Created on</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(collaboration.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
-                )}
+                  {collaboration.type === 'challenge' && collaboration.challengeDetails && (
+                    <>
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Deadline</p>
+                          <p className="text-sm text-gray-500">{collaboration.challengeDetails.deadline}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <DollarSign className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Reward</p>
+                          <p className="text-sm text-gray-500">{collaboration.challengeDetails.reward}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Briefcase className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Eligibility</p>
+                          <p className="text-sm text-gray-500">{collaboration.challengeDetails.eligibilityCriteria}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {collaboration.type === 'partnership' && collaboration.partnershipDetails && (
+                    <>
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Duration</p>
+                          <p className="text-sm text-gray-500">{collaboration.partnershipDetails.duration}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Briefcase className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Resources</p>
+                          <p className="text-sm text-gray-500">{collaboration.partnershipDetails.resources}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Target className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Expected Outcomes</p>
+                          <p className="text-sm text-gray-500">{collaboration.partnershipDetails.expectedOutcomes}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {collaboration.type === 'idea' && collaboration.ideaDetails && (
+                    <>
+                      <div className="flex items-start">
+                        <Tag className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Category</p>
+                          <p className="text-sm text-gray-500">{collaboration.ideaDetails.category}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Zap className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Stage</p>
+                          <p className="text-sm text-gray-500">{collaboration.ideaDetails.stage}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Users className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Target Audience</p>
+                          <p className="text-sm text-gray-500">{collaboration.ideaDetails.targetAudience}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Award className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Potential Impact</p>
+                          <p className="text-sm text-gray-500">{collaboration.ideaDetails.potentialImpact}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Express Interest */}
+              <div className="bg-gray-50 rounded-lg p-5">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Join This Initiative</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Interested in contributing to this {collaboration.type || 'collaboration'}? 
+                  Express your interest directly.
+                </p>
+                <ProtectedAction
+                  onAction={() => setShowInitiativeModal(true)}
+                  buttonClassName="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
+                  actionName="express interest in this initiative"
+                >
+                  <Handshake className="h-4 w-4 mr-2" />
+                  Express Interest
+                </ProtectedAction>
               </div>
             </div>
-          )}
 
-          {/* Initiative Collaborator Button */}
-          <div className="bg-white rounded-lg shadow p-4 border border-blue-200">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-semibold text-gray-900 flex items-center">
-                <Handshake className="h-4 w-4 mr-2" />
-                Initiative Collaborator
-              </h4>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Interested in collaborating on this initiative? Join as a partner to contribute your expertise and resources.
-            </p>
-            <ProtectedAction 
-              onAction={() => setShowInitiativeModal(true)}
-              buttonClassName="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center"
-              actionName="express interest in this initiative"
-            >
-              <Handshake className="h-4 w-4 mr-2" />
-              Express Initiative Interest
-            </ProtectedAction>
-          </div>
-
-          {/* Open Positions */}
-          {openRequests.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                <UserPlus className="h-5 w-5 mr-2" />
-                Open Positions
-              </h2>
-              
-              {openRequests.map((request, index) => (
-                <CollaborationRequestCard 
-                  key={index} 
-                  request={request}
-                  onExpressInterest={handleExpressInterest}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Center column - Activity */}
-        <div className="col-span-2">
-          <div className="space-y-6">
-            {/* Quick Stats */}
-            <ComingSoonOverlay title="Activity Stats Coming Soon">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center text-gray-500 mb-2">
-                    <Target className="h-5 w-5 mr-2" />
-                    <span className="text-sm">Milestones</span>
-                  </div>
-                  <p className="text-2xl font-semibold text-gray-900">3/5</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center text-gray-500 mb-2">
-                    <MessageSquare className="h-5 w-5 mr-2" />
-                    <span className="text-sm">Messages</span>
-                  </div>
-                  <p className="text-2xl font-semibold text-gray-900">24</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center text-gray-500 mb-2">
-                    <FileText className="h-5 w-5 mr-2" />
-                    <span className="text-sm">Documents</span>
-                  </div>
-                  <p className="text-2xl font-semibold text-gray-900">12</p>
-                </div>
-              </div>
-            </ComingSoonOverlay>
-
-            {/* Progress */}
-            <ComingSoonOverlay title="Progress Tracking Coming Soon">
-              <div className="bg-gray-50 rounded-lg p-4">
+            {/* Center column - Activity */}
+            <div className="md:col-span-2 space-y-6">
+              {/* Current Participants */}
+              <div className="bg-gray-50 rounded-lg p-5">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <BarChart className="h-5 w-5 mr-2" />
-                  Progress
+                  <Users className="h-5 w-5 mr-2 text-indigo-600" />
+                  Current Participants
                 </h3>
-                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-600 rounded-full" style={{ width: '60%' }} />
-                </div>
-                <div className="mt-4 grid grid-cols-3 text-sm">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-semibold">
+                    N
+                  </div>
                   <div>
-                    <p className="text-gray-500">Start Date</p>
-                    <p className="font-medium">Jan 15, 2025</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-gray-500">Duration</p>
-                    <p className="font-medium">6 months</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-gray-500">End Date</p>
-                    <p className="font-medium">Jul 15, 2025</p>
+                    <p className="font-medium">Numquam magni ullamc</p>
+                    <p className="text-sm text-gray-500">Partner</p>
                   </div>
                 </div>
               </div>
-            </ComingSoonOverlay>
 
-            {/* Related Challenge */}
-            {collaboration.challengeId && (
-              <ComingSoonOverlay title="Related Challenges Coming Soon">
-                <div className="bg-gray-50 rounded-lg p-4">
+              {/* Progress */}
+              <ComingSoonOverlay title="Progress Tracking Coming Soon">
+                <div className="bg-gray-50 rounded-lg p-5">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Link className="h-5 w-5 mr-2" />
-                    Related Challenge
+                    <BarChart className="h-5 w-5 mr-2 text-indigo-600" />
+                    Progress Tracking Coming Soon
                   </h3>
-                  <div className="flex items-center justify-between">
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-indigo-600 rounded-full" style={{ width: '60%' }} />
+                  </div>
+                  <div className="mt-4 grid grid-cols-3 text-sm">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Challenge #{collaboration.challengeId}</p>
-                      <p className="text-sm text-gray-500">View the original challenge that started this collaboration</p>
+                      <p className="text-gray-500">Start Date</p>
+                      <p className="font-medium">Jan 15, 2025</p>
                     </div>
-                    <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                      View Challenge
-                    </button>
+                    <div className="text-center">
+                      <p className="text-gray-500">Duration</p>
+                      <p className="font-medium">6 months</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-500">End Date</p>
+                      <p className="font-medium">Jul 15, 2025</p>
+                    </div>
                   </div>
                 </div>
               </ComingSoonOverlay>
-            )}
+
+              {/* Activity Stats */}
+              <ComingSoonOverlay title="Activity Stats Coming Soon">
+                <div className="bg-gray-50 rounded-lg p-5">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <BarChart className="h-5 w-5 mr-2 text-indigo-600" />
+                    Activity Stats Coming Soon
+                  </h3>
+                  <p className="text-gray-500 text-sm mb-4">This feature will be available in the next version</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center text-gray-500 mb-2">
+                        <Target className="h-5 w-5 mr-2" />
+                        <span className="text-sm">Milestones</span>
+                      </div>
+                      <p className="text-2xl font-semibold text-gray-900">3/5</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center text-gray-500 mb-2">
+                        <MessageSquare className="h-5 w-5 mr-2" />
+                        <span className="text-sm">Messages</span>
+                      </div>
+                      <p className="text-2xl font-semibold text-gray-900">24</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center text-gray-500 mb-2">
+                        <FileText className="h-5 w-5 mr-2" />
+                        <span className="text-sm">Documents</span>
+                      </div>
+                      <p className="text-2xl font-semibold text-gray-900">12</p>
+                    </div>
+                  </div>
+                </div>
+              </ComingSoonOverlay>
+            </div>
+
+            {/* Right column - Open Positions */}
+            <div className="md:col-span-1 space-y-6">
+              {openRequests.length > 0 && (
+                <div className="bg-gray-50 rounded-lg p-5">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <UserPlus className="h-5 w-5 mr-2 text-indigo-600" />
+                    Open Positions
+                  </h3>
+                  <div className="space-y-4">
+                    {openRequests.map((request, index) => (
+                      <div key={index} className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-gray-900">{request.role}</h4>
+                          <span className={`px-2 py-0.5 text-xs rounded-full ${
+                            request.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {request.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">{request.description}</p>
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {request.expertise.map((skill, index) => (
+                            <span key={index} className="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                        <ProtectedAction
+                          onAction={() => handleExpressInterest(request)}
+                          buttonClassName="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center"
+                          actionName="express interest in this position"
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Express Interest
+                        </ProtectedAction>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Related Challenge */}
+              {collaboration.challengeId && (
+                <ComingSoonOverlay title="Related Challenges Coming Soon">
+                  <div className="bg-gray-50 rounded-lg p-5">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                      <Link className="h-5 w-5 mr-2 text-indigo-600" />
+                      Related Challenge
+                    </h3>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Challenge #{collaboration.challengeId}</p>
+                        <p className="text-sm text-gray-500">View the original challenge that started this collaboration</p>
+                      </div>
+                      <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                        View Challenge
+                      </button>
+                    </div>
+                  </div>
+                </ComingSoonOverlay>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Express Interest Modal for Open Positions */}
+        {selectedRequest && (
+          <ExpressInterestModal
+            isOpen={true}
+            onClose={() => setSelectedRequest(null)}
+            onSubmit={handleSubmitInterest}
+            request={selectedRequest}
+            modalType="position"
+          />
+        )}
+
+        {/* Initiative Collaborator Modal */}
+        {showInitiativeModal && (
+          <ExpressInterestModal
+            isOpen={true}
+            onClose={() => setShowInitiativeModal(false)}
+            onSubmit={handleSubmitInterest}
+            modalType="initiative"
+            collaboratorType={collaboratorType}
+            onCollaboratorTypeChange={setCollaboratorType}
+          />
+        )}
       </div>
-
-      {/* Express Interest Modal for Open Positions */}
-      {selectedRequest && (
-        <ExpressInterestModal
-          isOpen={true}
-          onClose={() => setSelectedRequest(null)}
-          onSubmit={handleSubmitInterest}
-          request={selectedRequest}
-          modalType="position"
-        />
-      )}
-
-      {/* Initiative Collaborator Modal */}
-      {showInitiativeModal && (
-        <ExpressInterestModal
-          isOpen={true}
-          onClose={() => setShowInitiativeModal(false)}
-          onSubmit={handleSubmitInterest}
-          modalType="initiative"
-          collaboratorType={collaboratorType}
-          onCollaboratorTypeChange={setCollaboratorType}
-        />
-      )}
     </div>
   );
 }

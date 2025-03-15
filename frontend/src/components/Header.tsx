@@ -147,7 +147,7 @@ export function Header({
     return (
       <div 
         ref={userMenuRef}
-        className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 ${showUserMenu ? 'block' : 'hidden'}`}
+        className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50 ${showUserMenu ? 'block' : 'hidden'}`}
       >
         <Link
           to={user ? `/profile/${user.id}` : "/auth"}
@@ -324,6 +324,16 @@ export function Header({
                         src={user.profilePicture} 
                         alt={`${user.firstName} ${user.lastName}`} 
                         className="h-8 w-8 rounded-full object-cover"
+                        onError={(e) => {
+                          // If image fails to load, replace with UserCircle icon
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            const icon = document.createElement('div');
+                            icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>';
+                            parent.appendChild(icon.firstChild as Node);
+                          }
+                        }}
                       />
                     ) : (
                       <UserCircle className="h-6 w-6" />

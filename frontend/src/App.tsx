@@ -264,11 +264,13 @@ export function App() {
                 onViewModeChange={handleViewModeChange}
               />
               
-              <CollaborationList 
-                collaborations={filteredCollaborations}
-                onViewDetails={handleViewCollaboration}
-                viewMode={viewMode}
-              />
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <CollaborationList 
+                  collaborations={filteredCollaborations}
+                  onViewDetails={handleViewCollaboration}
+                  viewMode={viewMode}
+                />
+              </div>
             </div>
           } />
           

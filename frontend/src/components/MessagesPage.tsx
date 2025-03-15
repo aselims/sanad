@@ -95,6 +95,12 @@ const MessagesPage: React.FC = () => {
     
     if (!messageText.trim() || !selectedUser) return;
     
+    // Check if the selected user allows messages
+    if (selectedUser.allowMessages === false) {
+      setError('This user has disabled direct messages.');
+      return;
+    }
+    
     setIsSending(true);
     
     try {
@@ -319,33 +325,40 @@ const MessagesPage: React.FC = () => {
 
                 {/* Message Input */}
                 <div className="p-4 border-t border-gray-200">
-                  <form onSubmit={handleSendMessage} className="flex items-end">
-                    <textarea
-                      ref={messageInputRef}
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      placeholder="Type your message..."
-                      className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                      rows={2}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage(e);
-                        }
-                      }}
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSending || !messageText.trim()}
-                      className="ml-2 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed h-10"
-                    >
-                      {isSending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </button>
-                  </form>
+                  {selectedUser.allowMessages === false ? (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm text-yellow-800">
+                      This user has disabled direct messages.
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSendMessage} className="flex items-end">
+                      <textarea
+                        ref={messageInputRef}
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        placeholder="Type your message..."
+                        className="flex-1 border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                        rows={2}
+                      ></textarea>
+                      <button
+                        type="submit"
+                        disabled={isSending || !messageText.trim()}
+                        className={`ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                          isSending || !messageText.trim()
+                            ? 'bg-indigo-300 cursor-not-allowed'
+                            : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                        }`}
+                      >
+                        {isSending ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                          <>
+                            <Send className="h-4 w-4 mr-1" />
+                            Send
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
                 </div>
               </>
             ) : (

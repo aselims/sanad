@@ -70,6 +70,7 @@ export const updateCurrentUserProfile = async (data: Partial<User>): Promise<Use
       website: data.website,
       location: data.location,
       social: data.social,
+      allowMessages: data.allowMessages,
       // Add any other fields that are not part of the User model
     };
     

@@ -117,7 +117,7 @@ export function Footer({
             &copy; {new Date().getFullYear()} Saned Platform. All rights reserved.
           </p>
           <p className="text-gray-400 text-sm mt-4 md:mt-0 flex items-center">
-            Made with <Heart size={16} className="mx-1 text-red-500" /> in Saudi Arabia
+            Made with <Heart size={16} className="mx-1 text-red-500" /> For the MENA region and the world
           </p>
         </div>
       </div>
