@@ -45,7 +45,10 @@ export function WorkspaceHeader({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Workspace</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Collaboration Workspace</h1>
+              <p className="text-gray-600 mt-1">Find and manage your collaborations</p>
+            </div>
             <ProtectedAction 
               onAction={handleOpenModal}
               buttonClassName="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center"
@@ -54,22 +57,6 @@ export function WorkspaceHeader({
               <Plus className="h-5 w-5 mr-2" />
               New Collaboration
             </ProtectedAction>
-          </div>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Collaboration Workspace</h1>
-              <p className="text-gray-600 mt-1">Find and manage your collaborations</p>
-            </div>
-            <div className="mt-4 md:mt-0">
-              <button 
-                onClick={() => onCreateCollaboration({})}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Collaboration
-              </button>
-            </div>
           </div>
           
           <div className="flex flex-wrap gap-2 mb-6">
