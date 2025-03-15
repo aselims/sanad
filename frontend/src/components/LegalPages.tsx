@@ -58,22 +58,30 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
         The Saned platform and its original content, features, and functionality are owned by Saned and are protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.
       </p>
       
-      <h2>6. Termination</h2>
+      <h2>6. Revenue Sharing Model</h2>
+      <p>
+        Innovators contribute just 1% of revenue generated from successful collaborations. You only pay when you succeed. This fair model ensures that our platform remains accessible to all innovators while sustainably supporting our services.
+      </p>
+      <p>
+        The 1% contribution applies only to revenue directly generated from collaborations facilitated through our platform. No upfront fees or charges will be applied before your project generates revenue.
+      </p>
+      
+      <h2>7. Termination</h2>
       <p>
         We may terminate or suspend your account and bar access to the platform immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever and without limitation, including but not limited to a breach of the Terms.
       </p>
       
-      <h2>7. Limitation of Liability</h2>
+      <h2>8. Limitation of Liability</h2>
       <p>
         In no event shall Saned, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the platform.
       </p>
       
-      <h2>8. Changes to Terms</h2>
+      <h2>9. Changes to Terms</h2>
       <p>
         Saned reserves the right, at its sole discretion, to modify or replace these Terms at any time. It is your responsibility to check these Terms periodically for changes.
       </p>
       
-      <h2>9. Contact Us</h2>
+      <h2>10. Contact Us</h2>
       <p>
         If you have any questions about these Terms, please contact us at legal@Saned.com.
       </p>

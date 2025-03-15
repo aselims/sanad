@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { RegisterData } from '../../services/auth';
 import { INNOVATOR_TYPES, ROLE_DISPLAY_NAMES, INNOVATOR_TYPES_ARRAY } from '../../constants/roles';
+import { Link } from 'react-router-dom';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -20,6 +21,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginClick }) 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [termsAgreed, setTermsAgreed] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -43,6 +45,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginClick }) 
 
     if (formData.password !== confirmPassword) {
       setFormError('Passwords do not match');
+      return;
+    }
+
+    if (!termsAgreed) {
+      setFormError('You must agree to the Terms of Service to register');
       return;
     }
 
@@ -169,6 +176,30 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginClick }) 
             placeholder="Confirm Password"
             required
           />
+        </div>
+        
+        <div className="mb-6">
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                checked={termsAgreed}
+                onChange={(e) => setTermsAgreed(e.target.checked)}
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                required
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="terms" className="font-medium text-gray-700">
+                I agree to the <Link to="/legal/terms" className="text-indigo-600 hover:text-indigo-800" target="_blank">Terms of Service</Link>
+              </label>
+              <p className="text-gray-500">
+                Innovators contribute just 1% of revenue generated from successful collaborations. You only pay when you succeed.
+              </p>
+            </div>
+          </div>
         </div>
         
         <button
