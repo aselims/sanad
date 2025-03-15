@@ -15,6 +15,9 @@ const innovatorSeedData = [
     organization: 'Saned Platform',
     position: 'System Administrator',
     bio: 'Managing the Saned platform and its users.',
+    location: 'Riyadh',
+    interests: ['System Administration', 'Platform Management', 'User Support'],
+    tags: ['technology', 'administration', 'support', 'management']
   },
   // Startup innovator
   {
@@ -26,6 +29,9 @@ const innovatorSeedData = [
     organization: 'EcoTech Solutions',
     position: 'Founder & CEO',
     bio: 'Leading a startup focused on sustainable technology solutions for urban environments in Saudi Arabia.',
+    location: 'Jeddah',
+    interests: ['Sustainable Technology', 'Urban Planning', 'Green Energy', 'Entrepreneurship'],
+    tags: ['sustainability', 'cleantech', 'urban', 'startup', 'green energy']
   },
   // Research innovator
   {
@@ -37,6 +43,9 @@ const innovatorSeedData = [
     organization: 'King Abdullah University of Science and Technology',
     position: 'Research Director',
     bio: 'Leading research in renewable energy technologies with a focus on solar applications in desert environments.',
+    location: 'Thuwal',
+    interests: ['Renewable Energy', 'Solar Technology', 'Materials Science', 'Desert Applications'],
+    tags: ['research', 'solar', 'renewable', 'energy', 'academic', 'science']
   },
   // Corporate innovator
   {
@@ -48,6 +57,9 @@ const innovatorSeedData = [
     organization: 'Saudi Aramco',
     position: 'Innovation Director',
     bio: 'Leading digital transformation and sustainability initiatives at Saudi Aramco.',
+    location: 'Dhahran',
+    interests: ['Digital Transformation', 'Corporate Innovation', 'Oil & Gas', 'Sustainability'],
+    tags: ['corporate', 'innovation', 'energy', 'digital', 'transformation', 'oil']
   },
   // Government innovator
   {
@@ -59,6 +71,9 @@ const innovatorSeedData = [
     organization: 'Ministry of Communications and Information Technology',
     position: 'Digital Transformation Lead',
     bio: 'Working on national digital transformation initiatives as part of Saudi Vision 2030.',
+    location: 'Riyadh',
+    interests: ['Digital Government', 'Public Policy', 'Smart Cities', 'Vision 2030'],
+    tags: ['government', 'policy', 'digital', 'transformation', 'vision2030', 'smart cities']
   },
   // Investor innovator
   {
@@ -70,6 +85,9 @@ const innovatorSeedData = [
     organization: 'Saudi Venture Capital',
     position: 'Investment Director',
     bio: 'Investing in early-stage technology startups across Saudi Arabia and the MENA region.',
+    location: 'Riyadh',
+    interests: ['Venture Capital', 'Investment', 'Startup Funding', 'Financial Analysis'],
+    tags: ['investment', 'venture capital', 'funding', 'startups', 'finance', 'technology']
   },
   // Individual innovator
   {
@@ -81,6 +99,9 @@ const innovatorSeedData = [
     organization: 'Independent',
     position: 'Entrepreneur',
     bio: 'Serial entrepreneur with experience in e-commerce and fintech sectors.',
+    location: 'Jeddah',
+    interests: ['E-commerce', 'Fintech', 'Entrepreneurship', 'Digital Marketing'],
+    tags: ['entrepreneur', 'e-commerce', 'fintech', 'startup', 'digital']
   },
   // Organization innovator
   {
@@ -92,6 +113,9 @@ const innovatorSeedData = [
     organization: 'King Abdulaziz City for Science and Technology',
     position: 'Executive Director',
     bio: 'Leading national research and development initiatives at KACST.',
+    location: 'Riyadh',
+    interests: ['Research Management', 'Technology Transfer', 'Innovation Policy', 'Science Administration'],
+    tags: ['research', 'science', 'technology', 'innovation', 'policy', 'development']
   },
   // Accelerator innovator
   {
@@ -103,6 +127,9 @@ const innovatorSeedData = [
     organization: 'Riyadh Accelerator',
     position: 'Program Director',
     bio: 'Leading a startup accelerator program that helps early-stage companies scale rapidly through mentorship and funding.',
+    location: 'Riyadh',
+    interests: ['Startup Acceleration', 'Mentorship', 'Seed Funding', 'Entrepreneurship Development'],
+    tags: ['accelerator', 'startups', 'mentorship', 'funding', 'entrepreneurship', 'scaling']
   },
   // Incubator innovator
   {
@@ -114,6 +141,9 @@ const innovatorSeedData = [
     organization: 'Jeddah Innovation Incubator',
     position: 'Executive Director',
     bio: 'Managing an incubator that provides resources, space, and support for early-stage startups to develop their ideas.',
+    location: 'Jeddah',
+    interests: ['Startup Incubation', 'Business Development', 'Innovation Management', 'Entrepreneurship Support'],
+    tags: ['incubator', 'startups', 'innovation', 'entrepreneurship', 'business development']
   },
 ];
 
@@ -129,6 +159,9 @@ const newInnovatorTypes = [
     organization: 'Riyadh Accelerator',
     position: 'Program Director',
     bio: 'Leading a startup accelerator program that helps early-stage companies scale rapidly through mentorship and funding.',
+    location: 'Riyadh',
+    interests: ['Startup Acceleration', 'Mentorship', 'Seed Funding', 'Entrepreneurship Development'],
+    tags: ['accelerator', 'startups', 'mentorship', 'funding', 'entrepreneurship', 'scaling']
   },
   // Incubator innovator
   {
@@ -140,6 +173,9 @@ const newInnovatorTypes = [
     organization: 'Jeddah Innovation Incubator',
     position: 'Executive Director',
     bio: 'Managing an incubator that provides resources, space, and support for early-stage startups to develop their ideas.',
+    location: 'Jeddah',
+    interests: ['Startup Incubation', 'Business Development', 'Innovation Management', 'Entrepreneurship Support'],
+    tags: ['incubator', 'startups', 'innovation', 'entrepreneurship', 'business development']
   },
 ];
 
@@ -162,7 +198,23 @@ const seedUsers = async () => {
         // Check if user already exists
         const existingUser = await userRepository.findOne({ where: { email: userData.email } });
         if (existingUser) {
-          logger.info(`User ${userData.email} already exists, skipping`);
+          logger.info(`User ${userData.email} already exists, updating with new values`);
+          
+          // Update existing user with new values
+          existingUser.firstName = userData.firstName;
+          existingUser.lastName = userData.lastName;
+          existingUser.role = userData.role;
+          existingUser.organization = userData.organization;
+          existingUser.position = userData.position;
+          existingUser.bio = userData.bio;
+          
+          // Add new profile fields
+          if (userData.location) existingUser.location = userData.location;
+          if (userData.interests) existingUser.interests = userData.interests;
+          if (userData.tags) existingUser.tags = userData.tags;
+          
+          await userRepository.save(existingUser);
+          logger.info(`Updated user: ${userData.firstName} ${userData.lastName} (${userData.role})`);
           continue;
         }
         
@@ -180,6 +232,11 @@ const seedUsers = async () => {
         user.position = userData.position;
         user.bio = userData.bio;
         user.isVerified = true; // All seed users are verified
+        
+        // Add new profile fields
+        if (userData.location) user.location = userData.location;
+        if (userData.interests) user.interests = userData.interests;
+        if (userData.tags) user.tags = userData.tags;
         
         await userRepository.save(user);
         logger.info(`Created user: ${userData.firstName} ${userData.lastName} (${userData.role})`);
@@ -194,7 +251,23 @@ const seedUsers = async () => {
         // Check if user already exists
         const existingUser = await userRepository.findOne({ where: { email: userData.email } });
         if (existingUser) {
-          logger.info(`User ${userData.email} already exists, skipping`);
+          logger.info(`User ${userData.email} already exists, updating with new values`);
+          
+          // Update existing user with new values
+          existingUser.firstName = userData.firstName;
+          existingUser.lastName = userData.lastName;
+          existingUser.role = userData.role;
+          existingUser.organization = userData.organization;
+          existingUser.position = userData.position;
+          existingUser.bio = userData.bio;
+          
+          // Add new profile fields
+          if (userData.location) existingUser.location = userData.location;
+          if (userData.interests) existingUser.interests = userData.interests;
+          if (userData.tags) existingUser.tags = userData.tags;
+          
+          await userRepository.save(existingUser);
+          logger.info(`Updated user: ${userData.firstName} ${userData.lastName} (${userData.role})`);
           continue;
         }
         
@@ -212,6 +285,11 @@ const seedUsers = async () => {
         user.position = userData.position;
         user.bio = userData.bio;
         user.isVerified = true; // All seed users are verified
+        
+        // Add new profile fields
+        if (userData.location) user.location = userData.location;
+        if (userData.interests) user.interests = userData.interests;
+        if (userData.tags) user.tags = userData.tags;
         
         await userRepository.save(user);
         logger.info(`Created user: ${userData.firstName} ${userData.lastName} (${userData.role})`);

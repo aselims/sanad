@@ -39,7 +39,11 @@ This is the backend API for the SANAD Innovation Collaboration Platform.
    ```
    npm run migration:run
    ```
-7. Start the development server:
+7. Seed the database with initial users:
+   ```
+   npm run seed:users
+   ```
+8. Start the development server:
    ```
    npm run dev
    ```
@@ -54,6 +58,7 @@ src/
 ├── middlewares/    # Express middlewares
 ├── migrations/     # TypeORM migrations
 ├── routes/         # API routes
+├── scripts/        # Utility scripts (e.g., database seeding)
 ├── services/       # Business logic
 ├── utils/          # Utility functions
 └── index.ts        # Application entry point
@@ -71,6 +76,29 @@ The API documentation is available at `/api-docs` when the server is running.
 - `npm run lint` - Run ESLint
 - `npm run migration:generate` - Generate TypeORM migrations
 - `npm run migration:run` - Run TypeORM migrations
+- `npm run seed:users` - Seed the database with initial users for testing
+
+## Testing Potential Matches Functionality
+
+The platform includes an AI-powered matching system that connects innovators based on their profiles. To test this functionality:
+
+1. Seed the database with test users:
+   ```
+   npm run seed:users
+   ```
+
+2. Log in with one of the following test accounts:
+   - **Startup**: ahmed@techstartup.sa (Password: Password123!)
+   - **Individual**: youssef@gmail.com (Password: Password123!)
+   - **Research**: mohammed@kaust.edu.sa (Password: Password123!)
+   - **Investor**: saad@svc.sa (Password: Password123!)
+
+3. Navigate to your profile page and click on the "Potential Matches" tab to see AI-suggested matches based on:
+   - Shared tags (50% weight)
+   - Type compatibility (30% weight)
+   - Location proximity (20% weight)
+
+The seed users have been configured with complementary profiles to demonstrate the matching algorithm effectively.
 
 ## Performance Optimization
 
