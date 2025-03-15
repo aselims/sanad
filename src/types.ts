@@ -72,6 +72,14 @@ export interface PartnershipDetails {
   expectedOutcomes: string;
 }
 
+export interface IdeaDetails {
+  category: string;
+  stage: 'concept' | 'prototype' | 'validated' | 'scaling';
+  targetAudience: string;
+  potentialImpact: string;
+  resourcesNeeded?: string;
+}
+
 export interface Collaboration {
   id: string;
   title: string;
@@ -80,9 +88,10 @@ export interface Collaboration {
   challengeId?: string;
   description: string;
   collaborationRequests?: CollaborationRequest[];
-  type?: 'challenge' | 'partnership';
+  type?: 'challenge' | 'partnership' | 'idea';
   challengeDetails?: ChallengeDetails;
   partnershipDetails?: PartnershipDetails;
+  ideaDetails?: IdeaDetails;
   createdById?: string;
   createdAt: Date;
   updatedAt: Date;

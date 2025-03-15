@@ -26,7 +26,7 @@ export function App() {
   const { isAuthenticated, user } = useAuth();
   const [selectedCollaboration, setSelectedCollaboration] = useState<string | null>(null);
   const [showHomePage, setShowHomePage] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'challenges' | 'partnerships'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'challenges' | 'partnerships' | 'ideas'>('all');
   const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile' | 'blog'>('collaborations');
   const [selectedInnovator, setSelectedInnovator] = useState<string | null>(null);
   
@@ -73,6 +73,7 @@ export function App() {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'challenges' && collaboration.type === 'challenge') return true;
     if (activeFilter === 'partnerships' && collaboration.type === 'partnership') return true;
+    if (activeFilter === 'ideas' && collaboration.type === 'idea') return true;
     return false;
   });
 
@@ -109,6 +110,12 @@ export function App() {
     setShowHomePage(false);
     setActivePage('collaborations');
     setActiveFilter('partnerships');
+  };
+
+  const handleNavigateToIdeas = () => {
+    setShowHomePage(false);
+    setActivePage('collaborations');
+    setActiveFilter('ideas');
   };
 
   const handleNavigateToInnovators = () => {
@@ -242,6 +249,7 @@ export function App() {
             onNavigateToWorkspace={handleNavigateToWorkspace}
             onNavigateToChallenges={handleNavigateToChallenges}
             onNavigateToPartnerships={handleNavigateToPartnerships}
+            onNavigateToIdeas={handleNavigateToIdeas}
             onNavigateToInnovators={handleNavigateToInnovators}
             onNavigateToProfile={handleNavigateToProfile}
             onNavigateToAuth={handleNavigateToAuth}
@@ -269,6 +277,7 @@ export function App() {
             onNavigateToWorkspace={handleNavigateToWorkspace}
             onNavigateToChallenges={handleNavigateToChallenges}
             onNavigateToPartnerships={handleNavigateToPartnerships}
+            onNavigateToIdeas={handleNavigateToIdeas}
             onNavigateToInnovators={handleNavigateToInnovators}
             onNavigateToProfile={handleNavigateToProfile}
             onNavigateToAuth={handleNavigateToAuth}
@@ -290,6 +299,7 @@ export function App() {
               onNavigateToCollaboration={handleNavigateToCollaboration}
               onNavigateToChallenges={handleNavigateToChallenges}
               onNavigateToPartnerships={handleNavigateToPartnerships}
+              onNavigateToIdeas={handleNavigateToIdeas}
               onNavigateToInnovators={handleNavigateToInnovators}
               onNavigateToBlog={handleNavigateToBlog}
               onNavigateToHowItWorks={handleNavigateToHowItWorks}
@@ -337,6 +347,8 @@ export function App() {
                       // Add type-specific details if they exist
                       if (collaboration.type === 'challenge' && collaboration.challengeDetails) {
                         newCollaboration.challengeDetails = collaboration.challengeDetails;
+                      } else if (collaboration.type === 'idea' && collaboration.ideaDetails) {
+                        newCollaboration.ideaDetails = collaboration.ideaDetails;
                       } else if (collaboration.partnershipDetails) {
                         newCollaboration.partnershipDetails = collaboration.partnershipDetails;
                       }
@@ -351,6 +363,8 @@ export function App() {
                       // Set the appropriate filter based on the collaboration type
                       if (collaboration.type === 'challenge') {
                         setActiveFilter('challenges');
+                      } else if (collaboration.type === 'idea') {
+                        setActiveFilter('ideas');
                       } else {
                         setActiveFilter('partnerships');
                       }

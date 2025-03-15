@@ -6,6 +6,7 @@ interface HeaderProps {
   onNavigateToWorkspace?: () => void;
   onNavigateToChallenges?: () => void;
   onNavigateToPartnerships?: () => void;
+  onNavigateToIdeas?: () => void;
   onNavigateToInnovators?: () => void;
   onNavigateToHome?: () => void;
   onNavigateToProfile?: () => void;
@@ -16,6 +17,7 @@ export function Header({
   onNavigateToWorkspace,
   onNavigateToChallenges,
   onNavigateToPartnerships,
+  onNavigateToIdeas,
   onNavigateToInnovators,
   onNavigateToHome,
   onNavigateToProfile,
@@ -37,6 +39,13 @@ export function Header({
     console.log("Partnerships clicked");
     if (onNavigateToPartnerships) {
       onNavigateToPartnerships();
+    }
+  };
+
+  const handleIdeasClick = () => {
+    console.log("Ideas clicked");
+    if (onNavigateToIdeas) {
+      onNavigateToIdeas();
     }
   };
 
@@ -113,6 +122,12 @@ export function Header({
               className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
             >
               Partnerships
+            </button>
+            <button 
+              onClick={handleIdeasClick}
+              className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
+            >
+              Ideas
             </button>
             <button 
               onClick={handleInnovatorsClick}

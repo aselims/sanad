@@ -23,6 +23,7 @@ interface HomePageProps {
   onNavigateToCollaboration: (id: string) => void;
   onNavigateToChallenges?: () => void;
   onNavigateToPartnerships?: () => void;
+  onNavigateToIdeas?: () => void;
   onNavigateToInnovators?: () => void;
   onNavigateToBlog?: () => void;
   onNavigateToHowItWorks?: () => void;
@@ -40,6 +41,7 @@ export function HomePage({
   onNavigateToCollaboration,
   onNavigateToChallenges = onNavigateToWorkspace,
   onNavigateToPartnerships = onNavigateToWorkspace,
+  onNavigateToIdeas = onNavigateToWorkspace,
   onNavigateToInnovators = onNavigateToWorkspace,
   onNavigateToBlog = onNavigateToWorkspace,
   onNavigateToHowItWorks = onNavigateToWorkspace,
@@ -110,6 +112,7 @@ export function HomePage({
     onNavigateToCollaboration,
     onNavigateToChallenges,
     onNavigateToPartnerships,
+    onNavigateToIdeas,
     onNavigateToInnovators,
     onNavigateToBlog,
     onNavigateToHowItWorks,
