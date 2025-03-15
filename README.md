@@ -1,138 +1,81 @@
-# Saned - Innovation Collaboration Platform
+# T3awanu-2 Project
 
-Saned is a modern web platform designed to connect innovators, researchers, startups, corporations, and investors to collaborate on challenges and partnerships. The platform facilitates innovation by providing a structured environment for posting challenges, forming partnerships, and connecting with potential collaborators.
+A full-stack application with separate frontend and backend directories.
 
-![Saned Platform](https://via.placeholder.com/800x400?text=Saned+Platform)
+## Project Structure
 
-## 🌟 Features
+The project is organized into two main directories:
 
-### For Challenge Owners & Partnership Seekers
-- Create and manage innovation challenges with specific goals, timelines, and rewards
-- Establish partnership opportunities with clear objectives and resource requirements
-- Review and accept collaboration requests from potential innovators
-- Track progress of ongoing collaborations
-- Access AI-suggested matches for your challenges or partnerships
+- **frontend**: Contains the React application built with Vite, TypeScript, and Tailwind CSS
+- **backend**: Contains the Node.js API server built with Express and TypeScript
 
-### For Innovators
-- Discover relevant challenges and partnership opportunities
-- Submit interest in collaborations that match your expertise
-- Create a comprehensive profile to showcase your capabilities
-- Connect with other innovators for potential collaborations
-- Receive AI-powered match suggestions based on your profile and expertise
-
-## 🛠️ Tech Stack
-
-Saned is built using modern web technologies:
-
-- **Frontend**:
-  - React.js (v18+) - UI library
-  - TypeScript - Type-safe JavaScript
-  - Tailwind CSS - Utility-first CSS framework
-  - Lucide Icons - Beautiful, consistent icon set
-  - React Router - Client-side routing
-
-- **State Management**:
-  - React Hooks (useState, useEffect)
-  - Context API for global state (where needed)
-
-- **Backend** (planned for future versions):
-  - Node.js with Express
-  - MongoDB for database
-  - Auth0 for authentication
-  - RESTful API architecture
-
-- **Deployment**:
-  - Vercel/Netlify for frontend hosting
-  - MongoDB Atlas for database hosting
-
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (v16+)
-- npm (v7+) or yarn (v1.22+)
-- Git
+- Node.js (v16 or higher)
+- npm (v7 or higher)
 
 ### Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/Saned-platform.git
-   cd Saned-platform
+   ```
+   git clone <repository-url>
+   cd t3awanu-2
    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
+2. Install dependencies for both frontend and backend:
+   ```
+   npm run install:all
    ```
 
-3. Start the development server:
-   ```bash
-   npm start
-   # or
-   yarn start
-   ```
+### Running the Application
 
-4. Open your browser and navigate to `http://localhost:3000`
-
-### Project Structure
+To run both the frontend and backend concurrently:
 
 ```
-Saned-platform/
-├── public/                 # Static files
-├── src/                    # Source code
-│   ├── components/         # React components
-│   │   ├── CollaborationDetails.tsx  # Collaboration details view
-│   │   ├── CollaborationList.tsx     # List of collaborations
-│   │   ├── ExpressInterestModal.tsx  # Modal for expressing interest
-│   │   ├── Header.tsx                # Application header
-│   │   ├── HomePage.tsx              # Landing page
-│   │   ├── InnovatorsList.tsx        # List of innovators
-│   │   ├── NewCollaborationModal.tsx # Modal for creating collaborations
-│   │   ├── ProfilePage.tsx           # User profile page
-│   │   └── WorkspaceHeader.tsx       # Workspace header
-│   ├── types.ts            # TypeScript type definitions
-│   ├── App.tsx             # Main application component
-│   └── index.tsx           # Application entry point
-└── package.json            # Project dependencies and scripts
+npm start
 ```
 
-## 🔄 Workflow
+To run only the frontend:
 
-1. **Home Page**: Users start at the landing page where they can learn about Saned and navigate to different sections.
+```
+npm run start:frontend
+```
 
-2. **Challenges & Partnerships**: Users can browse existing challenges and partnerships or create new ones.
+To run only the backend:
 
-3. **Innovators Directory**: Users can discover potential collaborators with relevant expertise.
+```
+npm run start:backend
+```
 
-4. **Profile**: Users can view and manage their profiles, see potential matches, and handle match requests.
+### Building for Production
 
-5. **Collaboration Details**: Detailed view of a specific collaboration, including participants, progress, and open positions.
+To build both frontend and backend:
 
-## 🔮 Upcoming Features
+```
+npm run build
+```
 
-- **Messaging System**: Direct communication between collaborators
-- **Document Sharing**: Upload and share documents within collaborations
-- **Progress Tracking**: Track milestones and progress for collaborations
-- **Advanced Analytics**: Insights on collaboration performance and outcomes
-- **Mobile Application**: Native mobile experience for iOS and Android
+## Frontend
 
-## 🤝 Contributing
+The frontend is a React application built with:
 
-We welcome contributions to Saned! Please feel free to submit issues and pull requests.
+- Vite
+- TypeScript
+- Tailwind CSS
+- React Router
+- Lucide React for icons
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+For more details, see the [frontend README](./frontend/README.md).
 
-## 📄 License
+## Backend
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+The backend is a Node.js API server built with:
 
-## 📞 Contact
+- Express
+- TypeScript
+- Passport for authentication
+- TypeORM for database operations
 
-For any questions or feedback, please reach out to us at contact@Saned-platform.com 
+For more details, see the [backend README](./backend/README.md). 
