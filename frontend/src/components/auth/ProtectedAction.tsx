@@ -5,10 +5,11 @@ import AuthRequiredModal from './AuthRequiredModal';
 
 interface ProtectedActionProps {
   children: React.ReactNode;
-  onAction: () => void;
+  onAction?: () => void;
   buttonClassName?: string;
   redirectPath?: string;
   actionName?: string;
+  message?: string;
 }
 
 /**
@@ -22,6 +23,7 @@ const ProtectedAction: React.FC<ProtectedActionProps> = ({
   buttonClassName,
   redirectPath = '/auth',
   actionName = 'perform this action',
+  message,
 }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ const ProtectedAction: React.FC<ProtectedActionProps> = ({
     
     if (isAuthenticated) {
       // User is authenticated, execute the action
-      onAction();
+      if (onAction) onAction();
     } else {
       // User is not authenticated, show the auth modal
       setShowAuthModal(true);
@@ -51,7 +53,7 @@ const ProtectedAction: React.FC<ProtectedActionProps> = ({
       <AuthRequiredModal 
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        actionName={actionName}
+        actionName={message || actionName}
       />
     </>
   );

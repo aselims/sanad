@@ -27,6 +27,7 @@ export interface User {
   profilePicture?: string;
   isVerified: boolean;
   isActive: boolean;
+  allowMessages?: boolean;
   createdAt: Date;
   updatedAt: Date;
   location?: string;
@@ -114,6 +115,7 @@ export interface InnovatorBase {
   location?: string;
   website?: string;
   position?: string;
+  allowMessages?: boolean;
   social?: {
     linkedin?: string;
     twitter?: string;
@@ -186,6 +188,40 @@ export interface IncubatorInnovator extends InnovatorBase {
 
 export type Innovator = StartupInnovator | InvestorInnovator | ResearchInnovator | IndividualInnovator | AcceleratorInnovator | IncubatorInnovator;
 
+export enum ConnectionStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected'
+}
+
+export interface Connection {
+  id: string;
+  requesterId: string;
+  receiverId: string;
+  status: ConnectionStatus;
+  requester?: User;
+  receiver?: User;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Conversation {
+  userId: string;
+  user: User;
+  latestMessage: Message;
+  unreadCount: number;
+}
+
 // Helper function to convert User to Innovator format for frontend
 export const userToInnovator = (user: User): Innovator => {
   const baseInnovator: InnovatorBase = {
@@ -203,6 +239,7 @@ export const userToInnovator = (user: User): Innovator => {
     location: user.location,
     website: user.website,
     position: user.position,
+    allowMessages: user.allowMessages !== undefined ? user.allowMessages : true, // Default to true if not specified
     social: user.social,
   };
 

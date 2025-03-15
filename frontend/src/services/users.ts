@@ -1,5 +1,7 @@
 import api from './api';
 import { Innovator, User, userToInnovator } from '../types';
+import { sendConnectionRequest } from './connections';
+import { sendMessage } from './messages';
 
 /**
  * Get all users
@@ -67,7 +69,6 @@ export const updateCurrentUserProfile = async (data: Partial<User>): Promise<Use
       profileImage: data.profilePicture,
       website: data.website,
       location: data.location,
-      phone: data.phone,
       social: data.social,
       // Add any other fields that are not part of the User model
     };
@@ -91,13 +92,7 @@ export const updateCurrentUserProfile = async (data: Partial<User>): Promise<Use
  * @returns Promise with the connection response
  */
 export const connectWithUser = async (userId: string): Promise<any> => {
-  try {
-    const response = await api.post(`/connections/request`, { targetUserId: userId });
-    return response.data;
-  } catch (error) {
-    console.error('Error connecting with user:', error);
-    throw error;
-  }
+  return sendConnectionRequest(userId);
 };
 
 /**
@@ -107,11 +102,5 @@ export const connectWithUser = async (userId: string): Promise<any> => {
  * @returns Promise with the message response
  */
 export const sendMessageToUser = async (userId: string, message: string): Promise<any> => {
-  try {
-    const response = await api.post(`/messages`, { recipientId: userId, content: message });
-    return response.data;
-  } catch (error) {
-    console.error('Error sending message to user:', error);
-    throw error;
-  }
+  return sendMessage(userId, message);
 }; 

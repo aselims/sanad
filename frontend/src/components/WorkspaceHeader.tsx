@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Filter, Lightbulb, Users, Rocket, Search, Grid, List, Bot, ToggleLeft, ToggleRight } from 'lucide-react';
 import { NewCollaborationModal } from './NewCollaborationModal';
 import { Collaboration } from '../types';
 import ProtectedAction from './auth/ProtectedAction';
 import { useAuth } from '../contexts/AuthContext';
 import { performNormalSearch, performAISearch, SearchResults } from '../services/search';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface WorkspaceHeaderProps {
   onCreateCollaboration: (collaboration: Partial<Collaboration>) => void;
@@ -30,6 +31,22 @@ export function WorkspaceHeader({
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isAISearch, setIsAISearch] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Parse filter from URL query parameters
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const filterParam = searchParams.get('filter');
+    
+    if (filterParam && ['all', 'challenges', 'partnerships', 'ideas', 'innovators'].includes(filterParam)) {
+      if (filterParam === 'innovators') {
+        // Handle innovators filter differently if needed
+      } else if (onFilterChange) {
+        onFilterChange(filterParam as 'all' | 'challenges' | 'partnerships' | 'ideas');
+      }
+    }
+  }, [location.search, onFilterChange]);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -50,6 +67,11 @@ export function WorkspaceHeader({
     if (onFilterChange) {
       onFilterChange(filter);
     }
+    
+    // Update URL query parameter
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('filter', filter);
+    navigate(`${location.pathname}?${searchParams.toString()}`);
   };
 
   const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {

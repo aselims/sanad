@@ -3,6 +3,8 @@ import { AppDataSource } from '../config/data-source';
 import authRoutes from './auth.routes';
 import { User } from '../entities/User';
 import { authenticateJWT } from '../middlewares/auth';
+import { sendConnectionRequest, getConnectionRequests, getUserConnections, respondToConnectionRequest } from '../controllers/connectionController';
+import { sendMessage, getConversation, getConversations } from '../controllers/messageController';
 
 const router = Router();
 
@@ -199,71 +201,16 @@ router.put('/users/:id', authenticateJWT, asyncHandler(async (req: Request, res:
   });
 }));
 
-// Connection requests
-router.post('/connections/request', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({
-      status: 'error',
-      message: 'Unauthorized: User not authenticated'
-    });
-  }
+// Connection endpoints
+router.post('/connections/request', authenticateJWT, asyncHandler(sendConnectionRequest));
+router.get('/connections/requests', authenticateJWT, asyncHandler(getConnectionRequests));
+router.get('/connections', authenticateJWT, asyncHandler(getUserConnections));
+router.post('/connections/respond', authenticateJWT, asyncHandler(respondToConnectionRequest));
 
-  const { targetUserId } = req.body;
-  
-  if (!targetUserId) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Target user ID is required'
-    });
-  }
-  
-  // In a real application, you would create a connection request in the database
-  // For now, we'll just return a success response
-  
-  res.status(200).json({
-    status: 'success',
-    message: 'Connection request sent successfully',
-    data: {
-      fromUserId: req.user.id,
-      toUserId: targetUserId,
-      status: 'pending',
-      createdAt: new Date()
-    }
-  });
-}));
-
-// Messages
-router.post('/messages', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({
-      status: 'error',
-      message: 'Unauthorized: User not authenticated'
-    });
-  }
-
-  const { recipientId, content } = req.body;
-  
-  if (!recipientId || !content) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Recipient ID and message content are required'
-    });
-  }
-  
-  // In a real application, you would create a message in the database
-  // For now, we'll just return a success response
-  
-  res.status(200).json({
-    status: 'success',
-    message: 'Message sent successfully',
-    data: {
-      fromUserId: req.user.id,
-      toUserId: recipientId,
-      content,
-      createdAt: new Date()
-    }
-  });
-}));
+// Message endpoints
+router.post('/messages', authenticateJWT, asyncHandler(sendMessage));
+router.get('/messages/conversations', authenticateJWT, asyncHandler(getConversations));
+router.get('/messages/conversations/:userId', authenticateJWT, asyncHandler(getConversation));
 
 // AI-powered search endpoint
 router.get('/ai-search', asyncHandler(async (req: Request, res: Response) => {

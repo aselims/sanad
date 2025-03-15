@@ -71,4 +71,49 @@ export const getMatchHistory = async (userId: string): Promise<any[]> => {
     console.error('Error fetching match history:', error);
     return [];
   }
+};
+
+/**
+ * Get match requests for a user
+ * @param userId ID of the user
+ * @returns Promise with the match requests
+ */
+export const getMatchRequests = async (userId: string): Promise<any[]> => {
+  try {
+    // For now, we'll simulate match requests with mock data
+    // In a real implementation, this would call an API endpoint
+    return [
+      {
+        innovator: {
+          id: 'mock-1',
+          name: 'Tech Innovator',
+          type: 'startup',
+          description: 'AI-powered healthcare solutions'
+        },
+        challenge: {
+          id: 'challenge-1',
+          title: 'Healthcare Innovation Challenge'
+        },
+        message: 'We\'re interested in collaborating on your healthcare challenge. Our AI solutions could help improve patient outcomes.',
+        date: '2023-06-15'
+      },
+      {
+        innovator: {
+          id: 'mock-2',
+          name: 'Green Energy Research',
+          type: 'research',
+          description: 'Sustainable energy research institute'
+        },
+        challenge: {
+          id: 'challenge-2',
+          title: 'Renewable Energy Solutions'
+        },
+        message: 'Our research team has developed a new solar technology that aligns perfectly with your renewable energy challenge.',
+        date: '2023-06-10'
+      }
+    ];
+  } catch (error) {
+    console.error('Error fetching match requests:', error);
+    return [];
+  }
 }; 

@@ -66,6 +66,12 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: true })
+  allowMessages: boolean;
+
+  @Column({ default: true })
+  allowConnections: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

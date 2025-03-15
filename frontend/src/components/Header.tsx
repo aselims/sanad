@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Bell, UserCircle, LogOut, Settings, X } from 'lucide-react';
+import { Menu, Bell, UserCircle, LogOut, Settings, X, Users, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onNavigateToWorkspace?: () => void;
@@ -11,6 +12,15 @@ interface HeaderProps {
   onNavigateToHome?: () => void;
   onNavigateToProfile?: () => void;
   onNavigateToAuth?: () => void;
+  onNavigateToHowItWorks?: () => void;
+  onNavigateToSuccessStories?: () => void;
+  onNavigateToFAQ?: () => void;
+  onNavigateToSupport?: () => void;
+  onNavigateToContactUs?: () => void;
+  onNavigateToLegalPage?: (page: 'terms' | 'privacy' | 'cookies') => void;
+  onNavigateToConnections?: () => void;
+  onNavigateToMessages?: () => void;
+  isAuthenticated?: boolean;
 }
 
 export function Header({ 
@@ -21,9 +31,20 @@ export function Header({
   onNavigateToInnovators,
   onNavigateToHome,
   onNavigateToProfile,
-  onNavigateToAuth
+  onNavigateToAuth,
+  onNavigateToHowItWorks,
+  onNavigateToSuccessStories,
+  onNavigateToFAQ,
+  onNavigateToSupport,
+  onNavigateToContactUs,
+  onNavigateToLegalPage,
+  onNavigateToConnections,
+  onNavigateToMessages,
+  isAuthenticated: propIsAuthenticated
 }: HeaderProps) {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated: authIsAuthenticated, user, logout } = useAuth();
+  const isAuthenticated = propIsAuthenticated !== undefined ? propIsAuthenticated : authIsAuthenticated;
+  const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -85,6 +106,24 @@ export function Header({
     logout();
   };
 
+  const handleConnectionsClick = () => {
+    if (onNavigateToConnections) {
+      onNavigateToConnections();
+    } else {
+      navigate('/connections');
+    }
+    setShowUserMenu(false);
+  };
+
+  const handleMessagesClick = () => {
+    if (onNavigateToMessages) {
+      onNavigateToMessages();
+    } else {
+      navigate('/messages');
+    }
+    setShowUserMenu(false);
+  };
+
   // Close user menu and mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -103,44 +142,170 @@ export function Header({
     };
   }, []);
 
+  // Add the user menu with connections and messages links
+  const renderUserMenu = () => {
+    return (
+      <div 
+        ref={userMenuRef}
+        className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 ${showUserMenu ? 'block' : 'hidden'}`}
+      >
+        <Link
+          to={user ? `/profile/${user.id}` : "/auth"}
+          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          onClick={() => setShowUserMenu(false)}
+        >
+          <UserCircle className="inline-block h-4 w-4 mr-2" />
+          Profile
+        </Link>
+        
+        <Link
+          to="/connections"
+          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          onClick={() => setShowUserMenu(false)}
+        >
+          <Users className="inline-block h-4 w-4 mr-2" />
+          Connections
+        </Link>
+        
+        <Link
+          to="/messages"
+          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          onClick={() => setShowUserMenu(false)}
+        >
+          <MessageSquare className="inline-block h-4 w-4 mr-2" />
+          Messages
+        </Link>
+        
+        <button
+          onClick={handleLogout}
+          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        >
+          <LogOut className="inline-block h-4 w-4 mr-2" />
+          Sign out
+        </button>
+      </div>
+    );
+  };
+
+  // Add the mobile menu with connections and messages links
+  const renderMobileMenu = () => {
+    return (
+      <div 
+        ref={mobileMenuRef}
+        className={`fixed inset-0 z-50 bg-white ${showMobileMenu ? 'block' : 'hidden'}`}
+      >
+        <div className="p-4 flex justify-between items-center border-b">
+          <div className="font-bold text-xl">Menu</div>
+          <button 
+            onClick={() => setShowMobileMenu(false)}
+            className="p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <div className="p-4">
+          <ul className="space-y-4">
+            {isAuthenticated ? (
+              <>
+                <li>
+                  <Link
+                    to={user ? `/profile/${user.id}` : "/auth"}
+                    className="flex items-center text-gray-700 hover:text-indigo-600"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <UserCircle className="h-5 w-5 mr-2" />
+                    Profile
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/connections"
+                    className="flex items-center text-gray-700 hover:text-indigo-600"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <Users className="h-5 w-5 mr-2" />
+                    Connections
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/messages"
+                    className="flex items-center text-gray-700 hover:text-indigo-600"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    Messages
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={() => {
+                      setShowMobileMenu(false);
+                      handleLogout();
+                    }}
+                    className="flex items-center text-gray-700 hover:text-indigo-600"
+                  >
+                    <LogOut className="h-5 w-5 mr-2" />
+                    Sign out
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  to="/auth"
+                  className="flex items-center text-gray-700 hover:text-indigo-600"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  Sign in
+                </Link>
+              </li>
+            )}
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <header className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <button 
-              onClick={handleLogoClick} 
+            <Link 
+              to="/"
               className="text-2xl font-bold text-indigo-600 focus:outline-none cursor-pointer"
             >
               Saned
-            </button>
+            </Link>
           </div>
           
           <nav className="hidden md:flex space-x-8">
-            <button 
-              onClick={handleChallengesClick}
+            <Link 
+              to="/workspace?filter=challenges"
               className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
             >
               Challenges
-            </button>
-            <button 
-              onClick={handlePartnershipsClick}
+            </Link>
+            <Link 
+              to="/workspace?filter=partnerships"
               className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
             >
               Partnerships
-            </button>
-            <button 
-              onClick={handleIdeasClick}
+            </Link>
+            <Link 
+              to="/workspace?filter=ideas"
               className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
             >
               Ideas
-            </button>
-            <button 
-              onClick={handleInnovatorsClick}
+            </Link>
+            <Link 
+              to="/innovators"
               className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
             >
               Innovators
-            </button>
+            </Link>
           </nav>
 
           <div className="flex items-center space-x-4">
@@ -170,46 +335,16 @@ export function Header({
                     </span>
                   </button>
                   
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-10">
-                      <button
-                        onClick={handleProfileClick}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <div className="flex items-center">
-                          <UserCircle className="h-4 w-4 mr-2" />
-                          <span>Your Profile</span>
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => {}}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <div className="flex items-center">
-                          <Settings className="h-4 w-4 mr-2" />
-                          <span>Settings</span>
-                        </div>
-                      </button>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <div className="flex items-center">
-                          <LogOut className="h-4 w-4 mr-2" />
-                          <span>Sign out</span>
-                        </div>
-                      </button>
-                    </div>
-                  )}
+                  {showUserMenu && renderUserMenu()}
                 </div>
               </>
             ) : (
-              <button
-                onClick={handleAuthClick}
+              <Link
+                to="/auth"
                 className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Login / Register
-              </button>
+              </Link>
             )}
             <button 
               className="md:hidden text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer mobile-menu-button"
@@ -222,39 +357,7 @@ export function Header({
       </div>
       
       {/* Mobile menu */}
-      {showMobileMenu && (
-        <div 
-          className="md:hidden bg-white border-t border-gray-200 shadow-lg z-20"
-          ref={mobileMenuRef}
-        >
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <button
-              onClick={handleChallengesClick}
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
-            >
-              Challenges
-            </button>
-            <button
-              onClick={handlePartnershipsClick}
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
-            >
-              Partnerships
-            </button>
-            <button
-              onClick={handleIdeasClick}
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
-            >
-              Ideas
-            </button>
-            <button
-              onClick={handleInnovatorsClick}
-              className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
-            >
-              Innovators
-            </button>
-          </div>
-        </div>
-      )}
+      {showMobileMenu && renderMobileMenu()}
     </header>
   );
 }

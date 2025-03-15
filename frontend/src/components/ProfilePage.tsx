@@ -55,6 +55,9 @@ export function ProfilePage({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [messageStatus, setMessageStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageText, setMessageText] = useState('');
   const [matches, setMatches] = useState<Innovator[]>([]);
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [matchPreferences, setMatchPreferences] = useState<Record<string, 'like' | 'dislike'>>({});
@@ -119,17 +122,32 @@ export function ProfilePage({
   // Function to handle message action
   const handleMessage = async () => {
     if (!isAuthenticated) return;
+    setShowMessageModal(true);
+  };
+
+  const sendMessage = async () => {
+    if (!messageText.trim()) return;
     
-    // In a real app, you would open a message modal here
-    console.log('Opening message dialog for', profileData.name);
+    setMessageStatus('pending');
     
-    // Example of sending a message
     try {
-      const message = "Hello, I'd like to connect with you!";
-      await sendMessageToUser(profileData.id, message);
-      console.log('Message sent successfully');
+      await sendMessageToUser(profileData.id, messageText);
+      setMessageStatus('success');
+      setMessageText('');
+      
+      // Close modal after success
+      setTimeout(() => {
+        setShowMessageModal(false);
+        setMessageStatus('idle');
+      }, 1500);
     } catch (error) {
       console.error('Error sending message:', error);
+      setMessageStatus('error');
+      
+      // Reset status after error
+      setTimeout(() => {
+        setMessageStatus('idle');
+      }, 3000);
     }
   };
 
@@ -448,6 +466,54 @@ export function ProfilePage({
   const renderProfileContent = () => {
     return (
       <div className="space-y-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+          <div className="flex items-center">
+            <div className="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
+              {profileData.profileImage ? (
+                <img 
+                  src={profileData.profileImage} 
+                  alt={profileData.name} 
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User className="h-12 w-12 text-indigo-600" />
+              )}
+            </div>
+            <div className="ml-4">
+              <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
+              <p className="text-gray-600">{profileData.position} {profileData.organization ? `at ${profileData.organization}` : ''}</p>
+              
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mt-2">
+                {profileData.type}
+              </span>
+            </div>
+          </div>
+          
+          <div className="mt-4 md:mt-0 flex space-x-3">
+            {isOwnProfile ? (
+              <button
+                onClick={handleEditProfile}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <span className="inline-flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </span>
+                ) : (
+                  <>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Profile
+                  </>
+                )}
+              </button>
+            ) : null}
+          </div>
+        </div>
+        
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
@@ -763,6 +829,62 @@ export function ProfilePage({
     );
   };
 
+  // Message Modal
+  const MessageModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Send Message to {profileData.name}</h3>
+        
+        {messageStatus === 'error' && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+            Failed to send message. Please try again.
+          </div>
+        )}
+        
+        {messageStatus === 'success' && (
+          <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md">
+            Message sent successfully!
+          </div>
+        )}
+        
+        <textarea
+          value={messageText}
+          onChange={(e) => setMessageText(e.target.value)}
+          placeholder="Type your message here..."
+          className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+          rows={4}
+          disabled={messageStatus === 'pending' || messageStatus === 'success'}
+        ></textarea>
+        
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={() => setShowMessageModal(false)}
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={sendMessage}
+            disabled={!messageText.trim() || messageStatus === 'pending' || messageStatus === 'success'}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          >
+            {messageStatus === 'pending' ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Sending...
+              </span>
+            ) : (
+              'Send Message'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {error && (
@@ -798,81 +920,6 @@ export function ProfilePage({
               <h2 className="text-2xl font-bold text-gray-900">{profileData.name}</h2>
               <p className="text-sm text-gray-500 capitalize">{profileData.type}</p>
             </div>
-          </div>
-          <div className="mt-4 md:mt-0 flex space-x-3">
-            {isOwnProfile ? (
-              // Edit profile button for own profile
-              <button 
-                onClick={handleEditProfile}
-                disabled={isLoading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <span className="inline-flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </span>
-                ) : (
-                  <>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </>
-                )}
-              </button>
-            ) : (
-              // Connect and Message buttons for other profiles
-              <div className="mt-6 flex flex-col sm:flex-row sm:space-x-4">
-                <ProtectedAction
-                  onAction={handleConnect}
-                  buttonClassName="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mb-3 sm:mb-0"
-                  actionName={`connect with ${profileData.name}`}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Connecting...
-                    </span>
-                  ) : "Connect"}
-                </ProtectedAction>
-                
-                {/* Connection status notification */}
-                {connectionStatus === 'success' && (
-                  <div className="fixed bottom-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-md z-50">
-                    <div className="flex items-center">
-                      <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span>Connection request sent to {profileData.name}!</span>
-                    </div>
-                  </div>
-                )}
-                
-                {connectionStatus === 'error' && (
-                  <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md z-50">
-                    <div className="flex items-center">
-                      <svg className="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                      <span>Failed to send connection request. Please try again.</span>
-                    </div>
-                  </div>
-                )}
-                
-                <ProtectedAction
-                  onAction={handleMessage}
-                  buttonClassName="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  actionName={`send a message to ${profileData.name}`}
-                >
-                  Message
-                </ProtectedAction>
-              </div>
-            )}
           </div>
         </div>
         <div className="border-b border-gray-200">
@@ -928,33 +975,13 @@ export function ProfilePage({
         </div>
       </div>
 
-      {/* Tab content */}
-      <div className="py-6">
-        {activeTab === 'profile' && renderProfileContent()}
-        
-        {/* Only render these tabs for authenticated users viewing their own profile */}
-        {isAuthenticated && isOwnProfile && (
-          <>
-            {activeTab === 'potential-matches' && renderPotentialMatchesContent()}
-            {activeTab === 'match-requests' && renderMatchRequestsContent()}
-          </>
-        )}
-        
-        {/* If a non-authenticated user tries to access these tabs, redirect to profile */}
-        {(!isAuthenticated || !isOwnProfile) && (activeTab === 'potential-matches' || activeTab === 'match-requests') && (
-          <div className="text-center py-10">
-            <p className="text-gray-500">You need to be logged in and viewing your own profile to access this section.</p>
-          </div>
-        )}
-      </div>
+      {/* Render content based on active tab */}
+      {activeTab === 'profile' && renderProfileContent()}
+      {activeTab === 'potential-matches' && renderPotentialMatchesContent()}
+      {activeTab === 'match-requests' && renderMatchRequestsContent()}
 
-      {/* Edit Profile Modal */}
-      <EditProfileModal
-        user={profileData}
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onSave={handleSaveProfile}
-      />
+      {/* Message Modal */}
+      {showMessageModal && <MessageModal />}
     </div>
   );
-} 
+}
