@@ -3,6 +3,7 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 interface AuthPageProps {
   onSuccess?: () => void;
@@ -38,6 +39,16 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
             onLoginClick={() => setActiveForm('login')}
           />
         )}
+        
+        <div className="mt-6 text-center">
+          <button 
+            onClick={onSuccess}
+            className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Homepage
+          </button>
+        </div>
       </div>
     </div>
   );

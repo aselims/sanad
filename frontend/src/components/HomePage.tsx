@@ -480,6 +480,16 @@ export function HomePage({
               </p>
             </div>
           </div>
+          
+          <div className="mt-10 text-center">
+            <button
+              onClick={onNavigateToHowItWorks}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 font-medium inline-flex items-center"
+            >
+              Learn More About How It Works
+              <ArrowRight className="h-5 w-5 ml-2" />
+            </button>
+          </div>
         </div>
       </section>
       
@@ -503,7 +513,7 @@ export function HomePage({
                 Connect with resources, mentors, and organizations to scale your innovative solutions.
               </p>
               <button 
-                onClick={onNavigateToWorkspace}
+                onClick={onNavigateToInnovators}
                 className="text-indigo-600 font-medium flex items-center hover:text-indigo-800"
               >
                 Learn more <ArrowRight className="h-4 w-4 ml-1" />
@@ -519,7 +529,7 @@ export function HomePage({
                 Find industry partners to apply your research and create real-world impact.
               </p>
               <button 
-                onClick={onNavigateToWorkspace}
+                onClick={onNavigateToInnovators}
                 className="text-indigo-600 font-medium flex items-center hover:text-indigo-800"
               >
                 Learn more <ArrowRight className="h-4 w-4 ml-1" />
@@ -535,7 +545,7 @@ export function HomePage({
                 Discover promising ventures and research projects with high growth potential.
               </p>
               <button 
-                onClick={onNavigateToWorkspace}
+                onClick={onNavigateToInnovators}
                 className="text-indigo-600 font-medium flex items-center hover:text-indigo-800"
               >
                 Learn more <ArrowRight className="h-4 w-4 ml-1" />
@@ -551,7 +561,7 @@ export function HomePage({
                 Partner with innovators to solve challenges and drive digital transformation.
               </p>
               <button 
-                onClick={onNavigateToWorkspace}
+                onClick={onNavigateToChallenges}
                 className="text-indigo-600 font-medium flex items-center hover:text-indigo-800"
               >
                 Learn more <ArrowRight className="h-4 w-4 ml-1" />
@@ -630,22 +640,22 @@ export function HomePage({
             </div>
             
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              <div className="h-48 bg-gradient-to-r from-green-500 to-teal-600 flex items-center justify-center">
-                <Target className="h-16 w-16 text-white opacity-75" />
+              <div className="h-48 bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center">
+                <Lightbulb className="h-16 w-16 text-white opacity-75" />
               </div>
               <div className="p-6">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-xl font-semibold text-gray-900">Renewable Energy Innovation</h3>
+                  <h3 className="text-xl font-semibold text-gray-900">Sustainable Agriculture Innovation</h3>
                   <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Active</span>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  Multi-stakeholder collaboration to develop new solar energy storage solutions.
+                  Developing water-efficient farming technologies through collaboration between researchers and agricultural companies.
                 </p>
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <Users className="h-4 w-4 mr-1" />
-                  <span>3 Participants</span>
+                  <span>5 Participants</span>
                   <span className="mx-2">•</span>
-                  <span>1 Open Position</span>
+                  <span>0 Open Positions</span>
                 </div>
                 <button 
                   onClick={() => onNavigateToCollaboration('3')}
@@ -696,54 +706,6 @@ export function HomePage({
           </div>
         </div>
       </section>
-      
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Saned</h3>
-              <p className="text-gray-400">
-                Empowering collaboration and innovation across sectors to solve complex challenges.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Explore</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><button onClick={onNavigateToPartnerships} className="hover:text-white">Partnerships</button></li>
-                <li><button onClick={onNavigateToChallenges} className="hover:text-white">Challenges</button></li>
-                <li><button onClick={onNavigateToInnovators} className="hover:text-white">Innovators</button></li>
-                <li><button onClick={onNavigateToWorkspace} className="hover:text-white">About Us</button></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Resources</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><button onClick={onNavigateToHowItWorks} className="hover:text-white">How It Works</button></li>
-                <li><button onClick={onNavigateToSuccessStories} className="hover:text-white">Success Stories</button></li>
-                <li><button onClick={onNavigateToBlog} className="hover:text-white">Blog</button></li>
-                <li><button onClick={onNavigateToFAQ} className="hover:text-white">FAQ</button></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Contact</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="mailto:info@Saned.com" className="hover:text-white">info@Saned.com</a></li>
-                <li><button onClick={onNavigateToSupport} className="hover:text-white">Support</button></li>
-                <li><button onClick={onNavigateToContactUs} className="hover:text-white">Contact Us</button></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400">© 2025 Saned. All rights reserved.</p>
-            <div className="flex space-x-4 mt-4 md:mt-0">
-              <button onClick={onNavigateToTerms} className="text-gray-400 hover:text-white">Terms</button>
-              <button onClick={onNavigateToPrivacy} className="text-gray-400 hover:text-white">Privacy</button>
-              <button onClick={onNavigateToCookies} className="text-gray-400 hover:text-white">Cookies</button>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 } 

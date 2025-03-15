@@ -22,6 +22,7 @@ import { Support } from './components/Support';
 import { ContactUs } from './components/ContactUs';
 import { LegalPage } from './components/LegalPages';
 import { SearchResults } from './services/search';
+import { Footer } from './components/Footer';
 
 export function App() {
   const navigate = useNavigate();
@@ -298,11 +299,31 @@ export function App() {
 
   return (
     <Routes>
-      <Route path="/auth" element={<AuthPage onSuccess={handleBackToHome} />} />
+      <Route path="/auth" element={
+        <>
+          <AuthPage onSuccess={handleBackToHome} />
+          <Footer 
+            onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+            onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+            onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+            onNavigateToContactUs={handleNavigateToContactUs}
+            onNavigateToFAQ={handleNavigateToFAQ}
+          />
+        </>
+      } />
       
       {/* Add a specific route for profile/:id */}
       <Route path="/profile/:id" element={
-        <ProfilePageWrapper innovators={innovators} onBack={handleBackToHome} />
+        <>
+          <ProfilePageWrapper innovators={innovators} onBack={handleBackToHome} />
+          <Footer 
+            onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+            onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+            onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+            onNavigateToContactUs={handleNavigateToContactUs}
+            onNavigateToFAQ={handleNavigateToFAQ}
+          />
+        </>
       } />
       
       <Route path="/*" element={
@@ -329,179 +350,269 @@ export function App() {
               </div>
             </div>
           ) : showHomePage ? (
-            <HomePage 
-              onNavigateToWorkspace={handleNavigateToWorkspace}
-              onNavigateToCollaboration={handleNavigateToCollaboration}
-              onNavigateToChallenges={handleNavigateToChallenges}
-              onNavigateToPartnerships={handleNavigateToPartnerships}
-              onNavigateToIdeas={handleNavigateToIdeas}
-              onNavigateToInnovators={handleNavigateToInnovators}
-              onNavigateToProfileById={handleNavigateToProfileById}
-              onNavigateToBlog={handleNavigateToBlog}
-              onNavigateToHowItWorks={handleNavigateToHowItWorks}
-              onNavigateToSuccessStories={handleNavigateToSuccessStories}
-              onNavigateToFAQ={handleNavigateToFAQ}
-              onNavigateToSupport={handleNavigateToSupport}
-              onNavigateToContactUs={handleNavigateToContactUs}
-              onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
-              onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
-              onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
-              onSearchResults={handleSearchResults}
-              searchResults={searchResults}
-              lastSearchQuery={lastSearchQuery}
-            />
+            <>
+              <HomePage 
+                onNavigateToWorkspace={handleNavigateToWorkspace}
+                onNavigateToCollaboration={handleNavigateToCollaboration}
+                onNavigateToChallenges={handleNavigateToChallenges}
+                onNavigateToPartnerships={handleNavigateToPartnerships}
+                onNavigateToIdeas={handleNavigateToIdeas}
+                onNavigateToInnovators={handleNavigateToInnovators}
+                onNavigateToProfileById={handleNavigateToProfileById}
+                onNavigateToBlog={handleNavigateToBlog}
+                onNavigateToHowItWorks={handleNavigateToHowItWorks}
+                onNavigateToSuccessStories={handleNavigateToSuccessStories}
+                onNavigateToFAQ={handleNavigateToFAQ}
+                onNavigateToSupport={handleNavigateToSupport}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onSearchResults={handleSearchResults}
+                searchResults={searchResults}
+                lastSearchQuery={lastSearchQuery}
+              />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : activePage === 'blog' ? (
-            <Blog onNavigateBack={handleBackToHome} />
+            <>
+              <Blog onNavigateBack={handleBackToHome} />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : activePage === 'profile' ? (
-            <ProfilePage 
-              user={{
-                id: user?.id || 'current-user',
-                name: user?.firstName && user?.lastName 
-                  ? `${user?.firstName} ${user?.lastName}` 
-                  : user?.name || 'User',
-                type: user?.role as 'individual' || 'individual',
-                organization: user?.organization || 'Saned Platform',
-                description: user?.bio || 'Saned Platform user',
-                email: user?.email || '',
-                expertise: user?.expertise || [],
-                tags: user?.interests || ['Sustainable Development', 'Digital Transformation'],
-                position: user?.position || ''
-              }}
-              onBack={handleBackToHome} 
-            />
+            <>
+              <ProfilePage 
+                user={{
+                  id: user?.id || 'current-user',
+                  name: user?.firstName && user?.lastName 
+                    ? `${user?.firstName} ${user?.lastName}` 
+                    : user?.name || 'User',
+                  type: user?.role as 'individual' || 'individual',
+                  organization: user?.organization || 'Saned Platform',
+                  description: user?.bio || 'Saned Platform user',
+                  email: user?.email || '',
+                  expertise: user?.expertise || [],
+                  tags: user?.interests || ['Sustainable Development', 'Digital Transformation'],
+                  position: user?.position || ''
+                }}
+                onBack={handleBackToHome} 
+              />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : showHowItWorks ? (
-            <HowItWorks onBack={handleNavigateToHome} />
+            <>
+              <HowItWorks onBack={handleNavigateToHome} />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : showSuccessStories ? (
-            <SuccessStories onBack={handleNavigateToHome} />
+            <>
+              <SuccessStories onBack={handleNavigateToHome} />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : showFAQ ? (
-            <FAQ onBack={handleNavigateToHome} />
+            <>
+              <FAQ onBack={handleNavigateToHome} />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : showSupport ? (
-            <Support onBack={handleNavigateToHome} />
+            <>
+              <Support onBack={handleNavigateToHome} />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : showContactUs ? (
-            <ContactUs onBack={handleNavigateToHome} />
+            <>
+              <ContactUs onBack={handleNavigateToHome} />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : activeLegalPage ? (
-            <LegalPage onBack={handleNavigateToHome} pageType={activeLegalPage} />
+            <>
+              <LegalPage onBack={handleNavigateToHome} pageType={activeLegalPage} />
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           ) : (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {activePage === 'collaborations' && !selectedCollaboration && (
-                <>
-                  <WorkspaceHeader 
-                    onCreateCollaboration={(collaboration) => {
-                      // Handle collaboration creation
-                      console.log('Creating collaboration:', collaboration);
-                      
-                      // Create a new collaboration with required fields and a unique ID
-                      const newCollaboration: Collaboration = {
-                        id: `collab-${Date.now()}`, // Generate a unique ID
-                        title: collaboration.title || 'New Collaboration',
-                        description: collaboration.description || '',
-                        participants: user && user.firstName && user.lastName 
-                          ? [`${user.firstName} ${user.lastName}`, ...(collaboration.participants || [])]
-                          : user?.name 
-                            ? [user.name, ...(collaboration.participants || [])]
-                            : collaboration.participants || [],
-                        status: collaboration.status || 'proposed',
-                        type: collaboration.type || 'partnership',
-                        createdAt: new Date(),
-                        updatedAt: new Date()
-                      };
-                      
-                      // Add type-specific details if they exist
-                      if (collaboration.type === 'challenge' && collaboration.challengeDetails) {
-                        newCollaboration.challengeDetails = collaboration.challengeDetails;
-                      } else if (collaboration.type === 'idea' && collaboration.ideaDetails) {
-                        newCollaboration.ideaDetails = collaboration.ideaDetails;
-                        // Save idea to backend (with local storage fallback)
-                        saveIdea(newCollaboration)
-                          .then(() => {
-                            console.log('Idea saved successfully');
-                          })
-                          .catch(error => {
-                            console.error('Error saving idea:', error);
-                          });
-                      } else if (collaboration.partnershipDetails) {
-                        newCollaboration.partnershipDetails = collaboration.partnershipDetails;
-                      }
-                      
-                      // Add the new collaboration to the state
-                      setCollaborations(prevCollaborations => [...prevCollaborations, newCollaboration]);
-                      
-                      // Navigate to the collaborations page to show the new collaboration
-                      setShowHomePage(false);
-                      setActivePage('collaborations');
-                      
-                      // Set the appropriate filter based on the collaboration type
-                      if (collaboration.type === 'challenge') {
-                        setActiveFilter('challenges');
-                      } else if (collaboration.type === 'idea') {
-                        setActiveFilter('ideas');
-                      } else {
-                        setActiveFilter('partnerships');
-                      }
-                    }}
-                    onFilterChange={setActiveFilter}
-                    activeFilter={activeFilter}
-                    onSearch={handleWorkspaceSearch}
-                    onSearchResults={handleSearchResults}
-                    viewMode={viewMode}
-                    onViewModeChange={handleViewModeChange}
-                  />
-                  {searchResults && (
-                    <div className="mb-6">
-                      <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold text-gray-900">
-                          Search Results for "{lastSearchQuery}"
-                        </h2>
-                        <button 
-                          onClick={() => setSearchResults(null)}
-                          className="text-sm text-gray-500 hover:text-gray-700"
-                        >
-                          Clear Results
-                        </button>
-                      </div>
-                      
-                      {searchResults.collaborations.length > 0 ? (
-                        <CollaborationList 
-                          collaborations={searchResults.collaborations} 
-                          onViewDetails={handleNavigateToCollaboration}
-                          viewMode={viewMode}
-                        />
-                      ) : (
-                        <div className="text-center py-10">
-                          <p className="text-gray-500">No collaborations found matching your search.</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {!searchResults && (
-                    <CollaborationList 
-                      collaborations={filteredCollaborations} 
-                      onViewDetails={handleNavigateToCollaboration}
+            <>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {activePage === 'collaborations' && !selectedCollaboration && (
+                  <>
+                    <WorkspaceHeader 
+                      onCreateCollaboration={(collaboration) => {
+                        // Handle collaboration creation
+                        console.log('Creating collaboration:', collaboration);
+                        
+                        // Create a new collaboration with required fields and a unique ID
+                        const newCollaboration: Collaboration = {
+                          id: `collab-${Date.now()}`, // Generate a unique ID
+                          title: collaboration.title || 'New Collaboration',
+                          description: collaboration.description || '',
+                          participants: user && user.firstName && user.lastName 
+                            ? [`${user.firstName} ${user.lastName}`, ...(collaboration.participants || [])]
+                            : user?.name 
+                              ? [user.name, ...(collaboration.participants || [])]
+                              : collaboration.participants || [],
+                          status: collaboration.status || 'proposed',
+                          type: collaboration.type || 'partnership',
+                          createdAt: new Date(),
+                          updatedAt: new Date()
+                        };
+                        
+                        // Add type-specific details if they exist
+                        if (collaboration.type === 'challenge' && collaboration.challengeDetails) {
+                          newCollaboration.challengeDetails = collaboration.challengeDetails;
+                        } else if (collaboration.type === 'idea' && collaboration.ideaDetails) {
+                          newCollaboration.ideaDetails = collaboration.ideaDetails;
+                          // Save idea to backend (with local storage fallback)
+                          saveIdea(newCollaboration)
+                            .then(() => {
+                              console.log('Idea saved successfully');
+                            })
+                            .catch(error => {
+                              console.error('Error saving idea:', error);
+                            });
+                        } else if (collaboration.partnershipDetails) {
+                          newCollaboration.partnershipDetails = collaboration.partnershipDetails;
+                        }
+                        
+                        // Add the new collaboration to the state
+                        setCollaborations(prevCollaborations => [...prevCollaborations, newCollaboration]);
+                        
+                        // Navigate to the collaborations page to show the new collaboration
+                        setShowHomePage(false);
+                        setActivePage('collaborations');
+                        
+                        // Set the appropriate filter based on the collaboration type
+                        if (collaboration.type === 'challenge') {
+                          setActiveFilter('challenges');
+                        } else if (collaboration.type === 'idea') {
+                          setActiveFilter('ideas');
+                        } else {
+                          setActiveFilter('partnerships');
+                        }
+                      }}
+                      onFilterChange={setActiveFilter}
+                      activeFilter={activeFilter}
+                      onSearch={handleWorkspaceSearch}
+                      onSearchResults={handleSearchResults}
                       viewMode={viewMode}
+                      onViewModeChange={handleViewModeChange}
                     />
-                  )}
-                </>
-              )}
-              {activePage === 'collaborations' && selectedCollaboration && (
-                <CollaborationDetails 
-                  collaboration={collaborations.find(c => c.id === selectedCollaboration)!}
-                  onBack={handleBackFromCollaborationDetails}
-                  cameFromSearch={cameFromSearch}
-                />
-              )}
-              {activePage === 'innovators' && !selectedInnovator && (
-                <InnovatorsList 
-                  innovators={innovators}
-                  onViewProfile={handleViewInnovator}
-                />
-              )}
-              {activePage === 'innovators' && selectedInnovator && (
-                <ProfilePage 
-                  user={innovators.find(i => i.id === selectedInnovator)!}
-                  onBack={() => setSelectedInnovator(null)}
-                />
-              )}
-            </div>
+                    {searchResults && (
+                      <div className="mb-6">
+                        <div className="flex justify-between items-center mb-4">
+                          <h2 className="text-xl font-semibold text-gray-900">
+                            Search Results for "{lastSearchQuery}"
+                          </h2>
+                          <button 
+                            onClick={() => setSearchResults(null)}
+                            className="text-sm text-gray-500 hover:text-gray-700"
+                          >
+                            Clear Results
+                          </button>
+                        </div>
+                        
+                        {searchResults.collaborations.length > 0 ? (
+                          <CollaborationList 
+                            collaborations={searchResults.collaborations} 
+                            onViewDetails={handleNavigateToCollaboration}
+                            viewMode={viewMode}
+                          />
+                        ) : (
+                          <div className="text-center py-10">
+                            <p className="text-gray-500">No collaborations found matching your search.</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {!searchResults && (
+                      <CollaborationList 
+                        collaborations={filteredCollaborations} 
+                        onViewDetails={handleNavigateToCollaboration}
+                        viewMode={viewMode}
+                      />
+                    )}
+                  </>
+                )}
+                {activePage === 'collaborations' && selectedCollaboration && (
+                  <CollaborationDetails 
+                    collaboration={collaborations.find(c => c.id === selectedCollaboration)!}
+                    onBack={handleBackFromCollaborationDetails}
+                    cameFromSearch={cameFromSearch}
+                  />
+                )}
+                {activePage === 'innovators' && !selectedInnovator && (
+                  <InnovatorsList 
+                    innovators={innovators}
+                    onViewProfile={handleViewInnovator}
+                  />
+                )}
+                {activePage === 'innovators' && selectedInnovator && (
+                  <ProfilePage 
+                    user={innovators.find(i => i.id === selectedInnovator)!}
+                    onBack={() => setSelectedInnovator(null)}
+                  />
+                )}
+              </div>
+              <Footer 
+                onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+                onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+                onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+                onNavigateToContactUs={handleNavigateToContactUs}
+                onNavigateToFAQ={handleNavigateToFAQ}
+              />
+            </>
           )}
         </>
       } />
