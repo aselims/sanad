@@ -38,12 +38,14 @@ interface ProfilePageProps {
     message: string;
     date: string;
   }[];
+  onBack?: () => void;
 }
 
 export function ProfilePage({ 
   user, 
   potentialMatches = [], 
-  matchRequests = [] 
+  matchRequests = [], 
+  onBack
 }: ProfilePageProps) {
   const { user: currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -767,6 +769,15 @@ export function ProfilePage({
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error}
         </div>
+      )}
+      
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="mb-4 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          ← Back
+        </button>
       )}
       
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">

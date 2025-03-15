@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { Plus, Filter, Lightbulb, Users, Rocket, Search, Grid, List } from 'lucide-react';
+import { Plus, Filter, Lightbulb, Users, Rocket, Search, Grid, List, Bot, ToggleLeft, ToggleRight } from 'lucide-react';
 import { NewCollaborationModal } from './NewCollaborationModal';
 import { Collaboration } from '../types';
 import ProtectedAction from './auth/ProtectedAction';
 import { useAuth } from '../contexts/AuthContext';
+import { performNormalSearch, performAISearch, SearchResults } from '../services/search';
 
 interface WorkspaceHeaderProps {
   onCreateCollaboration: (collaboration: Partial<Collaboration>) => void;
   activeFilter?: 'all' | 'challenges' | 'partnerships' | 'ideas';
   onFilterChange?: (filter: 'all' | 'challenges' | 'partnerships' | 'ideas') => void;
   onSearch?: (query: string) => void;
+  onSearchResults?: (results: SearchResults, query: string) => void;
   viewMode?: 'grid' | 'list';
   onViewModeChange?: (mode: 'grid' | 'list') => void;
 }
@@ -19,11 +21,15 @@ export function WorkspaceHeader({
   activeFilter = 'all',
   onFilterChange,
   onSearch,
+  onSearchResults,
   viewMode = 'grid',
   onViewModeChange
 }: WorkspaceHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAuthenticated } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [isAISearch, setIsAISearch] = useState(false);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -46,13 +52,34 @@ export function WorkspaceHeader({
     }
   };
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const query = formData.get('query') as string;
     
-    if (onSearch) {
-      onSearch(query);
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    
+    try {
+      console.log(`Performing ${isAISearch ? 'AI' : 'normal'} search for: "${searchQuery}"`);
+      
+      // Use the appropriate search function based on the toggle state
+      const results = isAISearch 
+        ? await performAISearch(searchQuery)
+        : await performNormalSearch(searchQuery);
+      
+      // If parent component provided a callback, call it with the results
+      if (onSearchResults) {
+        onSearchResults(results, searchQuery);
+      }
+      
+      // Also call the simple onSearch callback if provided
+      if (onSearch) {
+        onSearch(searchQuery);
+      }
+    } catch (error) {
+      console.error('Error during search:', error);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -60,6 +87,10 @@ export function WorkspaceHeader({
     if (onViewModeChange) {
       onViewModeChange(viewMode === 'grid' ? 'list' : 'grid');
     }
+  };
+
+  const toggleSearchMode = () => {
+    setIsAISearch(!isAISearch);
   };
 
   return (
@@ -82,14 +113,48 @@ export function WorkspaceHeader({
           </div>
           
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            {/* Search Mode Toggle */}
+            <button
+              type="button"
+              onClick={toggleSearchMode}
+              className="flex items-center text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md px-4 py-2 transition-all duration-200"
+            >
+              {isAISearch ? (
+                <>
+                  <Bot className="h-4 w-4 mr-2" />
+                  <span className="text-sm font-medium">AI Chat Search</span>
+                  <ToggleRight className="h-5 w-5 ml-2" />
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4 mr-2" />
+                  <span className="text-sm font-medium">Normal Search</span>
+                  <ToggleLeft className="h-5 w-5 ml-2" />
+                </>
+              )}
+            </button>
+            
             <form onSubmit={handleSearch} className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                {isAISearch ? <Bot className="h-5 w-5 text-gray-400" /> : <Search className="h-5 w-5 text-gray-400" />}
+              </div>
               <input
                 type="text"
                 name="query"
-                placeholder="Search collaborations..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                placeholder={isAISearch 
+                  ? "Ask a question like 'Find healthcare innovators in Dubai'" 
+                  : "Search for startups, research projects, funding, or collaboration opportunities..."}
+                className="pl-10 pr-20 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <button 
+                type="submit"
+                className="absolute inset-y-0 right-0 px-4 text-white bg-indigo-600 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                disabled={isSearching}
+              >
+                {isSearching ? 'Searching...' : isAISearch ? 'Ask AI' : 'Search'}
+              </button>
             </form>
             
             <button

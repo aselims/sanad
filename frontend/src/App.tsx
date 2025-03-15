@@ -290,37 +290,19 @@ export function App() {
     setViewMode(mode);
   };
 
+  // Add a function to handle search from the workspace page
+  const handleWorkspaceSearch = (query: string) => {
+    console.log('Workspace search for:', query);
+    // You can add additional logic here if needed
+  };
+
   return (
     <Routes>
       <Route path="/auth" element={<AuthPage onSuccess={handleBackToHome} />} />
       
       {/* Add a specific route for profile/:id */}
       <Route path="/profile/:id" element={
-        <>
-          <Header 
-            onNavigateToHome={handleNavigateToHome}
-            onNavigateToWorkspace={handleNavigateToWorkspace}
-            onNavigateToChallenges={handleNavigateToChallenges}
-            onNavigateToPartnerships={handleNavigateToPartnerships}
-            onNavigateToIdeas={handleNavigateToIdeas}
-            onNavigateToInnovators={handleNavigateToInnovators}
-            onNavigateToProfile={handleNavigateToProfile}
-            onNavigateToAuth={handleNavigateToAuth}
-          />
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-            </div>
-          ) : error ? (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            </div>
-          ) : (
-            <ProfilePageWrapper innovators={innovators} />
-          )}
-        </>
+        <ProfilePageWrapper innovators={innovators} onBack={handleBackToHome} />
       } />
       
       <Route path="/*" element={
@@ -367,6 +349,25 @@ export function App() {
               onSearchResults={handleSearchResults}
               searchResults={searchResults}
               lastSearchQuery={lastSearchQuery}
+            />
+          ) : activePage === 'blog' ? (
+            <Blog onNavigateBack={handleBackToHome} />
+          ) : activePage === 'profile' ? (
+            <ProfilePage 
+              user={{
+                id: user?.id || 'current-user',
+                name: user?.firstName && user?.lastName 
+                  ? `${user?.firstName} ${user?.lastName}` 
+                  : user?.name || 'User',
+                type: user?.role as 'individual' || 'individual',
+                organization: user?.organization || 'Saned Platform',
+                description: user?.bio || 'Saned Platform user',
+                email: user?.email || '',
+                expertise: user?.expertise || [],
+                tags: user?.interests || ['Sustainable Development', 'Digital Transformation'],
+                position: user?.position || ''
+              }}
+              onBack={handleBackToHome} 
             />
           ) : showHowItWorks ? (
             <HowItWorks onBack={handleNavigateToHome} />
@@ -440,17 +441,47 @@ export function App() {
                     }}
                     onFilterChange={setActiveFilter}
                     activeFilter={activeFilter}
+                    onSearch={handleWorkspaceSearch}
+                    onSearchResults={handleSearchResults}
                     viewMode={viewMode}
                     onViewModeChange={handleViewModeChange}
                   />
-                  <CollaborationList 
-                    collaborations={filteredCollaborations} 
-                    onViewDetails={handleNavigateToCollaboration}
-                    viewMode={viewMode}
-                  />
+                  {searchResults && (
+                    <div className="mb-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          Search Results for "{lastSearchQuery}"
+                        </h2>
+                        <button 
+                          onClick={() => setSearchResults(null)}
+                          className="text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          Clear Results
+                        </button>
+                      </div>
+                      
+                      {searchResults.collaborations.length > 0 ? (
+                        <CollaborationList 
+                          collaborations={searchResults.collaborations} 
+                          onViewDetails={handleNavigateToCollaboration}
+                          viewMode={viewMode}
+                        />
+                      ) : (
+                        <div className="text-center py-10">
+                          <p className="text-gray-500">No collaborations found matching your search.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {!searchResults && (
+                    <CollaborationList 
+                      collaborations={filteredCollaborations} 
+                      onViewDetails={handleNavigateToCollaboration}
+                      viewMode={viewMode}
+                    />
+                  )}
                 </>
               )}
-              
               {activePage === 'collaborations' && selectedCollaboration && (
                 <CollaborationDetails 
                   collaboration={collaborations.find(c => c.id === selectedCollaboration)!}
@@ -458,42 +489,17 @@ export function App() {
                   cameFromSearch={cameFromSearch}
                 />
               )}
-              
               {activePage === 'innovators' && !selectedInnovator && (
                 <InnovatorsList 
                   innovators={innovators}
                   onViewProfile={handleViewInnovator}
                 />
               )}
-              
               {activePage === 'innovators' && selectedInnovator && (
                 <ProfilePage 
                   user={innovators.find(i => i.id === selectedInnovator)!}
+                  onBack={() => setSelectedInnovator(null)}
                 />
-              )}
-              
-              {activePage === 'profile' && (
-                <ProtectedRoute>
-                  <ProfilePage 
-                    user={{
-                      id: user?.id || 'current-user',
-                      name: user?.firstName && user?.lastName 
-                        ? `${user.firstName} ${user.lastName}` 
-                        : user?.name || 'User',
-                      type: user?.role as 'individual' || 'individual',
-                      organization: user?.organization || 'Saned Platform',
-                      description: user?.bio || 'Saned Platform user',
-                      email: user?.email || '',
-                      expertise: user?.expertise || [],
-                      tags: user?.interests || ['Sustainable Development', 'Digital Transformation'],
-                      position: user?.position || ''
-                    }}
-                  />
-                </ProtectedRoute>
-              )}
-              
-              {activePage === 'blog' && (
-                <Blog onNavigateBack={handleBackToHome} />
               )}
             </div>
           )}
@@ -504,14 +510,14 @@ export function App() {
 }
 
 // Create a wrapper component to handle the profile page with URL params
-function ProfilePageWrapper({ innovators }: { innovators: Innovator[] }) {
+function ProfilePageWrapper({ innovators, onBack }: { innovators: Innovator[], onBack: () => void }) {
   const navigate = useNavigate();
   const location = window.location.pathname;
   const id = location.split('/profile/')[1];
   
   // Find the innovator by ID
   const innovator = innovators.find(i => i.id === id);
-  
+ 
   if (!innovator) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -527,7 +533,7 @@ function ProfilePageWrapper({ innovators }: { innovators: Innovator[] }) {
     );
   }
   
-  return <ProfilePage user={innovator} />;
+  return <ProfilePage user={innovator} onBack={onBack} />;
 }
 
 export default App;
