@@ -21,6 +21,7 @@ import { FAQ } from './components/FAQ';
 import { Support } from './components/Support';
 import { ContactUs } from './components/ContactUs';
 import { LegalPage } from './components/LegalPages';
+import { SearchResults } from './services/search';
 
 export function App() {
   const navigate = useNavigate();
@@ -44,6 +45,11 @@ export function App() {
   const [showFAQ, setShowFAQ] = useState(false);
   const [showSupport, setShowSupport] = useState(false);
   const [showContactUs, setShowContactUs] = useState(false);
+  
+  // Add state for search results
+  const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
+  const [cameFromSearch, setCameFromSearch] = useState<boolean>(false);
+  const [lastSearchQuery, setLastSearchQuery] = useState<string>('');
 
   // Fetch data from API
   useEffect(() => {
@@ -85,7 +91,9 @@ export function App() {
     console.log('Active filter:', activeFilter);
     console.log('Show home page:', showHomePage);
     console.log('Active page:', activePage);
-  }, [collaborations, filteredCollaborations, activeFilter, showHomePage, activePage]);
+    console.log('Search results:', searchResults);
+    console.log('Came from search:', cameFromSearch);
+  }, [collaborations, filteredCollaborations, activeFilter, showHomePage, activePage, searchResults, cameFromSearch]);
 
   // Navigation functions
   const handleNavigateToWorkspace = () => {
@@ -93,30 +101,38 @@ export function App() {
     setActivePage('collaborations');
     setSelectedCollaboration(null);
     setSelectedInnovator(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToCollaboration = (id: string) => {
     setShowHomePage(false);
     setActivePage('collaborations');
     setSelectedCollaboration(id);
+    // If navigating from search results, set the flag
+    if (showHomePage && searchResults) {
+      setCameFromSearch(true);
+    }
   };
 
   const handleNavigateToChallenges = () => {
     setShowHomePage(false);
     setActivePage('collaborations');
     setActiveFilter('challenges');
+    setCameFromSearch(false);
   };
 
   const handleNavigateToPartnerships = () => {
     setShowHomePage(false);
     setActivePage('collaborations');
     setActiveFilter('partnerships');
+    setCameFromSearch(false);
   };
 
   const handleNavigateToIdeas = () => {
     setShowHomePage(false);
     setActivePage('collaborations');
     setActiveFilter('ideas');
+    setCameFromSearch(false);
   };
 
   const handleNavigateToInnovators = () => {
@@ -124,6 +140,7 @@ export function App() {
     setActivePage('innovators');
     setSelectedCollaboration(null);
     setSelectedInnovator(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToProfile = () => {
@@ -131,6 +148,7 @@ export function App() {
     setActivePage('profile');
     setSelectedCollaboration(null);
     setSelectedInnovator(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToBlog = () => {
@@ -138,6 +156,7 @@ export function App() {
     setActivePage('blog');
     setSelectedCollaboration(null);
     setSelectedInnovator(null);
+    setCameFromSearch(false);
   };
 
   const handleBackToHome = () => {
@@ -145,6 +164,7 @@ export function App() {
     setActivePage('collaborations');
     setSelectedCollaboration(null);
     setSelectedInnovator(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToAuth = () => {
@@ -159,6 +179,18 @@ export function App() {
     setSelectedInnovator(id);
   };
 
+  // Add a function to handle back from collaboration details
+  const handleBackFromCollaborationDetails = () => {
+    if (cameFromSearch) {
+      // If user came from search, go back to home page with search results
+      setShowHomePage(true);
+      setSelectedCollaboration(null);
+    } else {
+      // Otherwise, just clear the selected collaboration
+      setSelectedCollaboration(null);
+    }
+  };
+
   // Add navigation functions for the new pages
   const handleNavigateToHome = () => {
     setShowHomePage(true);
@@ -171,6 +203,7 @@ export function App() {
     setShowFAQ(false);
     setShowSupport(false);
     setShowContactUs(false);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToHowItWorks = () => {
@@ -181,6 +214,7 @@ export function App() {
     setShowSupport(false);
     setShowContactUs(false);
     setActiveLegalPage(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToSuccessStories = () => {
@@ -191,6 +225,7 @@ export function App() {
     setShowSupport(false);
     setShowContactUs(false);
     setActiveLegalPage(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToFAQ = () => {
@@ -201,6 +236,7 @@ export function App() {
     setShowSupport(false);
     setShowContactUs(false);
     setActiveLegalPage(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToSupport = () => {
@@ -211,6 +247,7 @@ export function App() {
     setShowSupport(true);
     setShowContactUs(false);
     setActiveLegalPage(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToContactUs = () => {
@@ -221,6 +258,7 @@ export function App() {
     setShowSupport(false);
     setShowContactUs(true);
     setActiveLegalPage(null);
+    setCameFromSearch(false);
   };
 
   const handleNavigateToLegalPage = (pageType: 'terms' | 'privacy' | 'cookies') => {
@@ -231,6 +269,13 @@ export function App() {
     setShowSupport(false);
     setShowContactUs(false);
     setActiveLegalPage(pageType);
+    setCameFromSearch(false);
+  };
+
+  // Add a function to handle search results
+  const handleSearchResults = (results: SearchResults, query: string) => {
+    setSearchResults(results);
+    setLastSearchQuery(query);
   };
 
   // Add a function to handle profile navigation by ID
@@ -311,6 +356,9 @@ export function App() {
               onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
               onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
               onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+              onSearchResults={handleSearchResults}
+              searchResults={searchResults}
+              lastSearchQuery={lastSearchQuery}
             />
           ) : showHowItWorks ? (
             <HowItWorks onBack={handleNavigateToHome} />
@@ -382,6 +430,8 @@ export function App() {
                         setActiveFilter('partnerships');
                       }
                     }}
+                    onFilterChange={setActiveFilter}
+                    activeFilter={activeFilter}
                   />
                   <CollaborationList 
                     collaborations={filteredCollaborations} 
@@ -393,7 +443,8 @@ export function App() {
               {activePage === 'collaborations' && selectedCollaboration && (
                 <CollaborationDetails 
                   collaboration={collaborations.find(c => c.id === selectedCollaboration)!}
-                  onBack={() => setSelectedCollaboration(null)}
+                  onBack={handleBackFromCollaborationDetails}
+                  cameFromSearch={cameFromSearch}
                 />
               )}
               

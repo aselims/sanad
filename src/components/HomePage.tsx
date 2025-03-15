@@ -34,6 +34,9 @@ interface HomePageProps {
   onNavigateToTerms?: () => void;
   onNavigateToPrivacy?: () => void;
   onNavigateToCookies?: () => void;
+  onSearchResults?: (results: SearchResults, query: string) => void;
+  searchResults?: SearchResults | null;
+  lastSearchQuery?: string;
 }
 
 export function HomePage({ 
@@ -51,17 +54,16 @@ export function HomePage({
   onNavigateToContactUs = onNavigateToWorkspace,
   onNavigateToTerms = onNavigateToWorkspace,
   onNavigateToPrivacy = onNavigateToWorkspace,
-  onNavigateToCookies = onNavigateToWorkspace
+  onNavigateToCookies = onNavigateToWorkspace,
+  onSearchResults,
+  searchResults: initialSearchResults,
+  lastSearchQuery: initialSearchQuery = ''
 }: HomePageProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<SearchResults>({ 
-    innovators: [], 
-    collaborations: [],
-    aiResults: []
-  });
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isAISearch, setIsAISearch] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResults>(initialSearchResults || { innovators: [], collaborations: [], aiResults: [] });
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +83,11 @@ export function HomePage({
       
       setSearchResults(results);
       
+      // If parent component provided a callback, call it with the results
+      if (onSearchResults) {
+        onSearchResults(results, searchQuery);
+      }
+      
       // If no results found, show a message
       if (results.innovators.length === 0 && results.collaborations.length === 0 && 
           (!results.aiResults || results.aiResults.length === 0)) {
@@ -99,6 +106,11 @@ export function HomePage({
     setSearchQuery('');
     setSearchResults({ innovators: [], collaborations: [], aiResults: [] });
     setSearchError(null);
+    
+    // If parent component provided a callback, call it with empty results
+    if (onSearchResults) {
+      onSearchResults({ innovators: [], collaborations: [], aiResults: [] }, '');
+    }
   };
   
   // Check if there are any search results

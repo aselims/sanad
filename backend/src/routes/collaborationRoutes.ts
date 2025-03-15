@@ -32,55 +32,59 @@ router.get('/search', asyncHandler(async (req: Request, res: Response) => {
   // Filter challenges based on the search query
   const lowerQuery = query.toLowerCase();
   const filteredChallenges = challenges.filter(challenge => 
-    challenge.title.toLowerCase().includes(lowerQuery) ||
-    challenge.description.toLowerCase().includes(lowerQuery) ||
-    challenge.organization.toLowerCase().includes(lowerQuery)
+    challenge && challenge.title && challenge.title.toLowerCase().includes(lowerQuery) ||
+    challenge && challenge.description && challenge.description.toLowerCase().includes(lowerQuery) ||
+    challenge && challenge.organization && challenge.organization.toLowerCase().includes(lowerQuery)
   );
   
   // Filter partnerships based on the search query
   const filteredPartnerships = partnerships.filter(partnership => 
-    partnership.title.toLowerCase().includes(lowerQuery) ||
-    partnership.description.toLowerCase().includes(lowerQuery) ||
-    partnership.participants.some(participant => participant.toLowerCase().includes(lowerQuery))
+    partnership && partnership.title && partnership.title.toLowerCase().includes(lowerQuery) ||
+    partnership && partnership.description && partnership.description.toLowerCase().includes(lowerQuery) ||
+    partnership && partnership.participants && partnership.participants.some(participant => 
+      participant && participant.toLowerCase().includes(lowerQuery)
+    )
   );
   
   // Filter ideas based on the search query
   const filteredIdeas = ideas.filter(idea => 
-    idea.title.toLowerCase().includes(lowerQuery) ||
-    idea.description.toLowerCase().includes(lowerQuery) ||
-    idea.category.toLowerCase().includes(lowerQuery) ||
-    idea.participants.some(participant => participant.toLowerCase().includes(lowerQuery))
+    idea && idea.title && idea.title.toLowerCase().includes(lowerQuery) ||
+    idea && idea.description && idea.description.toLowerCase().includes(lowerQuery) ||
+    idea && idea.category && idea.category.toLowerCase().includes(lowerQuery) ||
+    idea && idea.participants && idea.participants.some(participant => 
+      participant && participant.toLowerCase().includes(lowerQuery)
+    )
   );
   
   // Combine and format the results
   const results = [
     ...filteredChallenges.map(challenge => ({
       id: challenge.id,
-      title: challenge.title,
-      description: challenge.description,
-      participants: [challenge.organization], // Convert organization to participants array for consistency
+      title: challenge.title || '',
+      description: challenge.description || '',
+      participants: challenge.organization ? [challenge.organization] : [], // Convert organization to participants array for consistency
       type: 'challenge',
-      status: challenge.status,
+      status: challenge.status || '',
       createdAt: challenge.createdAt,
       updatedAt: challenge.updatedAt
     })),
     ...filteredPartnerships.map(partnership => ({
       id: partnership.id,
-      title: partnership.title,
-      description: partnership.description,
-      participants: partnership.participants,
+      title: partnership.title || '',
+      description: partnership.description || '',
+      participants: partnership.participants || [],
       type: 'partnership',
-      status: partnership.status,
+      status: partnership.status || '',
       createdAt: partnership.createdAt,
       updatedAt: partnership.updatedAt
     })),
     ...filteredIdeas.map(idea => ({
       id: idea.id,
-      title: idea.title,
-      description: idea.description,
-      participants: idea.participants,
+      title: idea.title || '',
+      description: idea.description || '',
+      participants: idea.participants || [],
       type: 'idea',
-      status: idea.status,
+      status: idea.status || '',
       createdAt: idea.createdAt,
       updatedAt: idea.updatedAt,
       creatorName: idea.createdBy ? `${idea.createdBy.firstName} ${idea.createdBy.lastName}` : 'Unknown'

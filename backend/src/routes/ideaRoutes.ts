@@ -10,8 +10,13 @@ const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextF
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Public routes
+// Public routes - Make sure specific routes come before parameterized routes
 router.get('/', asyncHandler(ideaController.getAllIdeas));
+
+// Any specific routes with fixed paths should go here
+// For example: router.get('/featured', asyncHandler(ideaController.getFeaturedIdeas));
+
+// Parameterized routes should come last
 router.get('/:id', asyncHandler(ideaController.getIdeaById));
 
 // Protected routes (require authentication)

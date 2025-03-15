@@ -15,6 +15,7 @@ type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'i
 interface CollaborationDetailsProps {
   collaboration: Collaboration;
   onBack: () => void;
+  cameFromSearch?: boolean;
 }
 
 function ComingSoonOverlay({ children, title }: { children: React.ReactNode, title?: string }) {
@@ -81,7 +82,7 @@ function CollaborationRequestCard({ request, onExpressInterest }: {
   );
 }
 
-export function CollaborationDetails({ collaboration, onBack }: CollaborationDetailsProps) {
+export function CollaborationDetails({ collaboration, onBack, cameFromSearch = false }: CollaborationDetailsProps) {
   const openRequests = collaboration.collaborationRequests?.filter(r => r.status === 'open') || [];
   const [selectedRequest, setSelectedRequest] = useState<CollaborationRequest | null>(null);
   const [collaboratorType, setCollaboratorType] = useState<CollaboratorType>('individual');
@@ -108,7 +109,7 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
             className="flex items-center text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
-            Back to Workspace
+            {cameFromSearch ? 'Back to Search Results' : 'Back to Workspace'}
           </button>
           <div className="flex items-center gap-2">
             {openRequests.length > 0 && (

@@ -31,30 +31,38 @@ export const getAllIdeas = async (): Promise<Collaboration[]> => {
   try {
     // Attempt to fetch ideas from the backend API
     const response = await api.get('/ideas');
-    console.log('Fetched ideas from API:', response.data.length);
     
-    // Convert the API response to Collaboration format
-    const ideas = response.data.map((idea: any) => ({
-      id: idea.id,
-      title: idea.title,
-      description: idea.description,
-      participants: idea.participants || [],
-      status: idea.status || 'proposed',
-      type: 'idea',
-      createdAt: new Date(idea.createdAt),
-      updatedAt: new Date(idea.updatedAt),
-      ideaDetails: {
-        category: idea.category,
-        stage: idea.stage,
-        targetAudience: idea.targetAudience,
-        potentialImpact: idea.potentialImpact,
-        resourcesNeeded: idea.resourcesNeeded,
-        creatorName: idea.creatorName,
-        creatorEmail: idea.creatorEmail,
-      }
-    }));
-    
-    return ideas;
+    // Check if response.data exists and is an array before mapping
+    if (response.data && Array.isArray(response.data)) {
+      console.log('Fetched ideas from API:', response.data.length);
+      
+      // Convert the API response to Collaboration format
+      const ideas = response.data.map((idea: any) => ({
+        id: idea.id,
+        title: idea.title,
+        description: idea.description,
+        participants: idea.participants || [],
+        status: idea.status || 'proposed',
+        type: 'idea' as 'idea',
+        createdAt: new Date(idea.createdAt),
+        updatedAt: new Date(idea.updatedAt),
+        ideaDetails: {
+          category: idea.category,
+          stage: idea.stage,
+          targetAudience: idea.targetAudience,
+          potentialImpact: idea.potentialImpact,
+          resourcesNeeded: idea.resourcesNeeded,
+          creatorName: idea.creatorName,
+          creatorEmail: idea.creatorEmail,
+        }
+      }));
+      
+      return ideas;
+    } else {
+      console.warn('API response for ideas is not in the expected format:', response.data);
+      // If response.data is not an array, fall back to local storage
+      throw new Error('API response is not in the expected format');
+    }
   } catch (error) {
     console.error('Error fetching ideas from API:', error);
     

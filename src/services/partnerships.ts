@@ -28,8 +28,15 @@ const formatPartnership = (partnership: any): Collaboration => {
 export const getAllPartnerships = async (): Promise<Collaboration[]> => {
   try {
     const response = await api.get('/partnerships');
-    // Convert each partnership to the Collaboration format
-    return response.data.data.map(formatPartnership);
+    
+    // Check if response.data and response.data.data exist and are arrays
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      // Convert each partnership to the Collaboration format
+      return response.data.data.map(formatPartnership);
+    } else {
+      console.warn('API response for partnerships is not in the expected format:', response.data);
+      return [];
+    }
   } catch (error) {
     console.error('Error fetching partnerships:', error);
     return [];

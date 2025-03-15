@@ -8,11 +8,18 @@ import { Challenge, challengeToCollaboration } from '../types';
 export const getAllChallenges = async (): Promise<Challenge[]> => {
   try {
     const response = await api.get('/challenges');
-    return response.data.data.map((challenge: any) => ({
-      ...challenge,
-      createdAt: new Date(challenge.createdAt),
-      updatedAt: new Date(challenge.updatedAt)
-    }));
+    
+    // Check if response.data and response.data.data exist and are arrays
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      return response.data.data.map((challenge: any) => ({
+        ...challenge,
+        createdAt: new Date(challenge.createdAt),
+        updatedAt: new Date(challenge.updatedAt)
+      }));
+    } else {
+      console.warn('API response for challenges is not in the expected format:', response.data);
+      return [];
+    }
   } catch (error) {
     console.error('Error fetching challenges:', error);
     return [];

@@ -45,10 +45,49 @@ router.get('/users', asyncHandler(async (req: Request, res: Response) => {
   });
 }));
 
-router.get('/users/:id', asyncHandler(async (req: Request, res: Response) => {
+// Search users - IMPORTANT: Place specific routes BEFORE parameterized routes
+router.get('/users/search', asyncHandler(async (req: Request, res: Response) => {
+  const query = req.query.q as string;
+  
+  if (!query) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Search query is required'
+    });
+  }
+  
+  // Get all users from the database
+  const users = await AppDataSource.getRepository(User).find();
+  
+  // Filter users based on the search query
+  const lowerQuery = query.toLowerCase();
+  const filteredUsers = users.filter(user => 
+    user.firstName.toLowerCase().includes(lowerQuery) ||
+    user.lastName.toLowerCase().includes(lowerQuery) ||
+    user.email.toLowerCase().includes(lowerQuery) ||
+    user.organization?.toLowerCase().includes(lowerQuery) ||
+    user.bio?.toLowerCase().includes(lowerQuery) ||
+    user.role.toLowerCase().includes(lowerQuery)
+  );
+  
+  res.status(200).json({
+    status: 'success',
+    data: filteredUsers
+  });
+}));
+
+// Current user profile
+router.get('/users/me', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Unauthorized: User not authenticated'
+    });
+  }
+
   const userRepository = AppDataSource.getRepository(User);
   const user = await userRepository.findOne({
-    where: { id: req.params.id },
+    where: { id: req.user.id },
     select: ['id', 'firstName', 'lastName', 'email', 'role', 'organization', 'position', 'bio', 'profilePicture', 'isVerified', 'isActive', 'createdAt', 'updatedAt']
   });
   
@@ -65,18 +104,11 @@ router.get('/users/:id', asyncHandler(async (req: Request, res: Response) => {
   });
 }));
 
-// Current user profile
-router.get('/users/me', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
-  if (!req.user || !req.user.id) {
-    return res.status(401).json({
-      status: 'error',
-      message: 'Unauthorized: User not authenticated'
-    });
-  }
-
+// Get user by ID - Place this AFTER specific routes
+router.get('/users/:id', asyncHandler(async (req: Request, res: Response) => {
   const userRepository = AppDataSource.getRepository(User);
   const user = await userRepository.findOne({
-    where: { id: req.user.id },
+    where: { id: req.params.id },
     select: ['id', 'firstName', 'lastName', 'email', 'role', 'organization', 'position', 'bio', 'profilePicture', 'isVerified', 'isActive', 'createdAt', 'updatedAt']
   });
   
@@ -230,37 +262,6 @@ router.post('/messages', authenticateJWT, asyncHandler(async (req: Request, res:
       content,
       createdAt: new Date()
     }
-  });
-}));
-
-// Search users
-router.get('/users/search', asyncHandler(async (req: Request, res: Response) => {
-  const query = req.query.q as string;
-  
-  if (!query) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'Search query is required'
-    });
-  }
-  
-  // Get all users from the database
-  const users = await AppDataSource.getRepository(User).find();
-  
-  // Filter users based on the search query
-  const lowerQuery = query.toLowerCase();
-  const filteredUsers = users.filter(user => 
-    user.firstName.toLowerCase().includes(lowerQuery) ||
-    user.lastName.toLowerCase().includes(lowerQuery) ||
-    user.email.toLowerCase().includes(lowerQuery) ||
-    user.organization?.toLowerCase().includes(lowerQuery) ||
-    user.bio?.toLowerCase().includes(lowerQuery) ||
-    user.role.toLowerCase().includes(lowerQuery)
-  );
-  
-  res.status(200).json({
-    status: 'success',
-    data: filteredUsers
   });
 }));
 
