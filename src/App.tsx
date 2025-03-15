@@ -13,6 +13,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import type { Collaboration, Innovator } from './types';
 import { getAllCollaborations } from './services/collaborations';
+import { saveIdea } from './services/ideas';
 import { getAllInnovators } from './services/innovators';
 import { HowItWorks } from './components/HowItWorks';
 import { SuccessStories } from './components/SuccessStories';
@@ -337,7 +338,11 @@ export function App() {
                         id: `collab-${Date.now()}`, // Generate a unique ID
                         title: collaboration.title || 'New Collaboration',
                         description: collaboration.description || '',
-                        participants: collaboration.participants || [],
+                        participants: user && user.firstName && user.lastName 
+                          ? [`${user.firstName} ${user.lastName}`, ...(collaboration.participants || [])]
+                          : user?.name 
+                            ? [user.name, ...(collaboration.participants || [])]
+                            : collaboration.participants || [],
                         status: collaboration.status || 'proposed',
                         type: collaboration.type || 'partnership',
                         createdAt: new Date(),
@@ -349,6 +354,14 @@ export function App() {
                         newCollaboration.challengeDetails = collaboration.challengeDetails;
                       } else if (collaboration.type === 'idea' && collaboration.ideaDetails) {
                         newCollaboration.ideaDetails = collaboration.ideaDetails;
+                        // Save idea to backend (with local storage fallback)
+                        saveIdea(newCollaboration)
+                          .then(() => {
+                            console.log('Idea saved successfully');
+                          })
+                          .catch(error => {
+                            console.error('Error saving idea:', error);
+                          });
                       } else if (collaboration.partnershipDetails) {
                         newCollaboration.partnershipDetails = collaboration.partnershipDetails;
                       }

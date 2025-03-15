@@ -3,7 +3,8 @@ import {
   Users, Calendar, ArrowLeft, FileText, 
   MessageSquare, Target, BarChart, Link,
   UserPlus, Briefcase, Award, Handshake,
-  Clock, DollarSign, AlertCircle
+  Clock, DollarSign, AlertCircle, Lightbulb,
+  Tag, Zap
 } from 'lucide-react';
 import type { Collaboration, CollaborationRequest, InterestSubmission } from '../types';
 import { ExpressInterestModal } from './ExpressInterestModal';
@@ -129,9 +130,15 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
               <span className={`px-3 py-1 text-sm rounded-full ${
                 collaboration.type === 'challenge'
                   ? 'bg-purple-100 text-purple-800'
+                  : collaboration.type === 'idea'
+                  ? 'bg-amber-100 text-amber-800'
                   : 'bg-indigo-100 text-indigo-800'
               }`}>
-                {collaboration.type === 'challenge' ? 'Challenge' : 'Partnership'}
+                {collaboration.type === 'challenge' 
+                  ? 'Challenge' 
+                  : collaboration.type === 'idea'
+                  ? 'Idea'
+                  : 'Partnership'}
               </span>
             )}
           </div>
@@ -160,7 +167,7 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">{participant}</p>
-                    <p className="text-xs text-gray-500">Partner</p>
+                    <p className="text-xs text-gray-500">{index === 0 ? 'Proposer' : 'Partner'}</p>
                   </div>
                 </div>
               ))}
@@ -228,6 +235,59 @@ export function CollaborationDetails({ collaboration, onBack }: CollaborationDet
                     <p className="text-sm text-gray-600">{collaboration.partnershipDetails.expectedOutcomes}</p>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {collaboration.type === 'idea' && collaboration.ideaDetails && (
+            <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Lightbulb className="h-5 w-5 mr-2 text-amber-600" />
+                Idea Details
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <Tag className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Category</p>
+                    <p className="text-sm text-gray-600">{collaboration.ideaDetails.category}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Briefcase className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Development Stage</p>
+                    <p className="text-sm text-gray-600">
+                      {collaboration.ideaDetails.stage === 'concept' ? 'Concept (Just an idea)' :
+                       collaboration.ideaDetails.stage === 'prototype' ? 'Prototype (Early development)' :
+                       collaboration.ideaDetails.stage === 'validated' ? 'Validated (Tested with users)' :
+                       'Scaling (Ready to grow)'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Users className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Target Audience</p>
+                    <p className="text-sm text-gray-600">{collaboration.ideaDetails.targetAudience}</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Zap className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Potential Impact</p>
+                    <p className="text-sm text-gray-600">{collaboration.ideaDetails.potentialImpact}</p>
+                  </div>
+                </div>
+                {collaboration.ideaDetails.resourcesNeeded && (
+                  <div className="flex items-start">
+                    <DollarSign className="h-5 w-5 text-amber-600 mt-0.5 mr-3" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Resources Needed</p>
+                      <p className="text-sm text-gray-600">{collaboration.ideaDetails.resourcesNeeded}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

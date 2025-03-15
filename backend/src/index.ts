@@ -9,6 +9,10 @@ import logger from './utils/logger';
 import apiRoutes from './routes/api';
 import { errorHandler, AppError } from './middlewares/errorHandler';
 import matchRoutes from './routes/matchRoutes';
+import ideaRoutes from './routes/ideaRoutes';
+import partnershipRoutes from './routes/partnershipRoutes';
+import challengeRoutes from './routes/challengeRoutes';
+import collaborationRoutes from './routes/collaborationRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -35,6 +39,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Routes
 app.use('/api', apiRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/ideas', ideaRoutes);
+app.use('/api/partnerships', partnershipRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/collaborations', collaborationRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

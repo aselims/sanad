@@ -78,6 +78,8 @@ export interface IdeaDetails {
   targetAudience: string;
   potentialImpact: string;
   resourcesNeeded?: string;
+  creatorName?: string;
+  creatorEmail?: string;
 }
 
 export interface Collaboration {

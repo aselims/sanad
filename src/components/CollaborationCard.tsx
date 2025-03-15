@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Calendar, ArrowRight, UserPlus, Target, Handshake } from 'lucide-react';
+import { Users, Calendar, ArrowRight, UserPlus, Target, Handshake, Lightbulb } from 'lucide-react';
 import type { Collaboration } from '../types';
 
 interface CollaborationCardProps {
@@ -31,6 +31,12 @@ export function CollaborationCard({ collaboration, onViewDetails }: Collaboratio
             <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
               <Handshake className="h-3 w-3" />
               Partnership
+            </span>
+          )}
+          {collaboration.type === 'idea' && (
+            <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-800 flex items-center gap-1">
+              <Lightbulb className="h-3 w-3" />
+              Idea
             </span>
           )}
           <span className={`px-2 py-1 text-xs rounded-full ${

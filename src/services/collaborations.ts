@@ -2,10 +2,11 @@ import { Collaboration } from '../types';
 import { challengeToCollaboration } from '../types';
 import { getAllChallenges } from './challenges';
 import { getAllPartnerships } from './partnerships';
+import { getAllIdeas } from './ideas';
 import api from './api';
 
 /**
- * Get all collaborations (both challenges and partnerships)
+ * Get all collaborations (challenges, partnerships, and ideas)
  * @returns Promise with all collaborations
  */
 export const getAllCollaborations = async (): Promise<Collaboration[]> => {
@@ -19,8 +20,12 @@ export const getAllCollaborations = async (): Promise<Collaboration[]> => {
     const partnerships = await getAllPartnerships();
     console.log('Fetched partnerships:', partnerships.length);
     
-    // Combine both types of collaborations
-    const allCollaborations = [...challengeCollaborations, ...partnerships];
+    // Get ideas from the ideas service
+    const ideas = await getAllIdeas();
+    console.log('Fetched ideas:', ideas.length);
+    
+    // Combine all types of collaborations
+    const allCollaborations = [...challengeCollaborations, ...partnerships, ...ideas];
     console.log('Total collaborations:', allCollaborations.length);
     
     return allCollaborations;

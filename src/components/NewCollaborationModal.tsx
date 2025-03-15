@@ -184,7 +184,7 @@ export function NewCollaborationModal({
               </div>
               
               <div className="md:col-span-2">
-                <label htmlFor="participants" className="block mb-2 text-sm font-medium text-gray-900">Participants</label>
+                <label htmlFor="participants" className="block mb-2 text-sm font-medium text-gray-900">Additional Participants</label>
                 <input 
                   type="text" 
                   name="participants" 
@@ -192,9 +192,10 @@ export function NewCollaborationModal({
                   value={formData.participants}
                   onChange={handleInputChange}
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-600 focus:border-indigo-600 block w-full p-2.5" 
-                  placeholder="Enter participant names, separated by commas" 
-                  required 
+                  placeholder="Enter additional participant names, separated by commas (you will be added automatically)" 
+                  required={false}
                 />
+                <p className="mt-1 text-xs text-gray-500">You will be automatically added as the proposer</p>
               </div>
               
               {/* Challenge-specific fields */}
