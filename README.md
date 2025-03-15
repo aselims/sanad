@@ -49,6 +49,28 @@ To run only the backend:
 npm run start:backend
 ```
 
+### Debugging in Development Mode
+
+To run both frontend and backend in debug mode:
+
+```
+npm run debug
+```
+
+To debug only the frontend:
+
+```
+npm run debug:frontend
+```
+
+To debug only the backend:
+
+```
+npm run debug:backend
+```
+
+For the backend, this enables the Node.js inspector on the default port (9229), allowing you to connect with Chrome DevTools or VS Code debugger.
+
 ### Building for Production
 
 To build both frontend and backend:

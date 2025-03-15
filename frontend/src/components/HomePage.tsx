@@ -25,6 +25,7 @@ interface HomePageProps {
   onNavigateToPartnerships?: () => void;
   onNavigateToIdeas?: () => void;
   onNavigateToInnovators?: () => void;
+  onNavigateToProfileById?: (id: string) => void;
   onNavigateToBlog?: () => void;
   onNavigateToHowItWorks?: () => void;
   onNavigateToSuccessStories?: () => void;
@@ -46,6 +47,7 @@ export function HomePage({
   onNavigateToPartnerships = onNavigateToWorkspace,
   onNavigateToIdeas = onNavigateToWorkspace,
   onNavigateToInnovators = onNavigateToWorkspace,
+  onNavigateToProfileById,
   onNavigateToBlog = onNavigateToWorkspace,
   onNavigateToHowItWorks = onNavigateToWorkspace,
   onNavigateToSuccessStories = onNavigateToWorkspace,
@@ -287,8 +289,13 @@ export function HomePage({
                               <button
                                 onClick={() => {
                                   if (result.type === 'user') {
-                                    // Navigate to innovator profile
-                                    onNavigateToInnovators();
+                                    // Navigate to innovator profile by ID if available
+                                    if (onNavigateToProfileById) {
+                                      onNavigateToProfileById(result.id);
+                                    } else {
+                                      // Fallback to the old behavior
+                                      onNavigateToInnovators();
+                                    }
                                   } else {
                                     // Navigate to collaboration
                                     onNavigateToCollaboration(result.id);
@@ -318,7 +325,15 @@ export function HomePage({
                         <div 
                           key={innovator.id}
                           className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition duration-150"
-                          onClick={() => onNavigateToInnovators()}
+                          onClick={() => {
+                            // If onNavigateToProfileById is provided, use it to navigate directly to the profile
+                            if (onNavigateToProfileById) {
+                              onNavigateToProfileById(innovator.id);
+                            } else {
+                              // Fallback to the old behavior
+                              onNavigateToInnovators();
+                            }
+                          }}
                         >
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">

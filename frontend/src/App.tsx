@@ -347,6 +347,7 @@ export function App() {
               onNavigateToPartnerships={handleNavigateToPartnerships}
               onNavigateToIdeas={handleNavigateToIdeas}
               onNavigateToInnovators={handleNavigateToInnovators}
+              onNavigateToProfileById={handleNavigateToProfileById}
               onNavigateToBlog={handleNavigateToBlog}
               onNavigateToHowItWorks={handleNavigateToHowItWorks}
               onNavigateToSuccessStories={handleNavigateToSuccessStories}

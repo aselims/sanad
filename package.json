@@ -15,7 +15,10 @@
     "install:backend": "cd backend && npm install",
     "test": "npm run test:frontend && npm run test:backend",
     "test:frontend": "cd frontend && npm test",
-    "test:backend": "cd backend && npm test"
+    "test:backend": "cd backend && npm test",
+    "debug": "concurrently \"npm run debug:frontend\" \"npm run debug:backend\"",
+    "debug:frontend": "cd frontend && npm run dev -- --debug",
+    "debug:backend": "cd backend && npm run dev:debug"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
