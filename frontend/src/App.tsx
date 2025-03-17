@@ -23,7 +23,6 @@ import { ContactUs } from './components/ContactUs';
 import { LegalPage } from './components/LegalPages';
 import { SearchResults } from './services/search';
 import { Footer } from './components/Footer';
-import ConnectionsPage from './components/ConnectionsPage';
 import MessagesPage from './components/MessagesPage';
 import { getPotentialMatches, getMatchRequests } from './services/matches';
 
@@ -143,7 +142,19 @@ export function App() {
   };
 
   const handleNavigateToConnections = () => {
-    navigate('/connections');
+    if (user) {
+      navigate(`/profile/${user.id}?tab=connections`);
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleNavigateToCollaborations = () => {
+    if (user) {
+      navigate(`/profile/${user.id}?tab=collaborations`);
+    } else {
+      navigate('/auth');
+    }
   };
 
   const handleNavigateToMessages = () => {
@@ -236,6 +247,7 @@ export function App() {
         onNavigateToLegalPage={handleNavigateToLegalPage}
         onNavigateToProfile={handleNavigateToProfile}
         onNavigateToConnections={handleNavigateToConnections}
+        onNavigateToCollaborations={handleNavigateToCollaborations}
         onNavigateToMessages={handleNavigateToMessages}
       />
       
@@ -303,12 +315,7 @@ export function App() {
           } />
           <Route path="/profile/:id" element={<ProfilePageWrapper innovators={innovators} onBack={() => navigate(-1)} />} />
           
-          {/* Add new routes for connections and messages */}
-          <Route path="/connections" element={
-            <ProtectedRoute>
-              <ConnectionsPage />
-            </ProtectedRoute>
-          } />
+          {/* Add new routes for messages */}
           <Route path="/messages" element={
             <ProtectedRoute>
               <MessagesPage />

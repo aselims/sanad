@@ -149,4 +149,34 @@ export const saveVote = async (collaborationId: string, voteType: 'up' | 'down')
     console.error('Error saving vote:', error);
     throw error;
   }
+};
+
+/**
+ * Get collaborations for a specific user
+ * @param userId ID of the user
+ * @returns Promise with the user's collaborations
+ */
+export const getUserCollaborations = async (userId: string): Promise<Collaboration[]> => {
+  try {
+    const response = await api.get(`/users/${userId}/collaborations`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching user collaborations:', error);
+    
+    // Fallback to client-side filtering if the API endpoint fails
+    try {
+      console.log('Falling back to client-side filtering for user collaborations...');
+      const allCollaborations = await getAllCollaborations();
+      
+      // Filter collaborations where the user is a participant
+      const userCollaborations = allCollaborations.filter(collab => 
+        collab.participants.some(p => p === userId)
+      );
+      
+      return userCollaborations;
+    } catch (fallbackError) {
+      console.error('Fallback filtering also failed:', fallbackError);
+      return [];
+    }
+  }
 }; 

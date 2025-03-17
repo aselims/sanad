@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Bell, UserCircle, LogOut, Settings, X, Users, MessageSquare } from 'lucide-react';
+import { Menu, Bell, UserCircle, LogOut, Settings, X, Users, MessageSquare, Briefcase } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -19,6 +19,7 @@ interface HeaderProps {
   onNavigateToContactUs?: () => void;
   onNavigateToLegalPage?: (page: 'terms' | 'privacy' | 'cookies') => void;
   onNavigateToConnections?: () => void;
+  onNavigateToCollaborations?: () => void;
   onNavigateToMessages?: () => void;
   isAuthenticated?: boolean;
 }
@@ -39,6 +40,7 @@ export function Header({
   onNavigateToContactUs,
   onNavigateToLegalPage,
   onNavigateToConnections,
+  onNavigateToCollaborations,
   onNavigateToMessages,
   isAuthenticated: propIsAuthenticated
 }: HeaderProps) {
@@ -124,6 +126,15 @@ export function Header({
     setShowUserMenu(false);
   };
 
+  const handleCollaborationsClick = () => {
+    if (onNavigateToCollaborations) {
+      onNavigateToCollaborations();
+    } else {
+      navigate(`/profile/${user?.id}?tab=collaborations`);
+    }
+    setShowUserMenu(false);
+  };
+
   // Close user menu and mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -159,12 +170,21 @@ export function Header({
         </Link>
         
         <Link
-          to="/connections"
+          to={user ? `/profile/${user.id}?tab=connections` : "/auth"}
           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           onClick={() => setShowUserMenu(false)}
         >
           <Users className="inline-block h-4 w-4 mr-2" />
           Connections
+        </Link>
+        
+        <Link
+          to={user ? `/profile/${user.id}?tab=collaborations` : "/auth"}
+          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          onClick={() => setShowUserMenu(false)}
+        >
+          <Briefcase className="inline-block h-4 w-4 mr-2" />
+          Collaborations
         </Link>
         
         <Link
@@ -226,6 +246,16 @@ export function Header({
                   >
                     <Users className="h-5 w-5 mr-2" />
                     Connections
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to={user ? `/profile/${user.id}?tab=collaborations` : "/auth"}
+                    className="flex items-center text-gray-700 hover:text-indigo-600"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    <Briefcase className="h-5 w-5 mr-2" />
+                    Collaborations
                   </Link>
                 </li>
                 <li>

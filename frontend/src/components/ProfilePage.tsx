@@ -18,7 +18,11 @@ import {
   Target,
   ThumbsUp,
   Edit,
-  Zap
+  Zap,
+  ArrowLeft,
+  Check,
+  UserPlus,
+  MessageSquare
 } from 'lucide-react';
 import { Innovator, Collaboration, User as UserType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -27,7 +31,9 @@ import EditProfileModal from './EditProfileModal';
 import { connectWithUser, sendMessageToUser, updateCurrentUserProfile } from '../services/users';
 import { findPotentialMatches } from '../utils/matchUtils';
 import { getPotentialMatches, saveMatchPreference } from '../services/matches';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { getUserConnections } from '../services/connections';
+import { getUserCollaborations } from '../services/collaborations';
 
 interface ProfilePageProps {
   user: Innovator;
@@ -49,7 +55,18 @@ export function ProfilePage({
 }: ProfilePageProps) {
   const { user: currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests'>('profile');
+  const location = useLocation();
+  
+  // Check for tab query parameter
+  const queryParams = new URLSearchParams(location.search);
+  const tabParam = queryParams.get('tab');
+  
+  // Set initial active tab based on query parameter if it exists and is valid
+  const initialTab = tabParam && ['profile', 'potential-matches', 'match-requests', 'connections', 'collaborations'].includes(tabParam) 
+    ? tabParam as 'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations'
+    : 'profile';
+  
+  const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations'>(initialTab);
   const [showEditModal, setShowEditModal] = useState(false);
   const [profileData, setProfileData] = useState<Innovator>(user);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -62,6 +79,14 @@ export function ProfilePage({
   const [isLoadingMatches, setIsLoadingMatches] = useState(false);
   const [matchPreferences, setMatchPreferences] = useState<Record<string, 'like' | 'dislike'>>({});
   const [preferenceStatus, setPreferenceStatus] = useState<{id: string, status: 'saving' | 'success' | 'error' | null}>({id: '', status: null});
+  
+  // Add state for connections tab
+  const [connections, setConnections] = useState<any[]>([]);
+  const [isLoadingConnections, setIsLoadingConnections] = useState(false);
+  
+  // Add state for collaborations tab
+  const [collaborations, setCollaborations] = useState<any[]>([]);
+  const [isLoadingCollaborations, setIsLoadingCollaborations] = useState(false);
 
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === user.id;
@@ -69,7 +94,7 @@ export function ProfilePage({
   // Reset activeTab to 'profile' if a non-authenticated user tries to access a protected tab
   useEffect(() => {
     if ((!isAuthenticated || !isOwnProfile) && 
-        (activeTab === 'potential-matches' || activeTab === 'match-requests')) {
+        (activeTab === 'potential-matches' || activeTab === 'match-requests' || activeTab === 'connections' || activeTab === 'collaborations')) {
       setActiveTab('profile');
     }
   }, [isAuthenticated, isOwnProfile, activeTab]);
@@ -91,6 +116,44 @@ export function ProfilePage({
     };
 
     fetchMatches();
+  }, [activeTab, isAuthenticated, isOwnProfile, user.id]);
+  
+  // Add useEffect to fetch connections when tab changes
+  useEffect(() => {
+    const fetchConnections = async () => {
+      if (activeTab === 'connections' && isAuthenticated && isOwnProfile) {
+        setIsLoadingConnections(true);
+        try {
+          const data = await getUserConnections();
+          setConnections(data);
+        } catch (error) {
+          console.error('Error fetching connections:', error);
+        } finally {
+          setIsLoadingConnections(false);
+        }
+      }
+    };
+    
+    fetchConnections();
+  }, [activeTab, isAuthenticated, isOwnProfile]);
+  
+  // Add useEffect to fetch collaborations when tab changes
+  useEffect(() => {
+    const fetchCollaborations = async () => {
+      if (activeTab === 'collaborations' && isAuthenticated && isOwnProfile) {
+        setIsLoadingCollaborations(true);
+        try {
+          const data = await getUserCollaborations(user.id);
+          setCollaborations(data);
+        } catch (error) {
+          console.error('Error fetching collaborations:', error);
+        } finally {
+          setIsLoadingCollaborations(false);
+        }
+      }
+    };
+    
+    fetchCollaborations();
   }, [activeTab, isAuthenticated, isOwnProfile, user.id]);
 
   // Function to handle connect action
@@ -466,54 +529,6 @@ export function ProfilePage({
   const renderProfileContent = () => {
     return (
       <div className="space-y-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-          <div className="flex items-center">
-            <div className="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-              {profileData.profileImage ? (
-                <img 
-                  src={profileData.profileImage} 
-                  alt={profileData.name} 
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <User className="h-12 w-12 text-indigo-600" />
-              )}
-            </div>
-            <div className="ml-4">
-              <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
-              <p className="text-gray-600">{profileData.position} {profileData.organization ? `at ${profileData.organization}` : ''}</p>
-              
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mt-2">
-                {profileData.type}
-              </span>
-            </div>
-          </div>
-          
-          <div className="mt-4 md:mt-0 flex space-x-3">
-            {isOwnProfile ? (
-              <button
-                onClick={handleEditProfile}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <span className="inline-flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </span>
-                ) : (
-                  <>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </>
-                )}
-              </button>
-            ) : null}
-          </div>
-        </div>
-        
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
@@ -538,7 +553,7 @@ export function ProfilePage({
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">Email address</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {profileData.email || `contact@${profileData.organization.toLowerCase().replace(/\s+/g, '')}.com`}
+                  {profileData.email || `contact@${profileData.organization?.toLowerCase().replace(/\s+/g, '')}.com`}
                 </dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -781,6 +796,165 @@ export function ProfilePage({
     );
   };
 
+  // Function to render connections tab content
+  const renderConnectionsContent = () => {
+    if (isLoadingConnections) {
+      return (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-6">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">Your Connections</h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              People and organizations you've connected with on the platform.
+            </p>
+          </div>
+          <div className="border-t border-gray-200">
+            <ul className="divide-y divide-gray-200">
+              {connections.length > 0 ? (
+                connections.map((connection) => (
+                  <li key={connection.id} className="px-6 py-4 hover:bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                          {connection.type === 'startup' ? (
+                            <Briefcase className="h-5 w-5 text-indigo-600" />
+                          ) : connection.type === 'research' ? (
+                            <Award className="h-5 w-5 text-purple-600" />
+                          ) : (
+                            <User className="h-5 w-5 text-gray-600" />
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{connection.name}</div>
+                          <div className="text-sm text-gray-500 capitalize">{connection.type}</div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Link
+                          to={`/profile/${connection.id}`}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                        >
+                          View Profile
+                        </Link>
+                        <Link
+                          to={`/messages/${connection.id}`}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200"
+                        >
+                          Message
+                        </Link>
+                      </div>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li className="px-4 py-12 sm:px-6 text-center">
+                  <div className="text-gray-500">
+                    <p>You don't have any connections yet.</p>
+                    <p className="mt-1 text-sm">Browse the innovators list to find people to connect with.</p>
+                  </div>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Function to render collaborations tab content
+  const renderCollaborationsContent = () => {
+    if (isLoadingCollaborations) {
+      return (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-6">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">Your Collaborations</h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Challenges, partnerships, and ideas you've created or participated in.
+            </p>
+          </div>
+          <div className="border-t border-gray-200">
+            <ul className="divide-y divide-gray-200">
+              {collaborations.length > 0 ? (
+                collaborations.map((collaboration) => (
+                  <li key={collaboration.id} className="px-6 py-4 hover:bg-gray-50">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{collaboration.title}</div>
+                        <div className="text-sm text-gray-500 capitalize">{collaboration.type}</div>
+                        <div className="mt-1 text-sm text-gray-500">
+                          {collaboration.description.length > 100 
+                            ? `${collaboration.description.substring(0, 100)}...` 
+                            : collaboration.description}
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          collaboration.status === 'active' ? 'bg-green-100 text-green-800' :
+                          collaboration.status === 'proposed' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {collaboration.status}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Link
+                        to={`/collaboration/${collaboration.id}`}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                      >
+                        View Details
+                      </Link>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li className="px-4 py-12 sm:px-6 text-center">
+                  <div className="text-gray-500">
+                    <p>You don't have any collaborations yet.</p>
+                    <p className="mt-1 text-sm">Create a challenge, partnership, or idea to get started.</p>
+                  </div>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Function to render the active tab content
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'profile':
+        return renderProfileContent();
+      case 'potential-matches':
+        return renderPotentialMatchesContent();
+      case 'match-requests':
+        return renderMatchRequestsContent();
+      case 'connections':
+        return renderConnectionsContent();
+      case 'collaborations':
+        return renderCollaborationsContent();
+      default:
+        return renderProfileContent();
+    }
+  };
+
   // Message Modal
   const MessageModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -838,101 +1012,169 @@ export function ProfilePage({
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-      
-      {onBack && (
-        <button
-          onClick={onBack}
-          className="mb-4 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          ← Back
-        </button>
-      )}
-      
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
-        <div className="px-4 py-5 sm:px-6 flex flex-col md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center">
-            <div className="h-20 w-20 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center">
-              {profileData.type === 'investor' ? (
-                <DollarSign className="h-10 w-10 text-white" />
-              ) : profileData.type === 'startup' ? (
-                <Briefcase className="h-10 w-10 text-white" />
-              ) : profileData.type === 'research' ? (
-                <Award className="h-10 w-10 text-white" />
-              ) : (
-                <User className="h-10 w-10 text-white" />
-              )}
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back button */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="mb-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </button>
+        )}
+        
+        {/* Profile header */}
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+          <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                {profileData.type === 'startup' ? (
+                  <Briefcase className="h-8 w-8 text-indigo-600" />
+                ) : profileData.type === 'research' ? (
+                  <Award className="h-8 w-8 text-purple-600" />
+                ) : (
+                  <User className="h-8 w-8 text-gray-600" />
+                )}
+              </div>
+              <div className="ml-4">
+                <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
+                <p className="text-sm text-gray-500 capitalize">{profileData.type}</p>
+              </div>
             </div>
-            <div className="ml-4">
-              <h2 className="text-2xl font-bold text-gray-900">{profileData.name}</h2>
-              <p className="text-sm text-gray-500 capitalize">{profileData.type}</p>
-            </div>
-          </div>
-        </div>
-        <div className="border-b border-gray-200">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`px-6 py-4 text-sm font-medium ${
-                activeTab === 'profile'
-                  ? 'text-indigo-600 border-b-2 border-indigo-500'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'
-              }`}
-            >
-              Profile
-            </button>
             
-            {/* Only show these tabs for authenticated users viewing their own profile */}
-            {isAuthenticated && isOwnProfile && (
-              <>
+            {isOwnProfile && (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Profile
+              </button>
+            )}
+            
+            {!isOwnProfile && isAuthenticated && (
+              <div className="flex space-x-3">
                 <button
-                  onClick={() => setActiveTab('potential-matches')}
-                  className={`px-6 py-4 text-sm font-medium flex items-center ${
-                    activeTab === 'potential-matches'
-                      ? 'text-indigo-600 border-b-2 border-indigo-500'
-                      : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'
-                  }`}
+                  onClick={handleConnect}
+                  disabled={isLoading || connectionStatus === 'pending'}
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md ${
+                    connectionStatus === 'success' 
+                      ? 'text-green-700 bg-green-100 hover:bg-green-200' 
+                      : 'text-white bg-indigo-600 hover:bg-indigo-700'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                 >
-                  Potential Matches
-                  {matches.length > 0 && (
-                    <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800">
-                      {matches.length}
-                    </span>
+                  {connectionStatus === 'pending' ? (
+                    <>
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                      Connecting...
+                    </>
+                  ) : connectionStatus === 'success' ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Connected
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Connect
+                    </>
                   )}
                 </button>
+                
                 <button
-                  onClick={() => setActiveTab('match-requests')}
-                  className={`px-6 py-4 text-sm font-medium flex items-center ${
-                    activeTab === 'match-requests'
-                      ? 'text-indigo-600 border-b-2 border-indigo-500'
-                      : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'
-                  }`}
+                  onClick={handleMessage}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  Match Requests
-                  {matchRequests.length > 0 && (
-                    <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                      {matchRequests.length}
-                    </span>
-                  )}
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Message
                 </button>
-              </>
+              </div>
             )}
           </div>
+          
+          {/* Tabs */}
+          <div className="border-t border-gray-200">
+            <nav className="flex flex-wrap">
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`px-6 py-4 text-sm font-medium ${
+                  activeTab === 'profile'
+                    ? 'text-indigo-700 border-b-2 border-indigo-500'
+                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Profile
+              </button>
+              
+              {isOwnProfile && isAuthenticated && (
+                <>
+                  <button
+                    onClick={() => setActiveTab('potential-matches')}
+                    className={`px-6 py-4 text-sm font-medium ${
+                      activeTab === 'potential-matches'
+                        ? 'text-indigo-700 border-b-2 border-indigo-500'
+                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Potential Matches {matches.length > 0 && <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-800">{matches.length}</span>}
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('match-requests')}
+                    className={`px-6 py-4 text-sm font-medium ${
+                      activeTab === 'match-requests'
+                        ? 'text-indigo-700 border-b-2 border-indigo-500'
+                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Match Requests {matchRequests.length > 0 && <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-800">{matchRequests.length}</span>}
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('connections')}
+                    className={`px-6 py-4 text-sm font-medium ${
+                      activeTab === 'connections'
+                        ? 'text-indigo-700 border-b-2 border-indigo-500'
+                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Connections
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('collaborations')}
+                    className={`px-6 py-4 text-sm font-medium ${
+                      activeTab === 'collaborations'
+                        ? 'text-indigo-700 border-b-2 border-indigo-500'
+                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Collaborations
+                  </button>
+                </>
+              )}
+            </nav>
+          </div>
         </div>
+
+        {/* Render content based on active tab */}
+        {renderTabContent()}
+
+        {/* Message Modal */}
+        {showMessageModal && <MessageModal />}
+        
+        {/* Edit Profile Modal */}
+        {showEditModal && (
+          <EditProfileModal
+            user={profileData}
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            onSave={handleSaveProfile}
+          />
+        )}
       </div>
-
-      {/* Render content based on active tab */}
-      {activeTab === 'profile' && renderProfileContent()}
-      {activeTab === 'potential-matches' && renderPotentialMatchesContent()}
-      {activeTab === 'match-requests' && renderMatchRequestsContent()}
-
-      {/* Message Modal */}
-      {showMessageModal && <MessageModal />}
     </div>
   );
 }
