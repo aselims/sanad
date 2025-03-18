@@ -158,7 +158,11 @@ export function App() {
   };
 
   const handleNavigateToMessages = () => {
-    navigate('/messages');
+    if (user) {
+      navigate(`/profile/${user.id}?tab=messages`);
+    } else {
+      navigate('/auth');
+    }
   };
 
   const handleBackToHome = () => {
@@ -313,6 +317,11 @@ export function App() {
               pageType={window.location.pathname.split('/legal/')[1] as 'terms' | 'privacy' | 'cookies'}
             />
           } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              {user ? <ProfilePageWrapper innovators={innovators} onBack={() => navigate(-1)} /> : null}
+            </ProtectedRoute>
+          } />
           <Route path="/profile/:id" element={<ProfilePageWrapper innovators={innovators} onBack={() => navigate(-1)} />} />
           
           {/* Add new routes for messages */}
@@ -352,19 +361,30 @@ export function App() {
 function ProfilePageWrapper({ innovators, onBack }: { innovators: Innovator[], onBack: () => void }) {
   const navigate = useNavigate();
   const location = window.location.pathname;
-  const id = location.split('/profile/')[1];
   const { user: currentUser } = useAuth();
+  
+  // Get ID from URL or use current user's ID
+  let id: string | undefined;
+  if (location.includes('/profile/')) {
+    id = location.split('/profile/')[1];
+  } else if (currentUser) {
+    id = currentUser.id;
+  }
+  
   const [matchRequests, setMatchRequests] = useState<any[]>([]);
   const [potentialMatches, setPotentialMatches] = useState<Innovator[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
   // Find the innovator by ID
-  const innovator = innovators.find(i => i.id === id);
-
+  const innovator = id ? innovators.find(i => i.id === id) : undefined;
+  
+  // If no ID or innovator not found but user is logged in, use current user
+  const userToDisplay = innovator || (currentUser ? currentUser as unknown as Innovator : undefined);
+  
   // Fetch match requests and potential matches if this is the current user's profile
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (currentUser && currentUser.id === id) {
+      if (currentUser && id && currentUser.id === id) {
         setIsLoading(true);
         try {
           const [matchRequestsData, potentialMatchesData] = await Promise.all([
@@ -385,7 +405,7 @@ function ProfilePageWrapper({ innovators, onBack }: { innovators: Innovator[], o
     fetchProfileData();
   }, [currentUser, id]);
  
-  if (!innovator) {
+  if (!userToDisplay) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
@@ -402,7 +422,7 @@ function ProfilePageWrapper({ innovators, onBack }: { innovators: Innovator[], o
   
   return (
     <ProfilePage 
-      user={innovator} 
+      user={userToDisplay} 
       onBack={onBack} 
       matchRequests={matchRequests}
       potentialMatches={potentialMatches}

@@ -236,7 +236,7 @@ const MessagesPage: React.FC = () => {
                 {/* Conversation Header */}
                 <div className="p-4 border-b border-gray-200 flex items-center">
                   <button
-                    onClick={() => navigate('/messages')}
+                    onClick={() => navigate(currentUser ? `/profile/${currentUser.id}?tab=messages` : '/profile?tab=messages')}
                     className="md:hidden mr-2 p-1 rounded-full hover:bg-gray-100"
                   >
                     <ArrowLeft className="h-5 w-5 text-gray-500" />

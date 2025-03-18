@@ -121,7 +121,7 @@ export function Header({
     if (onNavigateToMessages) {
       onNavigateToMessages();
     } else {
-      navigate('/messages');
+      navigate(user ? `/profile/${user.id}?tab=messages` : '/profile?tab=messages');
     }
     setShowUserMenu(false);
   };
@@ -188,7 +188,7 @@ export function Header({
         </Link>
         
         <Link
-          to="/messages"
+          to={user ? `/profile/${user.id}?tab=messages` : "/auth"}
           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           onClick={() => setShowUserMenu(false)}
         >
@@ -260,7 +260,7 @@ export function Header({
                 </li>
                 <li>
                   <Link
-                    to="/messages"
+                    to={user ? `/profile/${user.id}?tab=messages` : "/auth"}
                     className="flex items-center text-gray-700 hover:text-indigo-600"
                     onClick={() => setShowMobileMenu(false)}
                   >

@@ -24,7 +24,7 @@ import {
   UserPlus,
   MessageSquare
 } from 'lucide-react';
-import { Innovator, Collaboration, User as UserType } from '../types';
+import { Innovator, Collaboration, User as UserType, Message, Conversation } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import ProtectedAction from './auth/ProtectedAction';
 import EditProfileModal from './EditProfileModal';
@@ -62,11 +62,11 @@ export function ProfilePage({
   const tabParam = queryParams.get('tab');
   
   // Set initial active tab based on query parameter if it exists and is valid
-  const initialTab = tabParam && ['profile', 'potential-matches', 'match-requests', 'connections', 'collaborations'].includes(tabParam) 
-    ? tabParam as 'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations'
+  const initialTab = tabParam && ['profile', 'potential-matches', 'match-requests', 'connections', 'collaborations', 'messages'].includes(tabParam) 
+    ? tabParam as 'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages'
     : 'profile';
   
-  const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages'>(initialTab);
   const [showEditModal, setShowEditModal] = useState(false);
   const [profileData, setProfileData] = useState<Innovator>(user);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -88,13 +88,18 @@ export function ProfilePage({
   const [collaborations, setCollaborations] = useState<any[]>([]);
   const [isLoadingCollaborations, setIsLoadingCollaborations] = useState(false);
 
+  // Add state for messages
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === user.id;
 
   // Reset activeTab to 'profile' if a non-authenticated user tries to access a protected tab
   useEffect(() => {
     if ((!isAuthenticated || !isOwnProfile) && 
-        (activeTab === 'potential-matches' || activeTab === 'match-requests' || activeTab === 'connections' || activeTab === 'collaborations')) {
+        (activeTab === 'potential-matches' || activeTab === 'match-requests' || activeTab === 'connections' || activeTab === 'collaborations' || activeTab === 'messages')) {
       setActiveTab('profile');
     }
   }, [isAuthenticated, isOwnProfile, activeTab]);
@@ -118,7 +123,7 @@ export function ProfilePage({
     fetchMatches();
   }, [activeTab, isAuthenticated, isOwnProfile, user.id]);
   
-  // Add useEffect to fetch connections when tab changes
+  // Fetch connections when tab changes
   useEffect(() => {
     const fetchConnections = async () => {
       if (activeTab === 'connections' && isAuthenticated && isOwnProfile) {
@@ -137,7 +142,7 @@ export function ProfilePage({
     fetchConnections();
   }, [activeTab, isAuthenticated, isOwnProfile]);
   
-  // Add useEffect to fetch collaborations when tab changes
+  // Fetch collaborations when tab changes
   useEffect(() => {
     const fetchCollaborations = async () => {
       if (activeTab === 'collaborations' && isAuthenticated && isOwnProfile) {
@@ -155,6 +160,26 @@ export function ProfilePage({
     
     fetchCollaborations();
   }, [activeTab, isAuthenticated, isOwnProfile, user.id]);
+
+  // Fetch messages when tab changes
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (activeTab === 'messages' && isAuthenticated && isOwnProfile) {
+        setMessagesLoading(true);
+        try {
+          const { getConversations } = await import('../services/messages');
+          const userConversations = await getConversations();
+          setConversations(userConversations);
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+        } finally {
+          setMessagesLoading(false);
+        }
+      }
+    };
+    
+    fetchMessages();
+  }, [activeTab, isAuthenticated, isOwnProfile]);
 
   // Function to handle connect action
   const handleConnect = async () => {
@@ -937,6 +962,85 @@ export function ProfilePage({
     );
   };
 
+  // Function to render messages content
+  const renderMessagesContent = () => {
+    if (messagesLoading) {
+      return (
+        <div className="py-10 text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500 mb-2"></div>
+          <p className="text-gray-500">Loading messages...</p>
+        </div>
+      );
+    }
+
+    if (conversations.length === 0) {
+      return (
+        <div className="py-10 text-center">
+          <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-gray-900 mb-1">No messages yet</h3>
+          <p className="text-gray-500 mb-6">You haven't exchanged any messages yet.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="divide-y divide-gray-200">
+        {conversations.map((conversation) => {
+          const { userId, user, latestMessage, unreadCount } = conversation;
+          const isUnread = unreadCount > 0;
+          
+          return (
+            <div 
+              key={userId} 
+              className={`p-4 hover:bg-gray-50 transition-colors ${isUnread ? 'bg-indigo-50' : ''}`}
+              onClick={() => {
+                // Navigate to the full conversation view
+                navigate(`/messages/${userId}`);
+              }}
+            >
+              <div className="flex items-start">
+                <div className="flex-shrink-0 mr-4">
+                  {user.profilePicture ? (
+                    <img 
+                      src={user.profilePicture} 
+                      alt={`${user.firstName} ${user.lastName}`} 
+                      className="h-10 w-10 rounded-full"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <User className="h-5 w-5 text-indigo-600" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between">
+                    <h4 className="text-sm font-medium text-gray-900 truncate">
+                      {user.firstName} {user.lastName}
+                    </h4>
+                    <span className="text-xs text-gray-500">
+                      {new Date(latestMessage.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  <p className={`text-sm truncate ${isUnread ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
+                    {latestMessage.content}
+                  </p>
+                  
+                  {isUnread && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 mt-1">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   // Function to render the active tab content
   const renderTabContent = () => {
     switch (activeTab) {
@@ -950,6 +1054,8 @@ export function ProfilePage({
         return renderConnectionsContent();
       case 'collaborations':
         return renderCollaborationsContent();
+      case 'messages':
+        return renderMessagesContent();
       default:
         return renderProfileContent();
     }
@@ -1152,6 +1258,17 @@ export function ProfilePage({
                     }`}
                   >
                     Collaborations
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('messages')}
+                    className={`px-6 py-4 text-sm font-medium ${
+                      activeTab === 'messages'
+                        ? 'text-indigo-700 border-b-2 border-indigo-500'
+                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    Messages {conversations.length > 0 && <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-800">{conversations.length}</span>}
                   </button>
                 </>
               )}

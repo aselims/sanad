@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { performNormalSearch, performAISearch, SearchResults } from '../services/search';
 import { Innovator, Collaboration } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HomePageProps {
   onNavigateToWorkspace: () => void;
@@ -66,6 +67,7 @@ export function HomePage({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isAISearch, setIsAISearch] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResults>(initialSearchResults || { innovators: [], collaborations: [], aiResults: [] });
+  const { isAuthenticated } = useAuth();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -689,12 +691,14 @@ export function HomePage({
               </div>
               
               <div className="flex flex-wrap justify-center gap-4 mt-10">
-                <button 
-                  onClick={onNavigateToWorkspace}
-                  className="px-8 py-4 bg-white text-indigo-700 rounded-lg shadow-md hover:bg-gray-50 font-medium text-lg transition-all duration-200 transform hover:scale-105"
-                >
-                  Create an Account
-                </button>
+                {!isAuthenticated && (
+                  <button 
+                    onClick={onNavigateToWorkspace}
+                    className="px-8 py-4 bg-white text-indigo-700 rounded-lg shadow-md hover:bg-gray-50 font-medium text-lg transition-all duration-200 transform hover:scale-105"
+                  >
+                    Create an Account
+                  </button>
+                )}
                 <button 
                   onClick={onNavigateToChallenges}
                   className="px-8 py-4 bg-indigo-800 text-white rounded-lg shadow-md hover:bg-indigo-900 font-medium text-lg transition-all duration-200 transform hover:scale-105"
