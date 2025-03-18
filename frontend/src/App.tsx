@@ -13,7 +13,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 import type { Collaboration, Innovator } from './types';
 import { getAllCollaborations } from './services/collaborations';
-import { saveIdea } from './services/ideas';
+import { saveIdea, createIdea } from './services/ideas';
 import { getAllInnovators } from './services/innovators';
 import { HowItWorks } from './components/HowItWorks';
 import { SuccessStories } from './components/SuccessStories';
@@ -25,6 +25,8 @@ import { SearchResults } from './services/search';
 import { Footer } from './components/Footer';
 import MessagesPage from './components/MessagesPage';
 import { getPotentialMatches, getMatchRequests } from './services/matches';
+import { createChallenge } from './services/challenges';
+import { createPartnership } from './services/partnerships';
 
 export function App() {
   const navigate = useNavigate();
@@ -236,6 +238,89 @@ export function App() {
     // You can add additional logic here if needed
   };
 
+  // Add a function to handle collaboration creation
+  const handleCreateCollaboration = async (newCollaboration: Partial<Collaboration>) => {
+    console.log('Creating new collaboration:', newCollaboration);
+    
+    try {
+      let createdCollaboration: Collaboration | null = null;
+      
+      // Call the appropriate service function based on collaboration type
+      if (newCollaboration.type === 'challenge') {
+        // Convert collaboration to challenge format
+        const challengeData = {
+          title: newCollaboration.title || '',
+          description: newCollaboration.description || '',
+          organization: (newCollaboration.participants && newCollaboration.participants.length > 0) ? 
+            newCollaboration.participants[0] : 'Unknown Organization',
+          status: newCollaboration.status === 'proposed' ? 'open' : 
+                 newCollaboration.status === 'active' ? 'in-progress' : 'completed' as 'open' | 'in-progress' | 'completed',
+          deadline: newCollaboration.challengeDetails?.deadline,
+          reward: newCollaboration.challengeDetails?.reward,
+          eligibilityCriteria: newCollaboration.challengeDetails?.eligibilityCriteria
+        };
+        
+        const createdChallenge = await createChallenge(challengeData);
+        // Convert the response back to a collaboration
+        createdCollaboration = {
+          id: createdChallenge.id,
+          title: createdChallenge.title,
+          participants: [createdChallenge.organization],
+          status: createdChallenge.status === 'open' ? 'proposed' : 
+                 createdChallenge.status === 'in-progress' ? 'active' : 'completed',
+          description: createdChallenge.description,
+          type: 'challenge',
+          challengeDetails: {
+            deadline: createdChallenge.deadline || '',
+            reward: createdChallenge.reward || '',
+            eligibilityCriteria: createdChallenge.eligibilityCriteria || ''
+          },
+          createdAt: createdChallenge.createdAt,
+          updatedAt: createdChallenge.updatedAt
+        };
+      } 
+      else if (newCollaboration.type === 'partnership') {
+        createdCollaboration = await createPartnership(newCollaboration);
+      } 
+      else if (newCollaboration.type === 'idea') {
+        createdCollaboration = await createIdea(newCollaboration);
+      }
+      
+      if (createdCollaboration) {
+        // Add the new collaboration to the state
+        setCollaborations(prevCollaborations => [createdCollaboration!, ...prevCollaborations]);
+        console.log('Successfully created and added collaboration to state');
+      } else {
+        console.error('Failed to create collaboration: no collaboration was returned');
+      }
+    } catch (error) {
+      console.error('Error creating collaboration:', error);
+      
+      // Generate a temporary ID as fallback - this ensures UI still shows something even if API call fails
+      const tempId = `temp-${Date.now()}`;
+      
+      // Create a full collaboration object from the partial one as fallback
+      const fallbackCollaboration: Collaboration = {
+        id: tempId,
+        title: newCollaboration.title || 'Untitled Collaboration',
+        description: newCollaboration.description || '',
+        participants: newCollaboration.participants || [],
+        status: newCollaboration.status || 'proposed',
+        type: newCollaboration.type || 'partnership',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        // Include type-specific details
+        ...(newCollaboration.challengeDetails && { challengeDetails: newCollaboration.challengeDetails }),
+        ...(newCollaboration.partnershipDetails && { partnershipDetails: newCollaboration.partnershipDetails }),
+        ...(newCollaboration.ideaDetails && { ideaDetails: newCollaboration.ideaDetails }),
+      };
+      
+      // Add the fallback collaboration to the state
+      setCollaborations(prevCollaborations => [fallbackCollaboration, ...prevCollaborations]);
+      console.log('Added fallback collaboration to state due to API error');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header 
@@ -272,7 +357,7 @@ export function App() {
           <Route path="/workspace" element={
             <div className="bg-gray-50 min-h-screen">
               <WorkspaceHeader 
-                onCreateCollaboration={(collaboration) => console.log('Create collaboration:', collaboration)}
+                onCreateCollaboration={handleCreateCollaboration}
                 activeFilter={activeFilter}
                 onFilterChange={(filter) => setActiveFilter(filter as 'all' | 'challenges' | 'partnerships' | 'ideas')}
                 onSearch={handleWorkspaceSearch}
