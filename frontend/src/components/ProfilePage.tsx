@@ -22,9 +22,11 @@ import {
   ArrowLeft,
   Check,
   UserPlus,
-  MessageSquare
+  MessageSquare,
+  X,
+  Clock
 } from 'lucide-react';
-import { Innovator, Collaboration, User as UserType, Message, Conversation } from '../types';
+import { Innovator, Collaboration, User as UserType, Message, Conversation, Connection, ConnectionStatus } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import ProtectedAction from './auth/ProtectedAction';
 import EditProfileModal from './EditProfileModal';
@@ -32,7 +34,7 @@ import { connectWithUser, sendMessageToUser, updateCurrentUserProfile } from '..
 import { findPotentialMatches } from '../utils/matchUtils';
 import { getPotentialMatches, saveMatchPreference } from '../services/matches';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { getUserConnections } from '../services/connections';
+import { getUserConnections, getConnectionRequests, respondToConnectionRequest } from '../services/connections';
 import { getUserCollaborations } from '../services/collaborations';
 
 interface ProfilePageProps {
@@ -62,11 +64,11 @@ export function ProfilePage({
   const tabParam = queryParams.get('tab');
   
   // Set initial active tab based on query parameter if it exists and is valid
-  const initialTab = tabParam && ['profile', 'potential-matches', 'match-requests', 'connections', 'collaborations', 'messages'].includes(tabParam) 
-    ? tabParam as 'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages'
+  const initialTab = tabParam && ['profile', 'potential-matches', 'match-requests', 'connections', 'collaborations', 'messages', 'connection-requests'].includes(tabParam) 
+    ? tabParam as 'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages' | 'connection-requests'
     : 'profile';
   
-  const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages' | 'connection-requests'>(initialTab);
   const [showEditModal, setShowEditModal] = useState(false);
   const [profileData, setProfileData] = useState<Innovator>(user);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -93,13 +95,26 @@ export function ProfilePage({
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
 
+  // Add state for connection requests and user's connection status
+  const [connectionRequests, setConnectionRequests] = useState<Connection[]>([]);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+  const [userConnectionStatus, setUserConnectionStatus] = useState<'not_connected' | 'pending' | 'connected'>('not_connected');
+  const [connectionsCount, setConnectionsCount] = useState<number>(0);
+
+  // Add state for viewing collaborations with a specific connection
+  const [selectedConnection, setSelectedConnection] = useState<any | null>(null);
+  const [connectionCollaborations, setConnectionCollaborations] = useState<Collaboration[]>([]);
+  const [isLoadingConnectionCollabs, setIsLoadingConnectionCollabs] = useState(false);
+
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === user.id;
 
   // Reset activeTab to 'profile' if a non-authenticated user tries to access a protected tab
   useEffect(() => {
     if ((!isAuthenticated || !isOwnProfile) && 
-        (activeTab === 'potential-matches' || activeTab === 'match-requests' || activeTab === 'connections' || activeTab === 'collaborations' || activeTab === 'messages')) {
+        (activeTab === 'potential-matches' || activeTab === 'match-requests' || 
+         activeTab === 'connections' || activeTab === 'collaborations' || 
+         activeTab === 'messages' || activeTab === 'connection-requests')) {
       setActiveTab('profile');
     }
   }, [isAuthenticated, isOwnProfile, activeTab]);
@@ -131,6 +146,7 @@ export function ProfilePage({
         try {
           const data = await getUserConnections();
           setConnections(data);
+          setConnectionsCount(data.length);
         } catch (error) {
           console.error('Error fetching connections:', error);
         } finally {
@@ -141,6 +157,67 @@ export function ProfilePage({
     
     fetchConnections();
   }, [activeTab, isAuthenticated, isOwnProfile]);
+  
+  // Fetch connection requests when tab changes or on component mount
+  useEffect(() => {
+    const fetchConnectionRequests = async () => {
+      if ((activeTab === 'connection-requests' || !isOwnProfile) && isAuthenticated) {
+        setIsLoadingRequests(true);
+        try {
+          const requests = await getConnectionRequests();
+          setConnectionRequests(requests);
+          
+          // Check if viewing another user's profile to determine connection status
+          if (!isOwnProfile && currentUser) {
+            // Check if there's a pending request from current user to this profile
+            const pendingRequest = requests.find(
+              req => (req.requesterId === currentUser.id && req.receiverId === user.id) || 
+                    (req.receiverId === currentUser.id && req.requesterId === user.id)
+            );
+            
+            if (pendingRequest) {
+              if (pendingRequest.status === ConnectionStatus.PENDING) {
+                setUserConnectionStatus('pending');
+              } else if (pendingRequest.status === ConnectionStatus.ACCEPTED) {
+                setUserConnectionStatus('connected');
+              }
+            } else {
+              // Check if they're already connected by fetching connections
+              const userConnections = await getUserConnections();
+              const isConnected = userConnections.some(conn => conn.id === user.id);
+              if (isConnected) {
+                setUserConnectionStatus('connected');
+              } else {
+                setUserConnectionStatus('not_connected');
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching connection requests:', error);
+        } finally {
+          setIsLoadingRequests(false);
+        }
+      }
+    };
+    
+    if (isAuthenticated) {
+      fetchConnectionRequests();
+      
+      // Fetch connections count if this is own profile
+      if (isOwnProfile) {
+        const getConnectionsCount = async () => {
+          try {
+            const connections = await getUserConnections();
+            setConnectionsCount(connections.length);
+          } catch (error) {
+            console.error('Error fetching connections count:', error);
+          }
+        };
+        
+        getConnectionsCount();
+      }
+    }
+  }, [activeTab, isAuthenticated, isOwnProfile, currentUser, user.id]);
   
   // Fetch collaborations when tab changes
   useEffect(() => {
@@ -191,9 +268,12 @@ export function ProfilePage({
     
     try {
       await connectWithUser(profileData.id);
-      console.log('Successfully connected with', profileData.name);
-      // Show success message
+      console.log('Successfully sent connection request to', profileData.name);
+      
+      // Update connection status
+      setUserConnectionStatus('pending');
       setConnectionStatus('success');
+      
       // Reset status after 3 seconds
       setTimeout(() => {
         setConnectionStatus('idle');
@@ -204,6 +284,40 @@ export function ProfilePage({
       setConnectionStatus('error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Function to handle accepting or rejecting connection requests
+  const handleConnectionResponse = async (connectionId: string, action: 'accept' | 'reject') => {
+    setIsLoadingRequests(true);
+    
+    try {
+      await respondToConnectionRequest(connectionId, action);
+      
+      // Update the connection requests list
+      setConnectionRequests(prevRequests => 
+        prevRequests.map(request => 
+          request.id === connectionId 
+            ? { ...request, status: action === 'accept' ? ConnectionStatus.ACCEPTED : ConnectionStatus.REJECTED } 
+            : request
+        )
+      );
+      
+      // If on this user's profile, update the connection status
+      if (!isOwnProfile) {
+        setUserConnectionStatus(action === 'accept' ? 'connected' : 'not_connected');
+      }
+      
+      // Refresh connections if accepting
+      if (action === 'accept') {
+        const updatedConnections = await getUserConnections();
+        setConnections(updatedConnections);
+        setConnectionsCount(updatedConnections.length);
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing connection request:`, error);
+    } finally {
+      setIsLoadingRequests(false);
     }
   };
 
@@ -316,6 +430,31 @@ export function ProfilePage({
   const handleViewProfile = (innovatorId: string) => {
     console.log(`Navigating to profile: /profile/${innovatorId}`);
     navigate(`/profile/${innovatorId}`);
+  };
+
+  // Function to handle viewing collaborations with a specific connection
+  const handleViewConnectionCollaborations = async (connection: any) => {
+    setSelectedConnection(connection);
+    setIsLoadingConnectionCollabs(true);
+    
+    try {
+      // Get collaborations between current user and selected connection
+      const collaborations = await getUserCollaborations(user.id);
+      const sharedCollabs = collaborations.filter((collab: Collaboration) => 
+        collab.participants.includes(connection.id)
+      );
+      setConnectionCollaborations(sharedCollabs);
+    } catch (error) {
+      console.error('Error fetching shared collaborations:', error);
+    } finally {
+      setIsLoadingConnectionCollabs(false);
+    }
+  };
+
+  // Function to go back to connections list
+  const handleBackToConnections = () => {
+    setSelectedConnection(null);
+    setConnectionCollaborations([]);
   };
 
   // Function to render different content based on user type
@@ -831,6 +970,77 @@ export function ProfilePage({
       );
     }
     
+    // If a connection is selected, show their collaborations
+    if (selectedConnection) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
+              <div>
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Collaborations with {selectedConnection.name}
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Projects and initiatives you're working on together.
+                </p>
+              </div>
+              <button
+                onClick={handleBackToConnections}
+                className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                Back to Connections
+              </button>
+            </div>
+            <div className="border-t border-gray-200">
+              {isLoadingConnectionCollabs ? (
+                <div className="flex justify-center items-center h-40">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : connectionCollaborations.length > 0 ? (
+                <ul className="divide-y divide-gray-200">
+                  {connectionCollaborations.map((collab) => (
+                    <li key={collab.id} className="px-6 py-4 hover:bg-gray-50">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{collab.title}</div>
+                        <div className="text-sm text-gray-500 capitalize">{collab.type}</div>
+                        <div className="mt-2 text-sm text-gray-500">
+                          {collab.description.length > 100 
+                            ? `${collab.description.substring(0, 100)}...` 
+                            : collab.description}
+                        </div>
+                        <div className="mt-2 flex">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            collab.status === 'active'
+                              ? 'bg-green-100 text-green-800'
+                              : collab.status === 'completed'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {collab.status.charAt(0).toUpperCase() + collab.status.slice(1)}
+                          </span>
+                          <span className="ml-2 text-xs text-gray-500">
+                            Started: {new Date(collab.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-4 py-12 sm:px-6 text-center">
+                  <div className="text-gray-500">
+                    <p>You don't have any collaborations with {selectedConnection.name} yet.</p>
+                    <p className="mt-1 text-sm">Start a new project together by creating a challenge or partnership.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="space-y-6">
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -862,6 +1072,12 @@ export function ProfilePage({
                         </div>
                       </div>
                       <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleViewConnectionCollaborations(connection)}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                        >
+                          View Collaborations
+                        </button>
                         <Link
                           to={`/profile/${connection.id}`}
                           className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
@@ -1041,6 +1257,88 @@ export function ProfilePage({
     );
   };
 
+  // Function to render connection requests tab content
+  const renderConnectionRequestsContent = () => {
+    if (isLoadingRequests) {
+      return (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      );
+    }
+    
+    const pendingRequests = connectionRequests.filter(
+      request => request.status === ConnectionStatus.PENDING
+    );
+    
+    return (
+      <div className="space-y-6">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">Connection Requests</h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              People who want to connect with you. Accept or reject connection requests.
+            </p>
+          </div>
+          <div className="border-t border-gray-200">
+            <ul className="divide-y divide-gray-200">
+              {pendingRequests.length > 0 ? (
+                pendingRequests.map((request) => (
+                  <li key={request.id} className="px-6 py-4 hover:bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                          {request.requester?.role === 'startup' ? (
+                            <Briefcase className="h-5 w-5 text-indigo-600" />
+                          ) : request.requester?.role === 'research' ? (
+                            <Award className="h-5 w-5 text-purple-600" />
+                          ) : (
+                            <User className="h-5 w-5 text-gray-600" />
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {request.requester?.firstName} {request.requester?.lastName}
+                          </div>
+                          <div className="text-sm text-gray-500 capitalize">{request.requester?.role}</div>
+                          <div className="text-xs text-gray-400">
+                            {new Date(request.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleConnectionResponse(request.id, 'accept')}
+                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                        >
+                          <Check className="mr-1 h-4 w-4" />
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleConnectionResponse(request.id, 'reject')}
+                          className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                        >
+                          <X className="mr-1 h-4 w-4" />
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li className="px-4 py-12 sm:px-6 text-center">
+                  <div className="text-gray-500">
+                    <p>You don't have any pending connection requests.</p>
+                  </div>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Function to render the active tab content
   const renderTabContent = () => {
     switch (activeTab) {
@@ -1056,6 +1354,8 @@ export function ProfilePage({
         return renderCollaborationsContent();
       case 'messages':
         return renderMessagesContent();
+      case 'connection-requests':
+        return renderConnectionRequestsContent();
       default:
         return renderProfileContent();
     }
@@ -1118,180 +1418,244 @@ export function ProfilePage({
   );
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back button */}
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="mb-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </button>
-        )}
-        
-        {/* Profile header */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-          <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center">
-                {profileData.type === 'startup' ? (
-                  <Briefcase className="h-8 w-8 text-indigo-600" />
-                ) : profileData.type === 'research' ? (
-                  <Award className="h-8 w-8 text-purple-600" />
-                ) : (
-                  <User className="h-8 w-8 text-gray-600" />
-                )}
-              </div>
-              <div className="ml-4">
-                <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
-                <p className="text-sm text-gray-500 capitalize">{profileData.type}</p>
-              </div>
+    <div className="container mx-auto px-4 py-8">
+      {/* Back button if needed */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="mb-4 inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="mr-1 h-4 w-4" />
+          Back
+        </button>
+      )}
+      
+      {/* Profile header */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+        <div className="px-4 py-5 sm:px-6 flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div className="flex flex-col md:flex-row items-start md:items-center">
+            <div className="flex-shrink-0 h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center">
+              {profileData.type === 'startup' ? (
+                <Briefcase className="h-10 w-10 text-indigo-600" />
+              ) : profileData.type === 'investor' ? (
+                <DollarSign className="h-10 w-10 text-green-600" />
+              ) : profileData.type === 'research' ? (
+                <Award className="h-10 w-10 text-purple-600" />
+              ) : profileData.type === 'individual' ? (
+                <User className="h-10 w-10 text-blue-600" />
+              ) : profileData.type === 'accelerator' || profileData.type === 'incubator' ? (
+                <Zap className="h-10 w-10 text-yellow-600" />
+              ) : (
+                <Building className="h-10 w-10 text-gray-600" />
+              )}
             </div>
             
-            {isOwnProfile && (
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Profile
-              </button>
-            )}
-            
-            {!isOwnProfile && isAuthenticated && (
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleConnect}
-                  disabled={isLoading || connectionStatus === 'pending'}
-                  className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md ${
-                    connectionStatus === 'success' 
-                      ? 'text-green-700 bg-green-100 hover:bg-green-200' 
-                      : 'text-white bg-indigo-600 hover:bg-indigo-700'
-                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-                >
-                  {connectionStatus === 'pending' ? (
-                    <>
-                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                      Connecting...
-                    </>
-                  ) : connectionStatus === 'success' ? (
-                    <>
-                      <Check className="mr-2 h-4 w-4" />
-                      Connected
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Connect
-                    </>
-                  )}
-                </button>
+            <div className="md:ml-5 mt-3 md:mt-0">
+              <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
+              <div className="flex flex-wrap items-center mt-1">
+                <span className="capitalize bg-gray-100 text-gray-800 text-sm px-2 py-1 rounded">
+                  {profileData.type}
+                </span>
                 
-                <button
-                  onClick={handleMessage}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Message
-                </button>
+                {profileData.position && (
+                  <span className="ml-2 text-gray-600 text-sm">
+                    {profileData.position}
+                  </span>
+                )}
+                
+                {profileData.organization && profileData.type !== 'startup' && (
+                  <span className="ml-2 text-gray-600 text-sm">
+                    at {profileData.organization}
+                  </span>
+                )}
+                
+                {!isOwnProfile && (
+                  <span className={`ml-2 text-sm px-2 py-1 rounded-full ${
+                    userConnectionStatus === 'connected' 
+                      ? 'bg-green-100 text-green-800' 
+                      : userConnectionStatus === 'pending' 
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {userConnectionStatus === 'connected' 
+                      ? 'Connected' 
+                      : userConnectionStatus === 'pending' 
+                        ? 'Connection Pending'
+                        : 'Not Connected'}
+                  </span>
+                )}
+                
+                {isOwnProfile && (
+                  <span className="ml-2 text-gray-600 text-sm flex items-center">
+                    <Users className="h-4 w-4 mr-1" /> {connectionsCount} connection{connectionsCount !== 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
-            )}
+            </div>
           </div>
           
-          {/* Tabs */}
-          <div className="border-t border-gray-200">
-            <nav className="flex flex-wrap">
+          {isOwnProfile && (
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Profile
+            </button>
+          )}
+          
+          {!isOwnProfile && isAuthenticated && (
+            <div className="flex space-x-3 mt-4 md:mt-0">
               <button
-                onClick={() => setActiveTab('profile')}
-                className={`px-6 py-4 text-sm font-medium ${
-                  activeTab === 'profile'
-                    ? 'text-indigo-700 border-b-2 border-indigo-500'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                onClick={handleConnect}
+                disabled={isLoading || connectionStatus === 'pending' || userConnectionStatus === 'connected' || userConnectionStatus === 'pending'}
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md ${
+                  userConnectionStatus === 'connected' 
+                    ? 'text-green-700 bg-green-100 cursor-default'
+                    : userConnectionStatus === 'pending'
+                      ? 'text-yellow-700 bg-yellow-100 cursor-default'
+                      : 'text-white bg-indigo-600 hover:bg-indigo-700'
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               >
-                Profile
+                {connectionStatus === 'pending' ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                    Connecting...
+                  </>
+                ) : userConnectionStatus === 'connected' ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Connected
+                  </>
+                ) : userConnectionStatus === 'pending' ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4" />
+                    Request Pending
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Connect
+                  </>
+                )}
               </button>
               
-              {isOwnProfile && isAuthenticated && (
-                <>
-                  <button
-                    onClick={() => setActiveTab('potential-matches')}
-                    className={`px-6 py-4 text-sm font-medium ${
-                      activeTab === 'potential-matches'
-                        ? 'text-indigo-700 border-b-2 border-indigo-500'
-                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Potential Matches {matches.length > 0 && <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-800">{matches.length}</span>}
-                  </button>
-                  
-                  <button
-                    onClick={() => setActiveTab('match-requests')}
-                    className={`px-6 py-4 text-sm font-medium ${
-                      activeTab === 'match-requests'
-                        ? 'text-indigo-700 border-b-2 border-indigo-500'
-                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Match Requests {matchRequests.length > 0 && <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-800">{matchRequests.length}</span>}
-                  </button>
-                  
-                  <button
-                    onClick={() => setActiveTab('connections')}
-                    className={`px-6 py-4 text-sm font-medium ${
-                      activeTab === 'connections'
-                        ? 'text-indigo-700 border-b-2 border-indigo-500'
-                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Connections
-                  </button>
-                  
-                  <button
-                    onClick={() => setActiveTab('collaborations')}
-                    className={`px-6 py-4 text-sm font-medium ${
-                      activeTab === 'collaborations'
-                        ? 'text-indigo-700 border-b-2 border-indigo-500'
-                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Collaborations
-                  </button>
-                  
-                  <button
-                    onClick={() => setActiveTab('messages')}
-                    className={`px-6 py-4 text-sm font-medium ${
-                      activeTab === 'messages'
-                        ? 'text-indigo-700 border-b-2 border-indigo-500'
-                        : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    Messages {conversations.length > 0 && <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-indigo-100 text-indigo-800">{conversations.length}</span>}
-                  </button>
-                </>
-              )}
-            </nav>
-          </div>
+              <button
+                onClick={handleMessage}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Message
+              </button>
+            </div>
+          )}
         </div>
-
-        {/* Render content based on active tab */}
-        {renderTabContent()}
-
-        {/* Message Modal */}
-        {showMessageModal && <MessageModal />}
-        
-        {/* Edit Profile Modal */}
-        {showEditModal && (
-          <EditProfileModal
-            user={profileData}
-            isOpen={showEditModal}
-            onClose={() => setShowEditModal(false)}
-            onSave={handleSaveProfile}
-          />
-        )}
       </div>
+      
+      {/* Navigation Tabs */}
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="-mb-px flex space-x-4 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'profile'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Profile
+          </button>
+          
+          {isAuthenticated && isOwnProfile && (
+            <>
+              <button
+                onClick={() => setActiveTab('potential-matches')}
+                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'potential-matches'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Matches
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('match-requests')}
+                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'match-requests'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Match Requests
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('connections')}
+                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'connections'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Connections {connectionsCount > 0 && `(${connectionsCount})`}
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('connection-requests')}
+                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'connection-requests'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Connection Requests {connectionRequests.filter(req => req.status === ConnectionStatus.PENDING && req.receiverId === currentUser?.id).length > 0 && 
+                  <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800">
+                    {connectionRequests.filter(req => req.status === ConnectionStatus.PENDING && req.receiverId === currentUser?.id).length}
+                  </span>}
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('collaborations')}
+                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'collaborations'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Collaborations
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('messages')}
+                className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'messages'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Messages
+              </button>
+            </>
+          )}
+        </nav>
+      </div>
+      
+      {/* Tab Content */}
+      {renderTabContent()}
+      
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <EditProfileModal
+          user={profileData}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveProfile}
+        />
+      )}
+      
+      {/* Message Modal */}
+      {showMessageModal && MessageModal()}
     </div>
   );
 }
