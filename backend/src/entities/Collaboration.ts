@@ -4,6 +4,21 @@ import { User } from './User';
 export enum CollaborationType {
   CHALLENGE = 'challenge',
   PARTNERSHIP = 'partnership',
+  IDEA = 'idea',
+  PROJECT = 'project',
+  INVESTMENT = 'investment',
+  MENTORSHIP = 'mentorship',
+  RESEARCH = 'research',
+  EMPLOYMENT = 'employment',
+  EVENT = 'event',
+  SUPPORT = 'support',
+  PROGRAM = 'program',
+  OPPORTUNITY = 'opportunity',
+  GRANT = 'grant',
+  INCUBATION = 'incubation',
+  ALLIANCE = 'alliance',
+  INITIATIVE = 'initiative',
+  OTHER = 'other'
 }
 
 export enum CollaborationStatus {
@@ -61,6 +76,18 @@ export class Collaboration {
 
   @Column({ nullable: true, type: 'jsonb' })
   resources: object;
+
+  @Column({ nullable: true, type: 'jsonb' })
+  typeSpecificDetails: object;
+
+  @Column({ nullable: true })
+  parentCollaborationId: string;
+
+  @Column('simple-array', { nullable: true })
+  teamMembers: string[];
+
+  @Column({ default: 'public' })
+  visibility: 'public' | 'private' | 'limited';
 
   @CreateDateColumn()
   createdAt: Date;

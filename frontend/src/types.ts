@@ -83,6 +83,82 @@ export interface IdeaDetails {
   creatorEmail?: string;
 }
 
+// New interface for Project collaboration type
+export interface ProjectDetails {
+  timeline: string;
+  budget: string;
+  milestones: string[];
+  deliverables: string[];
+  responsibleParties?: string[];
+}
+
+// New interface for Investment collaboration type
+export interface InvestmentDetails {
+  amount: string;
+  equity: string;
+  investmentStage: string;
+  returnExpectations: string;
+  dueDate?: string;
+  investmentTerms?: string;
+}
+
+// New interface for Mentorship collaboration type
+export interface MentorshipDetails {
+  duration: string;
+  frequency: string;
+  areas: string[];
+  expectations: string;
+  mentorQualifications?: string;
+  menteeRequirements?: string;
+}
+
+// New interface for Research collaboration type
+export interface ResearchDetails {
+  researchArea: string;
+  methodology: string;
+  expectedFindings: string;
+  researchTeam: string[];
+  fundingSource?: string;
+  publicationTarget?: string;
+}
+
+// New interface for other collaboration types
+export interface OtherTypeDetails {
+  specificType: string;
+  duration?: string;
+  customFields: Record<string, any>;
+}
+
+export interface CollaborationTypeDetails {
+  challengeDetails?: ChallengeDetails;
+  partnershipDetails?: PartnershipDetails;
+  ideaDetails?: IdeaDetails;
+  projectDetails?: ProjectDetails;
+  investmentDetails?: InvestmentDetails;
+  mentorshipDetails?: MentorshipDetails;
+  researchDetails?: ResearchDetails;
+  otherTypeDetails?: OtherTypeDetails;
+}
+
+export type CollaborationType = 
+  'challenge' | 
+  'partnership' | 
+  'idea' | 
+  'project' | 
+  'investment' | 
+  'mentorship' | 
+  'research' | 
+  'employment' | 
+  'event' | 
+  'support' | 
+  'program' | 
+  'opportunity' | 
+  'grant' | 
+  'incubation' | 
+  'alliance' | 
+  'initiative' | 
+  'other';
+
 export interface Collaboration {
   id: string;
   title: string;
@@ -91,10 +167,19 @@ export interface Collaboration {
   challengeId?: string;
   description: string;
   collaborationRequests?: CollaborationRequest[];
-  type?: 'challenge' | 'partnership' | 'idea';
+  type?: CollaborationType;
+  // Legacy specific details fields
   challengeDetails?: ChallengeDetails;
   partnershipDetails?: PartnershipDetails;
   ideaDetails?: IdeaDetails;
+  // New unified type-specific details field
+  typeSpecificDetails?: CollaborationTypeDetails;
+  // Fields for advanced features
+  parentCollaborationId?: string;
+  teamMembers?: string[];
+  visibility?: 'public' | 'private' | 'limited';
+  tags?: string[];
+  coverImage?: string;
   createdById?: string;
   createdAt: Date;
   updatedAt: Date;
