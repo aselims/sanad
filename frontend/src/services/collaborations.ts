@@ -79,6 +79,8 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
     console.log(`Searching collaborations for: ${query}`);
     const response = await api.get(`/collaborations/search?q=${encodeURIComponent(query)}`);
     
+    console.log('Search API response:', response.data);
+    
     // Map the response data to ensure it matches the Collaboration interface
     const collaborations = response.data.data.map((item: any) => ({
       id: item.id,
@@ -94,7 +96,7 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
       ...(item.type === 'partnership' && item.partnershipDetails ? { partnershipDetails: item.partnershipDetails } : {})
     }));
     
-    console.log(`Found ${collaborations.length} collaborations matching "${query}"`);
+    console.log(`Found ${collaborations.length} collaborations matching "${query}"`, collaborations);
     return collaborations;
   } catch (error: any) {
     console.error(`Error searching collaborations for '${query}':`, error);

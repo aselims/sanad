@@ -27,6 +27,7 @@ import MessagesPage from './components/MessagesPage';
 import { getPotentialMatches, getMatchRequests } from './services/matches';
 import { createChallenge } from './services/challenges';
 import { createPartnership } from './services/partnerships';
+import { performNormalSearch } from './services/search';
 
 export function App() {
   const navigate = useNavigate();
@@ -321,24 +322,58 @@ export function App() {
     }
   };
 
+  // Add an effect to handle search parameters from URL
+  useEffect(() => {
+    // Check if there's a search query in URL
+    const url = new URL(window.location.href);
+    const searchParam = url.searchParams.get('search');
+    
+    if (searchParam) {
+      // If there's a search query but no results, perform the search
+      if (!searchResults && searchParam.trim() !== '') {
+        console.log('Found search param in URL:', searchParam);
+        // Perform search
+        const doSearch = async () => {
+          try {
+            const results = await performNormalSearch(searchParam);
+            setSearchResults(results);
+            setLastSearchQuery(searchParam);
+          } catch (error) {
+            console.error('Error performing search from URL param:', error);
+          }
+        };
+        doSearch();
+      }
+    }
+  }, [searchResults]);
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header 
-        isAuthenticated={isAuthenticated}
-        onNavigateToWorkspace={handleNavigateToWorkspace}
-        onNavigateToHome={handleNavigateToHome}
-        onNavigateToAuth={handleNavigateToAuth}
-        onNavigateToHowItWorks={handleNavigateToHowItWorks}
-        onNavigateToSuccessStories={handleNavigateToSuccessStories}
-        onNavigateToFAQ={handleNavigateToFAQ}
-        onNavigateToSupport={handleNavigateToSupport}
-        onNavigateToContactUs={handleNavigateToContactUs}
-        onNavigateToLegalPage={handleNavigateToLegalPage}
-        onNavigateToProfile={handleNavigateToProfile}
-        onNavigateToConnections={handleNavigateToConnections}
-        onNavigateToCollaborations={handleNavigateToCollaborations}
-        onNavigateToMessages={handleNavigateToMessages}
-      />
+      <Routes>
+        <Route path="/*" element={
+          <Header 
+            onNavigateToWorkspace={handleNavigateToWorkspace}
+            onNavigateToChallenges={handleNavigateToChallenges}
+            onNavigateToPartnerships={handleNavigateToPartnerships}
+            onNavigateToIdeas={handleNavigateToIdeas}
+            onNavigateToInnovators={handleNavigateToInnovators}
+            onNavigateToHome={handleNavigateToHome}
+            onNavigateToProfile={handleNavigateToProfile}
+            onNavigateToAuth={handleNavigateToAuth}
+            onNavigateToHowItWorks={handleNavigateToHowItWorks}
+            onNavigateToSuccessStories={handleNavigateToSuccessStories}
+            onNavigateToFAQ={handleNavigateToFAQ}
+            onNavigateToSupport={handleNavigateToSupport}
+            onNavigateToContactUs={handleNavigateToContactUs}
+            onNavigateToLegalPage={handleNavigateToLegalPage}
+            onNavigateToConnections={handleNavigateToConnections}
+            onNavigateToCollaborations={handleNavigateToCollaborations}
+            onNavigateToMessages={handleNavigateToMessages}
+            onSearchResults={handleSearchResults}
+            isAuthenticated={isAuthenticated}
+          />
+        } />
+      </Routes>
       
       <main className="flex-grow">
         <Routes>
@@ -351,6 +386,9 @@ export function App() {
               onNavigateToIdeas={handleNavigateToIdeas}
               onNavigateToInnovators={handleNavigateToInnovators}
               onNavigateToProfileById={(id) => navigate(`/profile/${id}`)}
+              searchResults={searchResults || { innovators: [], collaborations: [], aiResults: [] }}
+              lastSearchQuery={lastSearchQuery}
+              onSearchResults={handleSearchResults}
             />
           } />
           <Route path="/auth" element={<AuthPage />} />
@@ -363,6 +401,10 @@ export function App() {
                 onSearch={handleWorkspaceSearch}
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
+                onSearchResults={handleSearchResults}
+                onNavigateToHome={handleNavigateToHome}
+                onNavigateToProfile={handleNavigateToProfile}
+                onNavigateToAuth={handleNavigateToAuth}
               />
               
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
