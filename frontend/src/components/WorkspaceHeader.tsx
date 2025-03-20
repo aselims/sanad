@@ -165,14 +165,7 @@ export function WorkspaceHeader({
                 <h1 className="text-2xl font-bold text-gray-900">Collaboration Workspace</h1>
                 <p className="text-gray-600 mt-1">Find and manage your collaborations</p>
               </div>
-              <div className="flex items-center space-x-3">
-                <button 
-                  onClick={handleSearchClick}
-                  className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer p-2"
-                  aria-label="Search"
-                >
-                  <Search className="h-5 w-5" />
-                </button>
+               <div className="flex items-center space-x-3">
                 <ProtectedAction 
                   onAction={handleOpenModal}
                   buttonClassName="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center"
