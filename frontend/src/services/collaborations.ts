@@ -160,7 +160,9 @@ export const saveVote = async (collaborationId: string, voteType: 'up' | 'down')
  */
 export const getUserCollaborations = async (userId: string): Promise<Collaboration[]> => {
   try {
+    console.log(`Fetching collaborations for user ${userId}`);
     const response = await api.get(`/users/${userId}/collaborations`);
+    console.log('User collaborations API response:', response.data);
     return response.data.data;
   } catch (error) {
     console.error('Error fetching user collaborations:', error);
@@ -170,11 +172,15 @@ export const getUserCollaborations = async (userId: string): Promise<Collaborati
       console.log('Falling back to client-side filtering for user collaborations...');
       const allCollaborations = await getAllCollaborations();
       
-      // Filter collaborations where the user is a participant
+      // Filter collaborations where the user is a participant OR the creator
       const userCollaborations = allCollaborations.filter(collab => 
-        collab.participants.some(p => p === userId)
+        // Check if user is a participant
+        (collab.participants && collab.participants.some(p => p === userId)) ||
+        // OR check if user is the creator
+        (collab.createdById === userId)
       );
       
+      console.log(`Found ${userCollaborations.length} collaborations for user ${userId} via fallback`);
       return userCollaborations;
     } catch (fallbackError) {
       console.error('Fallback filtering also failed:', fallbackError);

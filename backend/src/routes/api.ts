@@ -5,6 +5,9 @@ import { User } from '../entities/User';
 import { authenticateJWT } from '../middlewares/auth';
 import { sendConnectionRequest, getConnectionRequests, getUserConnections, respondToConnectionRequest } from '../controllers/connectionController';
 import { sendMessage, getConversation, getConversations } from '../controllers/messageController';
+import { Partnership } from '../entities/Partnership';
+import { Challenge } from '../entities/Challenge';
+import { Idea } from '../entities/Idea';
 
 const router = Router();
 
@@ -125,6 +128,101 @@ router.get('/users/:id', asyncHandler(async (req: Request, res: Response) => {
     status: 'success',
     data: user
   });
+}));
+
+// Get collaborations for a specific user
+router.get('/users/:id/collaborations', asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  
+  try {
+    // Get partnerships created by the user
+    const partnerships = await AppDataSource.getRepository(Partnership)
+      .find({ where: { createdById: userId } });
+    
+    // Get challenges created by the user
+    const challenges = await AppDataSource.getRepository(Challenge)
+      .find({ where: { createdById: userId } });
+    
+    // Get ideas created by the user
+    const ideas = await AppDataSource.getRepository(Idea)
+      .find({ where: { createdById: userId } });
+    
+    // Format partnerships to match Collaboration type
+    const formattedPartnerships = partnerships.map(partnership => ({
+      id: partnership.id,
+      title: partnership.title,
+      description: partnership.description,
+      participants: partnership.participants || [],
+      status: partnership.status,
+      type: 'partnership' as const,
+      partnershipDetails: {
+        duration: partnership.duration,
+        resources: partnership.resources,
+        expectedOutcomes: partnership.expectedOutcomes
+      },
+      createdById: partnership.createdById,
+      createdAt: partnership.createdAt,
+      updatedAt: partnership.updatedAt
+    }));
+    
+    // Format challenges to match Collaboration type
+    const formattedChallenges = challenges.map(challenge => ({
+      id: challenge.id,
+      title: challenge.title,
+      description: challenge.description,
+      participants: [challenge.organization],
+      status: challenge.status === 'open' ? 'proposed' : 
+              challenge.status === 'in-progress' ? 'active' : 'completed',
+      type: 'challenge' as const,
+      challengeDetails: {
+        deadline: challenge.deadline,
+        reward: challenge.reward,
+        eligibilityCriteria: challenge.eligibilityCriteria
+      },
+      createdById: challenge.createdById,
+      createdAt: challenge.createdAt,
+      updatedAt: challenge.updatedAt
+    }));
+    
+    // Format ideas to match Collaboration type
+    const formattedIdeas = ideas.map(idea => ({
+      id: idea.id,
+      title: idea.title,
+      description: idea.description,
+      participants: idea.participants || [],
+      status: idea.status,
+      type: 'idea' as const,
+      ideaDetails: {
+        category: idea.category,
+        stage: idea.stage,
+        targetAudience: idea.targetAudience,
+        potentialImpact: idea.potentialImpact,
+        resourcesNeeded: idea.resourcesNeeded
+      },
+      createdById: idea.createdById,
+      createdAt: idea.createdAt,
+      updatedAt: idea.updatedAt
+    }));
+    
+    // Combine all collaborations
+    const collaborations = [
+      ...formattedPartnerships,
+      ...formattedChallenges,
+      ...formattedIdeas
+    ];
+    
+    res.status(200).json({
+      status: 'success',
+      data: collaborations
+    });
+  } catch (error: any) {
+    console.error('Error fetching user collaborations:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Failed to fetch user collaborations',
+      error: error.message
+    });
+  }
 }));
 
 // Update current user profile
