@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, Bell, UserCircle, LogOut, Settings, X, Users, MessageSquare, Briefcase, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { SearchComponent } from './SearchComponent';
 import { SearchResults } from '../services/search';
 
@@ -23,7 +23,6 @@ interface HeaderProps {
   onNavigateToConnections?: () => void;
   onNavigateToCollaborations?: () => void;
   onNavigateToMessages?: () => void;
-  onSearchResults?: (results: SearchResults, query: string) => void;
   isAuthenticated?: boolean;
 }
 
@@ -45,7 +44,6 @@ export function Header({
   onNavigateToConnections,
   onNavigateToCollaborations,
   onNavigateToMessages,
-  onSearchResults,
   isAuthenticated: propIsAuthenticated
 }: HeaderProps) {
   const { isAuthenticated: authIsAuthenticated, user, logout } = useAuth();
@@ -147,13 +145,6 @@ export function Header({
 
   const handleSearchClose = () => {
     setIsSearchOpen(false);
-  };
-
-  const handleSearchResults = (results: SearchResults, query: string) => {
-    if (onSearchResults) {
-      onSearchResults(results, query);
-    }
-    navigate('/?search=' + encodeURIComponent(query));
   };
 
   // Close user menu and mobile menu when clicking outside
@@ -448,7 +439,6 @@ export function Header({
       <SearchComponent 
         isOpen={isSearchOpen}
         onClose={handleSearchClose}
-        onSearchResults={handleSearchResults}
       />
     </>
   );

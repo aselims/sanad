@@ -52,11 +52,6 @@ export function App() {
   const [showSupport, setShowSupport] = useState(false);
   const [showContactUs, setShowContactUs] = useState(false);
   
-  // Add state for search results
-  const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
-  const [cameFromSearch, setCameFromSearch] = useState<boolean>(false);
-  const [lastSearchQuery, setLastSearchQuery] = useState<string>('');
-
   // Add state for view mode
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
@@ -92,17 +87,6 @@ export function App() {
     if (activeFilter === 'ideas' && collaboration.type === 'idea') return true;
     return false;
   });
-
-  // Add console logs to help debug the issue
-  useEffect(() => {
-    console.log('Collaborations state updated:', collaborations);
-    console.log('Filtered collaborations:', filteredCollaborations);
-    console.log('Active filter:', activeFilter);
-    console.log('Show home page:', showHomePage);
-    console.log('Active page:', activePage);
-    console.log('Search results:', searchResults);
-    console.log('Came from search:', cameFromSearch);
-  }, [collaborations, filteredCollaborations, activeFilter, showHomePage, activePage, searchResults, cameFromSearch]);
 
   // Navigation functions
   const handleNavigateToWorkspace = () => {
@@ -218,25 +202,10 @@ export function App() {
     navigate(`/legal/${pageType}`);
   };
 
-  // Add a function to handle search results
-  const handleSearchResults = (results: SearchResults, query: string) => {
-    setSearchResults(results);
-    setLastSearchQuery(query);
-  };
-
-  // Add a function to handle profile navigation by ID
-  const handleNavigateToProfileById = (id: string) => {
-    navigate(`/profile/${id}`);
-  };
-
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  };
-
-  // Add a function to handle search from the workspace page
+  // Add a function to handle workspace search
   const handleWorkspaceSearch = (query: string) => {
     console.log('Workspace search for:', query);
-    // You can add additional logic here if needed
+    // Since all search handling is now in the SearchComponent, we don't need to do anything here
   };
 
   // Add a function to handle collaboration creation
@@ -322,30 +291,9 @@ export function App() {
     }
   };
 
-  // Add an effect to handle search parameters from URL
-  useEffect(() => {
-    // Check if there's a search query in URL
-    const url = new URL(window.location.href);
-    const searchParam = url.searchParams.get('search');
-    
-    if (searchParam) {
-      // If there's a search query but no results, perform the search
-      if (!searchResults && searchParam.trim() !== '') {
-        console.log('Found search param in URL:', searchParam);
-        // Perform search
-        const doSearch = async () => {
-          try {
-            const results = await performNormalSearch(searchParam);
-            setSearchResults(results);
-            setLastSearchQuery(searchParam);
-          } catch (error) {
-            console.error('Error performing search from URL param:', error);
-          }
-        };
-        doSearch();
-      }
-    }
-  }, [searchResults]);
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -369,7 +317,6 @@ export function App() {
             onNavigateToConnections={handleNavigateToConnections}
             onNavigateToCollaborations={handleNavigateToCollaborations}
             onNavigateToMessages={handleNavigateToMessages}
-            onSearchResults={handleSearchResults}
             isAuthenticated={isAuthenticated}
           />
         } />
@@ -386,9 +333,6 @@ export function App() {
               onNavigateToIdeas={handleNavigateToIdeas}
               onNavigateToInnovators={handleNavigateToInnovators}
               onNavigateToProfileById={(id) => navigate(`/profile/${id}`)}
-              searchResults={searchResults || { innovators: [], collaborations: [], aiResults: [] }}
-              lastSearchQuery={lastSearchQuery}
-              onSearchResults={handleSearchResults}
             />
           } />
           <Route path="/auth" element={<AuthPage />} />
@@ -401,7 +345,6 @@ export function App() {
                 onSearch={handleWorkspaceSearch}
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
-                onSearchResults={handleSearchResults}
                 onNavigateToHome={handleNavigateToHome}
                 onNavigateToProfile={handleNavigateToProfile}
                 onNavigateToAuth={handleNavigateToAuth}

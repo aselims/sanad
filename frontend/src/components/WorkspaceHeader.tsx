@@ -4,7 +4,6 @@ import { NewCollaborationModal } from './NewCollaborationModal';
 import { Collaboration } from '../types';
 import ProtectedAction from './auth/ProtectedAction';
 import { useAuth } from '../contexts/AuthContext';
-import { SearchResults } from '../services/search';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { SearchComponent } from './SearchComponent';
 
@@ -13,7 +12,6 @@ interface WorkspaceHeaderProps {
   activeFilter?: 'all' | 'challenges' | 'partnerships' | 'ideas';
   onFilterChange?: (filter: 'all' | 'challenges' | 'partnerships' | 'ideas') => void;
   onSearch?: (query: string) => void;
-  onSearchResults?: (results: SearchResults, query: string) => void;
   viewMode?: 'grid' | 'list';
   onViewModeChange?: (mode: 'grid' | 'list') => void;
   onNavigateToHome?: () => void;
@@ -26,7 +24,6 @@ export function WorkspaceHeader({
   activeFilter = 'all',
   onFilterChange,
   onSearch,
-  onSearchResults,
   viewMode = 'grid',
   onViewModeChange,
   onNavigateToHome,
@@ -108,13 +105,6 @@ export function WorkspaceHeader({
 
   const handleSearchClose = () => {
     setIsSearchOpen(false);
-  };
-
-  const handleSearchResults = (results: SearchResults, query: string) => {
-    if (onSearchResults) {
-      onSearchResults(results, query);
-    }
-    navigate('/?search=' + encodeURIComponent(query));
   };
 
   const handleLogout = () => {
@@ -258,7 +248,6 @@ export function WorkspaceHeader({
       <SearchComponent 
         isOpen={isSearchOpen}
         onClose={handleSearchClose}
-        onSearchResults={handleSearchResults}
       />
     </>
   );
