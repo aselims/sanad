@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bot, X, ToggleLeft, ToggleRight, User, Briefcase, Handshake, Lightbulb, ArrowUpRight, AlertCircle } from 'lucide-react';
+import { 
+  Search, Bot, X, ToggleLeft, ToggleRight, User, Briefcase, 
+  Handshake, Lightbulb, ArrowUpRight, AlertCircle, 
+  Building, Microscope, Landmark, DollarSign, Users, 
+  Rocket, Target, Zap, BookOpen
+} from 'lucide-react';
 import { performNormalSearch, performAISearch, SearchResults } from '../services/search';
 import { Link } from 'react-router-dom';
+import { INNOVATOR_TYPES } from '../constants/roles';
+import type { InnovatorType } from '../constants/roles';
 
 interface SearchComponentProps {
   onSearchResults?: (results: SearchResults, query: string) => void;
@@ -9,6 +16,48 @@ interface SearchComponentProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+// Helper function to render the appropriate innovator icon
+const InnovatorIcon = ({ type }: { type: string }): JSX.Element => {
+  switch (type) {
+    case 'startup':
+      return <Rocket className="h-4 w-4 mr-2 text-purple-600" aria-label="Startup" />;
+    case 'research':
+      return <Microscope className="h-4 w-4 mr-2 text-blue-600" aria-label="Research Institution" />;
+    case 'corporate':
+      return <Building className="h-4 w-4 mr-2 text-gray-600" aria-label="Corporate" />;
+    case 'government':
+      return <Landmark className="h-4 w-4 mr-2 text-green-600" aria-label="Government" />;
+    case 'investor':
+      return <DollarSign className="h-4 w-4 mr-2 text-amber-600" aria-label="Investor" />;
+    case 'individual':
+      return <User className="h-4 w-4 mr-2 text-indigo-600" aria-label="Individual" />;
+    case 'organization':
+      return <Users className="h-4 w-4 mr-2 text-teal-600" aria-label="Organization" />;
+    case 'accelerator':
+      return <Zap className="h-4 w-4 mr-2 text-orange-600" aria-label="Accelerator" />;
+    case 'incubator':
+      return <BookOpen className="h-4 w-4 mr-2 text-rose-600" aria-label="Incubator" />;
+    default:
+      return <User className="h-4 w-4 mr-2 text-gray-600" aria-label="Innovator" />;
+  }
+};
+
+// Helper function to render the appropriate collaboration icon
+const CollaborationIcon = ({ type }: { type?: string }): JSX.Element => {
+  switch (type) {
+    case 'challenge':
+      return <Target className="h-4 w-4 mr-2 text-purple-600" aria-label="Challenge" />;
+    case 'partnership':
+      return <Handshake className="h-4 w-4 mr-2 text-blue-600" aria-label="Partnership" />;
+    case 'idea':
+      return <Lightbulb className="h-4 w-4 mr-2 text-amber-600" aria-label="Idea" />;
+    case 'project':
+      return <Briefcase className="h-4 w-4 mr-2 text-teal-600" aria-label="Project" />;
+    default:
+      return <Briefcase className="h-4 w-4 mr-2 text-gray-600" aria-label="Collaboration" />;
+  }
+};
 
 export function SearchComponent({ 
   onSearchResults, 
@@ -234,7 +283,11 @@ export function SearchComponent({
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <h5 className="font-medium text-gray-900">{innovator.name}</h5>
+                            <div className="flex items-center">
+                              {/* Use the helper component for innovator type icons */}
+                              <InnovatorIcon type={innovator.type} />
+                              <h5 className="font-medium text-gray-900">{innovator.name}</h5>
+                            </div>
                             <p className="text-sm text-gray-600 mt-1">{innovator.organization} • {innovator.position}</p>
                           </div>
                           <ArrowUpRight className="h-4 w-4 text-indigo-600" />
@@ -272,9 +325,8 @@ export function SearchComponent({
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex items-center">
-                            {collab.type === 'challenge' && <Briefcase className="h-4 w-4 mr-2 text-blue-600" />}
-                            {collab.type === 'partnership' && <Handshake className="h-4 w-4 mr-2 text-green-600" />}
-                            {collab.type === 'idea' && <Lightbulb className="h-4 w-4 mr-2 text-amber-600" />}
+                            {/* Use the helper component for collaboration type icons */}
+                            <CollaborationIcon type={collab.type} />
                             <h5 className="font-medium text-gray-900">{collab.title}</h5>
                           </div>
                           <ArrowUpRight className="h-4 w-4 text-indigo-600" />
