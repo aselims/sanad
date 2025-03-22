@@ -10,7 +10,8 @@ import type { Collaboration, CollaborationRequest, InterestSubmission } from '..
 import { ExpressInterestModal } from './ExpressInterestModal';
 import ProtectedAction from './auth/ProtectedAction';
 import { saveVote } from '../services/collaborations';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { getUserById } from '../services/users';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
@@ -97,6 +98,8 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
   const [isVoting, setIsVoting] = useState(false);
   const [voteError, setVoteError] = useState<string | null>(null);
+  const [creator, setCreator] = useState<{ name: string; role?: string } | null>(null);
+  const [isLoadingCreator, setIsLoadingCreator] = useState(false);
 
   // Update votes when collaboration prop changes
   useEffect(() => {
@@ -105,6 +108,30 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
       downvotes: collaboration.downvotes || 0
     });
   }, [collaboration.upvotes, collaboration.downvotes]);
+
+  // Add useEffect to fetch creator details
+  useEffect(() => {
+    const fetchCreatorDetails = async () => {
+      if (collaboration.createdById) {
+        setIsLoadingCreator(true);
+        try {
+          const userData = await getUserById(collaboration.createdById);
+          if (userData) {
+            setCreator({
+              name: `${userData.firstName} ${userData.lastName}`,
+              role: userData.role
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching creator details:', error);
+        } finally {
+          setIsLoadingCreator(false);
+        }
+      }
+    };
+
+    fetchCreatorDetails();
+  }, [collaboration.createdById]);
 
   const handleExpressInterest = (request: CollaborationRequest) => {
     setSelectedRequest(request);
@@ -259,7 +286,18 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
                       <Users className="h-5 w-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm font-medium text-gray-900">Created by</p>
-                        <p className="text-sm text-gray-500">User #{collaboration.createdById}</p>
+                        {isLoadingCreator ? (
+                          <p className="text-sm text-gray-500">Loading...</p>
+                        ) : creator ? (
+                          <div>
+                            <p className="text-sm text-gray-700">{creator.name}</p>
+                            {creator.role && (
+                              <p className="text-xs text-gray-500 capitalize">{creator.role}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">User #{collaboration.createdById}</p>
+                        )}
                       </div>
                     </div>
                   )}
