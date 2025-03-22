@@ -145,10 +145,15 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
  */
 export const saveVote = async (collaborationId: string, voteType: 'up' | 'down'): Promise<any> => {
   try {
+    console.log(`Saving ${voteType} vote for collaboration ${collaborationId}`);
+    // Make sure the URL and request body match the backend expectations
     const response = await api.post(`/collaborations/${collaborationId}/vote`, { voteType });
+    
+    console.log('Vote response:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('Error saving vote:', error);
+    console.error('Error details:', error.response?.data || error.message);
     throw error;
   }
 };

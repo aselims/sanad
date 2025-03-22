@@ -1,11 +1,18 @@
 import axios from 'axios';
 
+// Determine the API URL based on environment
+// In development, directly target the backend server
+const API_URL = import.meta.env.DEV 
+  ? 'http://localhost:3000/api' 
+  : '/api';  // In production, use relative path which will be handled by deployment configuration
+
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include cookies in cross-origin requests
 });
 
 // Add a request interceptor to include the auth token in requests

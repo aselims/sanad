@@ -3,6 +3,15 @@ import { AppDataSource } from '../config/data-source';
 import { Challenge } from '../entities/Challenge';
 import { Partnership } from '../entities/Partnership';
 import { Idea } from '../entities/Idea';
+import { authenticate } from '../middlewares/authenticate';
+
+// Add type interfaces for vote tracking
+interface VotableEntity {
+  upvotes?: number;
+  downvotes?: number;
+  userVotes?: Record<string, 'up' | 'down'>;
+  [key: string]: any;
+}
 
 const router = express.Router();
 
@@ -96,5 +105,120 @@ router.get('/search', asyncHandler(async (req: Request, res: Response) => {
     data: results
   });
 }));
+
+// Handle voting for a collaboration
+router.post('/:id/vote', authenticate, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { voteType } = req.body;
+  const userId = req.user?.id;
+
+  if (!voteType || (voteType !== 'up' && voteType !== 'down')) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Invalid vote type. Must be "up" or "down".'
+    });
+  }
+
+  if (!userId) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'User ID is required for voting'
+    });
+  }
+
+  // Try to find the item in each repository
+  const challengeRepo = AppDataSource.getRepository(Challenge);
+  const partnershipRepo = AppDataSource.getRepository(Partnership);
+  const ideaRepo = AppDataSource.getRepository(Idea);
+
+  let result;
+  let entityType = '';
+
+  // Check each repository in turn
+  const challenge = await challengeRepo.findOne({ where: { id } });
+  if (challenge) {
+    // Cast to VotableEntity to handle additional properties
+    const votableChallenge = challenge as unknown as VotableEntity;
+    result = processVote(votableChallenge, userId, voteType);
+    await challengeRepo.save(challenge);
+    entityType = 'challenge';
+  } else {
+    const partnership = await partnershipRepo.findOne({ where: { id } });
+    if (partnership) {
+      // Cast to VotableEntity to handle additional properties
+      const votablePartnership = partnership as unknown as VotableEntity;
+      result = processVote(votablePartnership, userId, voteType);
+      await partnershipRepo.save(partnership);
+      entityType = 'partnership';
+    } else {
+      const idea = await ideaRepo.findOne({ where: { id } });
+      if (idea) {
+        // Cast to VotableEntity to handle additional properties
+        const votableIdea = idea as unknown as VotableEntity;
+        result = processVote(votableIdea, userId, voteType);
+        await ideaRepo.save(idea);
+        entityType = 'idea';
+      } else {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Collaboration not found'
+        });
+      }
+    }
+  }
+
+  return res.status(200).json({
+    status: 'success',
+    upvotes: result.upvotes,
+    downvotes: result.downvotes,
+    type: entityType
+  });
+}));
+
+/**
+ * Helper function to process votes
+ */
+function processVote(item: VotableEntity, userId: string, voteType: 'up' | 'down'): { upvotes: number, downvotes: number } {
+  // Initialize vote properties if they don't exist
+  if (item.upvotes === undefined) item.upvotes = 0;
+  if (item.downvotes === undefined) item.downvotes = 0;
+  if (item.userVotes === undefined) item.userVotes = {};
+  
+  const currentVote = item.userVotes[userId];
+  
+  // Update votes based on user's action
+  if (currentVote === voteType) {
+    // User is canceling their previous vote
+    if (voteType === 'up') {
+      item.upvotes = Math.max(0, item.upvotes - 1);
+    } else {
+      item.downvotes = Math.max(0, item.downvotes - 1);
+    }
+    delete item.userVotes[userId]; // Remove the vote
+  } else if (currentVote) {
+    // User is changing their vote
+    if (currentVote === 'up') {
+      item.upvotes = Math.max(0, item.upvotes - 1);
+      item.downvotes += 1;
+    } else {
+      item.downvotes = Math.max(0, item.downvotes - 1);
+      item.upvotes += 1;
+    }
+    item.userVotes[userId] = voteType;
+  } else {
+    // User is voting for the first time
+    if (voteType === 'up') {
+      item.upvotes += 1;
+    } else {
+      item.downvotes += 1;
+    }
+    item.userVotes[userId] = voteType;
+  }
+  
+  return {
+    upvotes: item.upvotes,
+    downvotes: item.downvotes
+  };
+}
 
 export default router; 

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, Calendar, ArrowLeft, FileText, 
-  MessageSquare, Target, BarChart, Link,
+  MessageSquare, Target, BarChart, Link as LinkIcon,
   UserPlus, Briefcase, Award, Handshake,
   Clock, DollarSign, AlertCircle, Lightbulb,
   Tag, Zap, ThumbsUp, ThumbsDown
@@ -10,6 +10,7 @@ import type { Collaboration, CollaborationRequest, InterestSubmission } from '..
 import { ExpressInterestModal } from './ExpressInterestModal';
 import ProtectedAction from './auth/ProtectedAction';
 import { saveVote } from '../services/collaborations';
+import { useNavigate } from 'react-router-dom';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
@@ -39,7 +40,7 @@ function ComingSoonOverlay({ children, title }: { children: React.ReactNode, tit
           {title || 'Coming Soon'}
         </p>
         <p className={`text-sm text-gray-600 mt-1 ${isTransparent ? 'opacity-50' : 'opacity-100'}`}>
-          This feature will be available in the next version
+          This feature will be available in Q3 2024
         </p>
         <p className="text-xs text-indigo-600 mt-3 font-medium">
           {isTransparent ? 'Click to hide details' : 'Click to preview'}
@@ -84,6 +85,7 @@ function CollaborationRequestCard({ request, onExpressInterest }: {
 }
 
 export function CollaborationDetails({ collaboration, onBack, cameFromSearch = false }: CollaborationDetailsProps) {
+  const navigate = useNavigate();
   const openRequests = collaboration.collaborationRequests?.filter(r => r.status === 'open') || [];
   const [selectedRequest, setSelectedRequest] = useState<CollaborationRequest | null>(null);
   const [collaboratorType, setCollaboratorType] = useState<CollaboratorType>('individual');
@@ -93,6 +95,16 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
     downvotes: collaboration.downvotes || 0 
   });
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
+  const [isVoting, setIsVoting] = useState(false);
+  const [voteError, setVoteError] = useState<string | null>(null);
+
+  // Update votes when collaboration prop changes
+  useEffect(() => {
+    setVotes({
+      upvotes: collaboration.upvotes || 0,
+      downvotes: collaboration.downvotes || 0
+    });
+  }, [collaboration.upvotes, collaboration.downvotes]);
 
   const handleExpressInterest = (request: CollaborationRequest) => {
     setSelectedRequest(request);
@@ -106,37 +118,52 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
   };
 
   const handleVote = async (voteType: 'up' | 'down') => {
-    // If user already voted this way, remove the vote
-    if (userVote === voteType) {
-      setVotes(prev => ({
-        ...prev,
-        [voteType === 'up' ? 'upvotes' : 'downvotes']: Math.max(0, prev[voteType === 'up' ? 'upvotes' : 'downvotes'] - 1)
-      }));
-      setUserVote(null);
-    } 
-    // If user voted the opposite way, switch the vote
-    else if (userVote !== null) {
-      setVotes(prev => ({
-        upvotes: voteType === 'up' ? prev.upvotes + 1 : Math.max(0, prev.upvotes - 1),
-        downvotes: voteType === 'down' ? prev.downvotes + 1 : Math.max(0, prev.downvotes - 1)
-      }));
-      setUserVote(voteType);
-    } 
-    // If user hasn't voted yet, add a new vote
-    else {
-      setVotes(prev => ({
-        ...prev,
-        [voteType === 'up' ? 'upvotes' : 'downvotes']: prev[voteType === 'up' ? 'upvotes' : 'downvotes'] + 1
-      }));
-      setUserVote(voteType);
-    }
-
-    // Save the vote to the database
+    // Clear any previous errors
+    setVoteError(null);
+    setIsVoting(true);
+    
     try {
-      await saveVote(collaboration.id, voteType);
+      // Call API first before updating UI
+      const response = await saveVote(collaboration.id, voteType);
+      
+      // If user already voted this way, remove the vote
+      if (userVote === voteType) {
+        setVotes(prev => ({
+          ...prev,
+          [voteType === 'up' ? 'upvotes' : 'downvotes']: Math.max(0, prev[voteType === 'up' ? 'upvotes' : 'downvotes'] - 1)
+        }));
+        setUserVote(null);
+      } 
+      // If user voted the opposite way, switch the vote
+      else if (userVote !== null) {
+        setVotes(prev => ({
+          upvotes: voteType === 'up' ? prev.upvotes + 1 : Math.max(0, prev.upvotes - 1),
+          downvotes: voteType === 'down' ? prev.downvotes + 1 : Math.max(0, prev.downvotes - 1)
+        }));
+        setUserVote(voteType);
+      } 
+      // If user hasn't voted yet, add a new vote
+      else {
+        setVotes(prev => ({
+          ...prev,
+          [voteType === 'up' ? 'upvotes' : 'downvotes']: prev[voteType === 'up' ? 'upvotes' : 'downvotes'] + 1
+        }));
+        setUserVote(voteType);
+      }
+      
+      // Update with server data if available
+      if (response?.upvotes !== undefined && response?.downvotes !== undefined) {
+        setVotes({
+          upvotes: response.upvotes,
+          downvotes: response.downvotes
+        });
+      }
     } catch (error) {
       console.error('Failed to save vote:', error);
-      // Optionally revert the UI state if the API call fails
+      setVoteError('Unable to record your vote. Please try again.');
+      // Don't update UI state if the API call fails
+    } finally {
+      setIsVoting(false);
     }
   };
 
@@ -156,23 +183,30 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
           <div className="border-b border-gray-200 p-6 pb-4">
             <div className="flex justify-between items-start mb-2">
               <h1 className="text-2xl font-bold text-gray-900">{collaboration.title}</h1>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => handleVote('up')}
-                  className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'up' ? 'text-green-600' : 'text-gray-400'}`}
-                  aria-label="Upvote"
-                >
-                  <ThumbsUp className="h-5 w-5" />
-                </button>
-                <span className="text-gray-700 font-medium">{votes.upvotes}</span>
-                <button 
-                  onClick={() => handleVote('down')}
-                  className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'down' ? 'text-red-600' : 'text-gray-400'}`}
-                  aria-label="Downvote"
-                >
-                  <ThumbsDown className="h-5 w-5" />
-                </button>
-                <span className="text-gray-700 font-medium">{votes.downvotes}</span>
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => handleVote('up')}
+                    disabled={isVoting}
+                    className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'up' ? 'text-green-600' : 'text-gray-400'} ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    aria-label="Upvote"
+                  >
+                    <ThumbsUp className="h-5 w-5" />
+                  </button>
+                  <span className="text-gray-700 font-medium">{votes.upvotes}</span>
+                  <button 
+                    onClick={() => handleVote('down')}
+                    disabled={isVoting}
+                    className={`p-1.5 rounded-full hover:bg-gray-100 ${userVote === 'down' ? 'text-red-600' : 'text-gray-400'} ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    aria-label="Downvote"
+                  >
+                    <ThumbsDown className="h-5 w-5" />
+                  </button>
+                  <span className="text-gray-700 font-medium">{votes.downvotes}</span>
+                </div>
+                {voteError && (
+                  <span className="text-xs text-red-500 mt-1">{voteError}</span>
+                )}
               </div>
             </div>
             <p className="text-gray-600 mb-3">{collaboration.description}</p>
@@ -349,15 +383,33 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
                   <Users className="h-5 w-5 mr-2 text-indigo-600" />
                   Current Participants
                 </h3>
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-semibold">
-                    N
+                {collaboration.participants && collaboration.participants.length > 0 ? (
+                  <div className="space-y-4">
+                    {collaboration.participants.map((participant, index) => (
+                      <div key={index} className="flex items-center space-x-4">
+                        <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-semibold">
+                          {typeof participant === 'string' 
+                            ? participant.charAt(0).toUpperCase()
+                            : (participant as any)?.name?.charAt(0).toUpperCase() || 'P'}
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {typeof participant === 'string' 
+                              ? participant 
+                              : (participant as any)?.name || 'Unknown Participant'}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {typeof participant !== 'string' && (participant as any)?.role 
+                              ? (participant as any).role 
+                              : 'Partner'}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <p className="font-medium">Numquam magni ullamc</p>
-                    <p className="text-sm text-gray-500">Partner</p>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No participants yet</p>
+                )}
               </div>
 
               {/* Progress */}
@@ -465,23 +517,23 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
 
               {/* Related Challenge */}
               {collaboration.challengeId && (
-                <ComingSoonOverlay title="Related Challenges Coming Soon">
-                  <div className="bg-gray-50 rounded-lg p-5">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Link className="h-5 w-5 mr-2 text-indigo-600" />
-                      Related Challenge
-                    </h3>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Challenge #{collaboration.challengeId}</p>
-                        <p className="text-sm text-gray-500">View the original challenge that started this collaboration</p>
-                      </div>
-                      <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                        View Challenge
-                      </button>
+                <div className="bg-gray-50 rounded-lg p-5">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <LinkIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                    Related Challenge
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Challenge #{collaboration.challengeId}</p>
+                      <p className="text-sm text-gray-500">View the original challenge that started this collaboration</p>
                     </div>
+                    <button 
+                      onClick={() => navigate(`/challenge/${collaboration.challengeId}`)}
+                      className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                      View Challenge
+                    </button>
                   </div>
-                </ComingSoonOverlay>
+                </div>
               )}
             </div>
           </div>
