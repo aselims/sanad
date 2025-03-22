@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Send, MessageSquare, ArrowLeft } from 'lucide-react';
+import { User, Send, MessageSquare, ArrowLeft, UserPlus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Message, Conversation, User as UserType } from '../types';
 import { getConversations, getConversation, sendMessage } from '../services/messages';
@@ -221,10 +221,17 @@ const MessagesPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No messages yet</h3>
-                <p className="mt-1 text-sm text-gray-500">Start a conversation with one of your connections.</p>
+              <div className="text-center py-8 px-4">
+                <MessageSquare className="mx-auto h-12 w-12 text-indigo-300" />
+                <h3 className="mt-2 text-base font-medium text-gray-900">Your inbox is ready</h3>
+                <p className="mt-1 text-sm text-gray-500 mb-4">Connect with others to start messaging</p>
+                <Link
+                  to="/connections"
+                  className="inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Find Connections
+                </Link>
               </div>
             )}
           </div>
@@ -362,17 +369,27 @@ const MessagesPage: React.FC = () => {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center p-4">
-                <MessageSquare className="h-16 w-16 text-indigo-500 mb-4" />
-                <h2 className="text-xl font-medium text-gray-900 mb-2">Your Messages</h2>
-                <p className="text-gray-600 text-center max-w-md mb-6">
-                  Select a conversation from the list or start a new one with your connections.
+              <div className="flex flex-col items-center justify-center h-full p-8 bg-gray-50">
+                <img
+                  src="/images/welcome-messages.svg"
+                  alt="Welcome to Messages"
+                  className="w-64 h-64 object-contain mb-6"
+                  onError={(e) => {
+                    // Fallback if the image doesn't exist
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
+                <MessageSquare className="h-16 w-16 text-indigo-400 mb-4" />
+                <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Welcome to Messages</h2>
+                <p className="text-gray-600 mb-6 text-center max-w-md">
+                  Select a conversation from the sidebar to view your messages. Connect with other users to start new conversations.
                 </p>
                 <Link
                   to="/connections"
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  View Connections
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Find Connections
                 </Link>
               </div>
             )}

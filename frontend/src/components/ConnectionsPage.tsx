@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Check, X, UserPlus, Users } from 'lucide-react';
+import { User, Check, X, UserPlus, Users, MessageSquare } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Connection, ConnectionStatus } from '../types';
 import { getConnectionRequests, getUserConnections, respondToConnectionRequest } from '../services/connections';
@@ -124,43 +124,52 @@ const ConnectionsPage: React.FC = () => {
           ) : activeTab === 'connections' ? (
             connections.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {connections.map((connection) => (
-                  <div key={connection.id} className="border rounded-lg p-4 flex items-center">
-                    <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden mr-4">
-                      {connection.user.profilePicture ? (
-                        <img
-                          src={connection.user.profilePicture}
-                          alt={`${connection.user.firstName} ${connection.user.lastName}`}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <User className="h-6 w-6 text-indigo-600" />
-                      )}
+                {connections.map((connection) => {
+                  if (!connection.user) {
+                    console.error("Missing user data in connection:", connection);
+                    return null;
+                  }
+                  
+                  return (
+                    <div key={connection.id} className="border rounded-lg p-4 flex items-center">
+                      <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden mr-4">
+                        {connection.user.profilePicture ? (
+                          <img
+                            src={connection.user.profilePicture}
+                            alt={`${connection.user.firstName} ${connection.user.lastName}`}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <User className="h-6 w-6 text-indigo-600" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-gray-900">
+                          {connection.user.firstName} {connection.user.lastName}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {connection.user.position} {connection.user.organization ? `at ${connection.user.organization}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Link
+                          to={`/profile/${connection.user.id}`}
+                          className="p-2 text-indigo-600 hover:text-indigo-800"
+                          title="View Profile"
+                        >
+                          <User className="h-5 w-5" />
+                        </Link>
+                        <Link
+                          to={`/messages/${connection.user.id}`}
+                          className="p-2 text-green-600 hover:text-green-800"
+                          title="Send Message"
+                        >
+                          <MessageSquare className="h-5 w-5" />
+                        </Link>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">
-                        {connection.user.firstName} {connection.user.lastName}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {connection.user.position} {connection.user.organization ? `at ${connection.user.organization}` : ''}
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Link
-                        to={`/profile/${connection.user.id}`}
-                        className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm leading-5 font-medium rounded-md text-gray-700 bg-white hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue active:text-gray-800 active:bg-gray-50"
-                      >
-                        View
-                      </Link>
-                      <Link
-                        to={`/messages/${connection.user.id}`}
-                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-5 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:border-indigo-700 focus:shadow-outline-indigo active:bg-indigo-700"
-                      >
-                        Message
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-12">

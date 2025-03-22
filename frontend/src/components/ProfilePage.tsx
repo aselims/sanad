@@ -184,7 +184,7 @@ export function ProfilePage({
             } else {
               // Check if they're already connected by fetching connections
               const userConnections = await getUserConnections();
-              const isConnected = userConnections.some(conn => conn.id === user.id);
+              const isConnected = userConnections.some(conn => conn.user && conn.user.id === user.id);
               if (isConnected) {
                 setUserConnectionStatus('connected');
               } else {
@@ -440,9 +440,16 @@ export function ProfilePage({
     try {
       // Get collaborations between current user and selected connection
       const collaborations = await getUserCollaborations(user.id);
+      const connectionUserId = connection.user?.id || connection.id;
+      
+      // Filter to find collaborations where this user is a participant
       const sharedCollabs = collaborations.filter((collab: Collaboration) => 
-        collab.participants.includes(connection.id)
+        collab.participants.some((participant: any) => 
+          participant === connectionUserId || 
+          (typeof participant === 'object' && participant.id === connectionUserId)
+        )
       );
+      
       setConnectionCollaborations(sharedCollabs);
     } catch (error) {
       console.error('Error fetching shared collaborations:', error);
@@ -674,7 +681,7 @@ export function ProfilePage({
             <div>
               <h3 className="text-lg font-medium text-gray-900">Areas of Expertise</h3>
               <div className="mt-2 flex flex-wrap gap-2">
-                {profileData.expertise.map((skill, index) => (
+                {profileData.expertise && profileData.expertise.map((skill, index) => (
                   <span 
                     key={index} 
                     className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800"
@@ -1053,47 +1060,65 @@ export function ProfilePage({
           <div className="border-t border-gray-200">
             <ul className="divide-y divide-gray-200">
               {connections.length > 0 ? (
-                connections.map((connection) => (
-                  <li key={connection.id} className="px-6 py-4 hover:bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                          {connection.type === 'startup' ? (
-                            <Briefcase className="h-5 w-5 text-indigo-600" />
-                          ) : connection.type === 'research' ? (
-                            <Award className="h-5 w-5 text-purple-600" />
-                          ) : (
-                            <User className="h-5 w-5 text-gray-600" />
-                          )}
+                connections.map((connection) => {
+                  // Ensure we have user data
+                  if (!connection.user) {
+                    console.error("Missing user data in connection:", connection);
+                    return null;
+                  }
+                  
+                  return (
+                    <li key={connection.id} className="px-6 py-4 hover:bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
+                            {connection.user.profilePicture ? (
+                              <img 
+                                src={connection.user.profilePicture} 
+                                alt={`${connection.user.firstName} ${connection.user.lastName}`} 
+                                className="h-full w-full object-cover"
+                              />
+                            ) : connection.user.role === 'startup' ? (
+                              <Briefcase className="h-5 w-5 text-indigo-600" />
+                            ) : connection.user.role === 'research' ? (
+                              <Award className="h-5 w-5 text-purple-600" />
+                            ) : (
+                              <User className="h-5 w-5 text-gray-600" />
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {connection.user.firstName} {connection.user.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500 capitalize">
+                              {connection.user.role} {connection.user.organization ? `at ${connection.user.organization}` : ''}
+                            </div>
+                          </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{connection.name}</div>
-                          <div className="text-sm text-gray-500 capitalize">{connection.type}</div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleViewConnectionCollaborations(connection)}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                          >
+                            View Collaborations
+                          </button>
+                          <Link
+                            to={`/profile/${connection.user.id}`}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                          >
+                            View Profile
+                          </Link>
+                          <Link
+                            to={`/messages/${connection.user.id}`}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200"
+                          >
+                            Message
+                          </Link>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleViewConnectionCollaborations(connection)}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                        >
-                          View Collaborations
-                        </button>
-                        <Link
-                          to={`/profile/${connection.id}`}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-                        >
-                          View Profile
-                        </Link>
-                        <Link
-                          to={`/messages/${connection.id}`}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200"
-                        >
-                          Message
-                        </Link>
-                      </div>
-                    </div>
-                  </li>
-                ))
+                    </li>
+                  );
+                })
               ) : (
                 <li className="px-4 py-12 sm:px-6 text-center">
                   <div className="text-gray-500">
@@ -1191,68 +1216,138 @@ export function ProfilePage({
 
     if (conversations.length === 0) {
       return (
-        <div className="py-10 text-center">
-          <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-gray-900 mb-1">No messages yet</h3>
-          <p className="text-gray-500 mb-6">You haven't exchanged any messages yet.</p>
+        <div className="py-12 px-4 text-center bg-white rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-indigo-50 mx-auto w-16 h-16 flex items-center justify-center rounded-full mb-4">
+            <MessageSquare className="h-8 w-8 text-indigo-500" />
+          </div>
+          <h3 className="text-xl font-medium text-gray-900 mb-2">Your messages will appear here</h3>
+          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            Connect with other innovators and start messaging to build your network.
+          </p>
+          <Link
+            to="/connections"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Find Connections
+          </Link>
         </div>
       );
     }
-
+    
+    // Check if there's a welcome message
+    const welcomeMessage = conversations.find(conv => 
+      conv.user.email === 'system@t3awanu.com' || 
+      conv.user.firstName === 'T3awanu'
+    );
+    
     return (
-      <div className="divide-y divide-gray-200">
-        {conversations.map((conversation) => {
-          const { userId, user, latestMessage, unreadCount } = conversation;
-          const isUnread = unreadCount > 0;
-          
-          return (
-            <div 
-              key={userId} 
-              className={`p-4 hover:bg-gray-50 transition-colors ${isUnread ? 'bg-indigo-50' : ''}`}
-              onClick={() => {
-                // Navigate to the full conversation view
-                navigate(`/messages/${userId}`);
-              }}
-            >
-              <div className="flex items-start">
-                <div className="flex-shrink-0 mr-4">
-                  {user.profilePicture ? (
-                    <img 
-                      src={user.profilePicture} 
-                      alt={`${user.firstName} ${user.lastName}`} 
-                      className="h-10 w-10 rounded-full"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <User className="h-5 w-5 text-indigo-600" />
-                    </div>
-                  )}
+      <div className="space-y-4">
+        {/* Welcome Message Card (if exists) */}
+        {welcomeMessage && (
+          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg shadow-sm p-4 mb-6 border border-indigo-100">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 mr-4">
+                <div className="h-12 w-12 rounded-full bg-indigo-600 flex items-center justify-center">
+                  <MessageSquare className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex justify-between items-start">
+                  <h4 className="text-lg font-medium text-gray-900">
+                    Welcome to T3awanu
+                  </h4>
+                  <span className="text-xs text-gray-500">
+                    {new Date(welcomeMessage.latestMessage.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between">
-                    <h4 className="text-sm font-medium text-gray-900 truncate">
-                      {user.firstName} {user.lastName}
-                    </h4>
-                    <span className="text-xs text-gray-500">
-                      {new Date(latestMessage.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  
-                  <p className={`text-sm truncate ${isUnread ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
-                    {latestMessage.content}
-                  </p>
-                  
-                  {isUnread && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 mt-1">
-                      {unreadCount} new
-                    </span>
-                  )}
+                <p className="text-sm text-gray-700 mt-1">
+                  {welcomeMessage.latestMessage.content}
+                </p>
+                
+                <div className="mt-3">
+                  <Link
+                    to={`/messages/${welcomeMessage.userId}`}
+                    className="inline-flex items-center px-3 py-1 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                    View Message
+                  </Link>
                 </div>
               </div>
             </div>
-          );
-        })}
+          </div>
+        )}
+
+        {/* Regular Conversations List */}
+        <div className="divide-y divide-gray-200 bg-white rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium p-4 border-b border-gray-200">Recent Conversations</h3>
+          {conversations
+            .filter(conv => conv.user.email !== 'system@t3awanu.com' && conv.user.firstName !== 'T3awanu')
+            .map((conversation) => {
+              const { userId, user, latestMessage, unreadCount } = conversation;
+              const isUnread = unreadCount > 0;
+              
+              return (
+                <div 
+                  key={userId} 
+                  className={`p-4 hover:bg-gray-50 transition-colors ${isUnread ? 'bg-indigo-50' : ''}`}
+                  onClick={() => {
+                    // Navigate to the full conversation view
+                    navigate(`/messages/${userId}`);
+                  }}
+                >
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 mr-4">
+                      {user.profilePicture ? (
+                        <img 
+                          src={user.profilePicture} 
+                          alt={`${user.firstName} ${user.lastName}`} 
+                          className="h-10 w-10 rounded-full"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                          <User className="h-5 w-5 text-indigo-600" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between">
+                        <h4 className="text-sm font-medium text-gray-900 truncate">
+                          {user.firstName} {user.lastName}
+                        </h4>
+                        <span className="text-xs text-gray-500">
+                          {new Date(latestMessage.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      
+                      <p className={`text-sm truncate ${isUnread ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
+                        {latestMessage.content}
+                      </p>
+                      
+                      {isUnread && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 mt-1">
+                          {unreadCount} new
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            {conversations.filter(conv => 
+              conv.user.email !== 'system@t3awanu.com' && 
+              conv.user.firstName !== 'T3awanu'
+            ).length === 0 && (
+              <div className="py-8 text-center">
+                <p className="text-gray-500">No conversations with other users yet</p>
+              </div>
+            )}
+        </div>
       </div>
     );
   };

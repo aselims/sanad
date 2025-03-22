@@ -448,8 +448,8 @@ function ProfilePageWrapper({ innovators, onBack }: { innovators: Innovator[], o
   // Find the innovator by ID
   const innovator = id ? innovators.find(i => i.id === id) : undefined;
   
-  // If no ID or innovator not found but user is logged in, use current user
-  const userToDisplay = innovator || (currentUser ? currentUser as unknown as Innovator : undefined);
+  // Only use current user as fallback if explicitly viewing own profile (no ID in URL or URL ID matches current user ID)
+  const userToDisplay = innovator || (currentUser && location === '/profile' ? currentUser as unknown as Innovator : undefined);
   
   // Fetch match requests and potential matches if this is the current user's profile
   useEffect(() => {

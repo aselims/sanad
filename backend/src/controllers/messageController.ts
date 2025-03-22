@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../config/data-source';
 import { Message } from '../entities/Message';
-import { User } from '../entities/User';
+import { User, UserRole } from '../entities/User';
 import { Connection, ConnectionStatus } from '../entities/Connection';
 
 /**
@@ -53,11 +53,11 @@ export const sendMessage = async (req: Request, res: Response) => {
       ]
     });
 
+    // Instead of requiring a connection, we'll make it optional
+    // If they're not connected, we'll log it but still allow the message
     if (!connection) {
-      return res.status(403).json({
-        status: 'error',
-        message: 'You must be connected with this user to send messages'
-      });
+      console.log(`Message sent between non-connected users: ${req.user.id} to ${recipientId}`);
+      // Continue with sending the message instead of returning an error
     }
 
     // Create new message
@@ -153,6 +153,9 @@ export const getConversations = async (req: Request, res: Response) => {
       });
     }
 
+    // Create welcome message if user doesn't have any messages yet
+    await createWelcomeMessage(req.user.id);
+
     const messageRepository = AppDataSource.getRepository(Message);
     const userRepository = AppDataSource.getRepository(User);
 
@@ -224,5 +227,61 @@ export const getConversations = async (req: Request, res: Response) => {
       status: 'error',
       message: 'Internal server error'
     });
+  }
+};
+
+/**
+ * Create welcome message for a new user
+ */
+export const createWelcomeMessage = async (userId: string) => {
+  try {
+    const messageRepository = AppDataSource.getRepository(Message);
+    const userRepository = AppDataSource.getRepository(User);
+    
+    // Check if user already has any messages
+    const existingMessages = await messageRepository.find({
+      where: [
+        { senderId: userId },
+        { receiverId: userId }
+      ]
+    });
+    
+    // Only create welcome message if the user has no messages
+    if (existingMessages.length === 0) {
+      // Find or create a system admin user
+      let adminUser = await userRepository.findOne({ 
+        where: { email: 'system@t3awanu.com' }
+      });
+      
+      if (!adminUser) {
+        // Create a system admin user if it doesn't exist
+        adminUser = userRepository.create({
+          firstName: 'T3awanu',
+          lastName: 'Team',
+          email: 'system@t3awanu.com',
+          role: UserRole.ADMIN,
+          organization: 'T3awanu',
+          isVerified: true,
+          isActive: true,
+          allowMessages: true,
+          // Add other required fields with sensible defaults
+          password: 'system-user-not-for-login', // This user won't be used for login
+        });
+        await userRepository.save(adminUser);
+      }
+      
+      // Create welcome message
+      const welcomeMessage = messageRepository.create({
+        senderId: adminUser.id,
+        receiverId: userId,
+        content: `Welcome to T3awanu! We're excited to have you join our community of innovators. Start connecting and collaborating with others to bring your ideas to life. If you need any assistance, don't hesitate to reach out to our support team.`,
+        isRead: false
+      });
+      
+      await messageRepository.save(welcomeMessage);
+      console.log(`Welcome message created for user ${userId}`);
+    }
+  } catch (error) {
+    console.error('Error creating welcome message:', error);
   }
 }; 
