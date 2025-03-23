@@ -17,9 +17,13 @@ import {
   Filter, 
   X,
   ChevronDown,
-  ArrowUpRight
+  ArrowUpRight,
+  Check,
+  School,
+  Laptop
 } from 'lucide-react';
 import { INNOVATOR_TYPES, ROLE_DISPLAY_NAMES } from '../constants/roles';
+import UserProfileModal from './modals/UserProfileModal';
 
 interface InnovatorsListProps {
   innovators: Innovator[];
@@ -33,6 +37,10 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [selectedExpertise, setSelectedExpertise] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // New state variables for the profile modal
+  const [selectedInnovatorId, setSelectedInnovatorId] = useState<string | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
   // Get all unique expertise tags across all innovators
   const allExpertiseTags = Array.from(
@@ -103,6 +111,9 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
   const handleViewProfile = (id: string) => {
     if (onViewProfile) {
       onViewProfile(id);
+    } else {
+      setSelectedInnovatorId(id);
+      setIsProfileModalOpen(true);
     }
   };
 
@@ -471,6 +482,14 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
             Clear all filters
           </button>
         </div>
+      )}
+
+      {selectedInnovatorId && !onViewProfile && (
+        <UserProfileModal
+          userId={selectedInnovatorId}
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
       )}
     </div>
   );

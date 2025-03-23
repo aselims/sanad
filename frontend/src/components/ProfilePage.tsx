@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   User, 
   Building, 
@@ -36,6 +36,7 @@ import { getPotentialMatches, saveMatchPreference } from '../services/matches';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { getUserConnections, getConnectionRequests, respondToConnectionRequest } from '../services/connections';
 import { getUserCollaborations } from '../services/collaborations';
+import UserProfileModal from './modals/UserProfileModal';
 
 interface ProfilePageProps {
   user: Innovator;
@@ -108,6 +109,9 @@ export function ProfilePage({
 
   // Check if this is the current user's profile
   const isOwnProfile = currentUser && currentUser.id === user.id;
+
+  const [selectedInnovatorId, setSelectedInnovatorId] = useState<string | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Reset activeTab to 'profile' if a non-authenticated user tries to access a protected tab
   useEffect(() => {
@@ -428,8 +432,8 @@ export function ProfilePage({
 
   // Function to navigate to a user's profile
   const handleViewProfile = (innovatorId: string) => {
-    console.log(`Navigating to profile: /profile/${innovatorId}`);
-    navigate(`/profile/${innovatorId}`);
+    setSelectedInnovatorId(innovatorId);
+    setIsProfileModalOpen(true);
   };
 
   // Function to handle viewing collaborations with a specific connection
@@ -1751,6 +1755,15 @@ export function ProfilePage({
       
       {/* Message Modal */}
       {showMessageModal && MessageModal()}
+
+      {/* User Profile Modal */}
+      {selectedInnovatorId && (
+        <UserProfileModal
+          userId={selectedInnovatorId}
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

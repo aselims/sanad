@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Connection, ConnectionStatus } from '../types';
 import { getConnectionRequests, getUserConnections, respondToConnectionRequest } from '../services/connections';
 import { Link } from 'react-router-dom';
+import UserProfileModal from './modals/UserProfileModal';
 
 const ConnectionsPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -12,6 +13,8 @@ const ConnectionsPage: React.FC = () => {
   const [connectionRequests, setConnectionRequests] = useState<Connection[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -54,6 +57,11 @@ const ConnectionsPage: React.FC = () => {
       setError('Failed to respond to request. Please try again.');
       console.error('Error responding to request:', err);
     }
+  };
+
+  const handleViewProfile = (userId: string) => {
+    setSelectedUserId(userId);
+    setIsProfileModalOpen(true);
   };
 
   if (!isAuthenticated) {
@@ -152,13 +160,13 @@ const ConnectionsPage: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex space-x-2">
-                        <Link
-                          to={`/profile/${connection.user.id}`}
+                        <button
+                          onClick={() => handleViewProfile(connection.user.id)}
                           className="p-2 text-indigo-600 hover:text-indigo-800"
                           title="View Profile"
                         >
                           <User className="h-5 w-5" />
-                        </Link>
+                        </button>
                         <Link
                           to={`/messages/${connection.user.id}`}
                           className="p-2 text-green-600 hover:text-green-800"
@@ -232,6 +240,14 @@ const ConnectionsPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {selectedUserId && (
+        <UserProfileModal
+          userId={selectedUserId}
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

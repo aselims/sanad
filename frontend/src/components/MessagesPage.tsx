@@ -5,6 +5,7 @@ import { Message, Conversation, User as UserType } from '../types';
 import { getConversations, getConversation, sendMessage } from '../services/messages';
 import { getUserById } from '../services/users';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
+import UserProfileModal from './modals/UserProfileModal';
 
 const MessagesPage: React.FC = () => {
   const { isAuthenticated, user: currentUser } = useAuth();
@@ -21,6 +22,7 @@ const MessagesPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isTextareaFocused, setIsTextareaFocused] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -216,6 +218,12 @@ const MessagesPage: React.FC = () => {
     return fullName.includes(searchQuery.toLowerCase());
   });
 
+  const handleViewProfile = () => {
+    if (selectedUser) {
+      setIsProfileModalOpen(true);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-4">
@@ -391,13 +399,13 @@ const MessagesPage: React.FC = () => {
                   </Link>
                   
                   <div className="flex items-center space-x-2">
-                    <Link
-                      to={`/profile/${selectedUser.id}`}
+                    <button
+                      onClick={handleViewProfile}
                       className="p-2 rounded-full text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors duration-150"
                       aria-label="View profile"
                     >
                       <Info className="h-5 w-5" />
-                    </Link>
+                    </button>
                   </div>
                 </div>
 
@@ -566,6 +574,19 @@ const MessagesPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* User Profile Modal */}
+      {selectedUser && (
+        <UserProfileModal
+          userId={selectedUser.id}
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          onSendMessage={() => {
+            setIsProfileModalOpen(false);
+            messageInputRef.current?.focus();
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -28,6 +28,7 @@ import { getPotentialMatches, getMatchRequests } from './services/matches';
 import { createChallenge } from './services/challenges';
 import { createPartnership } from './services/partnerships';
 import { performNormalSearch } from './services/search';
+import UserProfileModal from './components/modals/UserProfileModal';
 
 export function App() {
   const navigate = useNavigate();
@@ -54,6 +55,10 @@ export function App() {
   
   // Add state for view mode
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Add state for UserProfileModal
+  const [viewProfileUserId, setViewProfileUserId] = useState<string | null>(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Fetch data from API
   useEffect(() => {
@@ -165,7 +170,8 @@ export function App() {
   };
 
   const handleViewInnovator = (id: string) => {
-    navigate(`/profile/${id}`);
+    setViewProfileUserId(id);
+    setIsProfileModalOpen(true);
   };
 
   // Add a function to handle back from collaboration details
@@ -423,6 +429,15 @@ export function App() {
         onNavigateToContactUs={() => navigate('/contact')}
         onNavigateToFAQ={() => navigate('/faq')}
       />
+
+      {/* User Profile Modal */}
+      {viewProfileUserId && (
+        <UserProfileModal
+          userId={viewProfileUserId}
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
