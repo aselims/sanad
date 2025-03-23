@@ -12,6 +12,8 @@ import ProtectedAction from './auth/ProtectedAction';
 import { saveVote } from '../services/collaborations';
 import { useNavigate, Link } from 'react-router-dom';
 import { getUserById } from '../services/users';
+import { sendMessage } from '../services/messages';
+import { useAuth } from '../contexts/AuthContext';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
@@ -87,6 +89,7 @@ function CollaborationRequestCard({ request, onExpressInterest }: {
 
 export function CollaborationDetails({ collaboration, onBack, cameFromSearch = false }: CollaborationDetailsProps) {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
   const openRequests = collaboration.collaborationRequests?.filter(r => r.status === 'open') || [];
   const [selectedRequest, setSelectedRequest] = useState<CollaborationRequest | null>(null);
   const [collaboratorType, setCollaboratorType] = useState<CollaboratorType>('individual');
@@ -137,11 +140,66 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
     setSelectedRequest(request);
   };
 
-  const handleSubmitInterest = (submission: InterestSubmission) => {
-    // Here you would typically send this to your backend
-    console.log('Interest submitted:', submission);
-    // Show success message
-    alert('Your interest has been submitted successfully! The collaboration team will review your application and contact you soon.');
+  const handleSubmitInterest = async (submission: InterestSubmission) => {
+    try {
+      // Check if user is authenticated
+      if (!isAuthenticated || !user) {
+        alert('You must be logged in to express interest. Please sign in and try again.');
+        return;
+      }
+      
+      // Here you would typically send this to your backend
+      console.log('Interest submitted:', submission);
+      
+      // If there's a createdById in the collaboration, send a message to the owner
+      if (collaboration.createdById && user.id !== collaboration.createdById) {
+        // Create a message title based on the collaboration type and title
+        const messageTitle = `Interest in your ${collaboration.type || 'collaboration'}: ${collaboration.title}`;
+        
+        // Format any expertise information
+        const expertise = submission.expertise && submission.expertise.length > 0 
+          ? `Expertise: ${submission.expertise.join(', ')}` 
+          : submission.expertiseText 
+            ? `Expertise: ${submission.expertiseText}` 
+            : '';
+        
+        // Build the message content from the submission details with improved formatting
+        const messageContent = `
+✨ ${messageTitle} ✨
+
+Someone has expressed interest in your collaboration!
+
+-------------------------------------------------
+📋 CONTACT INFORMATION
+-------------------------------------------------
+• Name: ${submission.name} 
+• Email: ${submission.email}
+• Organization: ${submission.organization || 'Not specified'}
+• Type: ${submission.collaboratorType || 'Individual'}
+${expertise ? `• ${expertise}` : ''}
+${submission.foundingYear ? `• Founding Year: ${submission.foundingYear}` : ''}
+${submission.researchArea ? `• Research Area: ${submission.researchArea}` : ''}
+${submission.investmentFocus ? `• Investment Focus: ${submission.investmentFocus}` : ''}
+
+-------------------------------------------------
+💬 MESSAGE FROM INTERESTED PARTY
+-------------------------------------------------
+${submission.message}
+
+-------------------------------------------------
+You can respond directly to this message to contact them.
+`;
+        
+        // Send the message to the collaboration owner
+        await sendMessage(collaboration.createdById, messageContent);
+      }
+      
+      // Show success message
+      alert('Your interest has been submitted successfully! The collaboration team will review your application and contact you soon.');
+    } catch (error) {
+      console.error('Error submitting interest:', error);
+      alert('There was an error submitting your interest. Please try again later.');
+    }
   };
 
   const handleVote = async (voteType: 'up' | 'down') => {
