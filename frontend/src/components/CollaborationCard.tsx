@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Users, Calendar, ArrowRight, UserPlus, Target, Handshake, Lightbulb, ThumbsUp, ThumbsDown } from 'lucide-react';
 import type { Collaboration } from '../types';
-import { saveVote } from '../services/collaborations';
+import { useCollaborations } from '../contexts/CollaborationContext';
 
 interface CollaborationCardProps {
   collaboration: Collaboration;
@@ -9,8 +9,12 @@ interface CollaborationCardProps {
 }
 
 export function CollaborationCard({ collaboration, onViewDetails }: CollaborationCardProps) {
+  const { voteForCollaboration } = useCollaborations();
   const openRequests = collaboration.collaborationRequests?.filter(r => r.status === 'open').length || 0;
-  const [votes, setVotes] = useState({ upvotes: collaboration.upvotes || 0, downvotes: collaboration.downvotes || 0 });
+  const [votes, setVotes] = useState({ 
+    upvotes: collaboration.upvotes || 0, 
+    downvotes: collaboration.downvotes || 0 
+  });
   const [userVote, setUserVote] = useState<'up' | 'down' | null>(null);
 
   const handleVote = async (voteType: 'up' | 'down') => {
@@ -39,12 +43,12 @@ export function CollaborationCard({ collaboration, onViewDetails }: Collaboratio
       setUserVote(voteType);
     }
 
-    // Save the vote to the database
+    // Save the vote using the context
     try {
-      await saveVote(collaboration.id, voteType);
+      await voteForCollaboration(collaboration.id, voteType);
     } catch (error) {
       console.error('Failed to save vote:', error);
-      // Optionally revert the UI state if the API call fails
+      // No need to revert UI state as the context will handle failed votes
     }
   };
 

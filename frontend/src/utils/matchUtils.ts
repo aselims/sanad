@@ -48,25 +48,50 @@ function generateMatchHighlight(currentUser: Innovator, matchedUser: Innovator, 
 
 // Main function to find potential matches
 export function findPotentialMatches(currentUser: Innovator, allUsers: Innovator[]): MatchResult[] {
-  return allUsers
+  console.log('Finding matches - current user tags:', currentUser.tags);
+  console.log('Finding matches - other users count:', allUsers.length);
+  
+  if (!currentUser.tags || currentUser.tags.length === 0) {
+    console.warn('Current user has no tags for matching');
+    return [];
+  }
+  
+  // Filter users, calculate scores, and create match results
+  const matches = allUsers
     .filter(user => user.id !== currentUser.id)
     .map(user => {
+      // Ensure the user has tags
+      const userTags = user.tags || [];
+      console.log(`User ${user.name} has ${userTags.length} tags:`, userTags);
+      
       // Calculate shared tags
-      const sharedTags = user.tags.filter(tag => currentUser.tags.includes(tag));
+      const sharedTags = userTags.filter(tag => 
+        currentUser.tags.some(userTag => 
+          userTag.toLowerCase() === tag.toLowerCase()
+        )
+      );
+      
+      console.log(`User ${user.name} has ${sharedTags.length} shared tags:`, sharedTags);
       
       // Calculate tag similarity score (50% weight)
-      const tagSimilarity = sharedTags.length / Math.max(currentUser.tags.length, user.tags.length);
+      // Avoid division by zero
+      const tagSimilarity = currentUser.tags.length > 0 && userTags.length > 0 
+        ? sharedTags.length / Math.max(currentUser.tags.length, userTags.length)
+        : 0;
       
       // Calculate type compatibility score (30% weight)
       const typeScore = user.type === currentUser.type ? 1 : 0.5;
       
       // Calculate location proximity score (20% weight)
-      const locationScore = user.location === currentUser.location ? 1 : 0.3;
+      const locationScore = user.location && currentUser.location && 
+        user.location.toLowerCase() === currentUser.location.toLowerCase() ? 1 : 0.3;
       
       // Calculate final match score (weighted)
       const matchScore = Math.round(
         (tagSimilarity * 0.5 + typeScore * 0.3 + locationScore * 0.2) * 100
       );
+      
+      console.log(`User ${user.name} match score: ${matchScore}`);
       
       // Generate highlight
       const highlight = generateMatchHighlight(currentUser, user, sharedTags);
@@ -78,6 +103,10 @@ export function findPotentialMatches(currentUser: Innovator, allUsers: Innovator
         highlight
       };
     })
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 5); // Return top 5 matches
+    .filter(match => match.matchScore > 0) // Only include non-zero scores
+    .sort((a, b) => b.matchScore - a.matchScore);
+  
+  console.log(`Found ${matches.length} matches with scores > 0`);
+  
+  return matches.slice(0, 10); // Return top 10 matches
 } 

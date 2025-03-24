@@ -38,6 +38,8 @@ export interface User {
     github?: string;
   };
   expertise?: string[];
+  tags?: string[];
+  interests?: string[];
 }
 
 export interface CollaborationRequest {
@@ -331,7 +333,7 @@ export const userToInnovator = (user: User): Innovator => {
     description: user.bio || '', // Use bio for description
     profileImage: user.profilePicture,
     email: user.email,
-    tags: [],
+    tags: user.tags || user.interests || [], // Use tags field or fallback to interests field, or empty array as last resort
     location: user.location,
     website: user.website,
     position: user.position,

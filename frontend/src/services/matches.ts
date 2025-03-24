@@ -12,26 +12,89 @@ export const getPotentialMatches = async (userId: string): Promise<Innovator[]> 
     // First, get the current user's full profile
     const currentUserResponse = await api.get(`/users/${userId}`);
     const currentUser = currentUserResponse.data.data;
+    
+    // Log to see what data we're getting
+    console.log('Current user:', currentUser);
 
     // Then, get all other users
     const allUsersResponse = await api.get('/users');
     const allUsers = allUsersResponse.data.data;
+    
+    // Log a sample user
+    if (allUsers.length > 0) {
+      console.log('Sample user:', allUsers[0]);
+    }
 
     // Convert users to innovators format
     const currentInnovator = userToInnovator(currentUser);
     const otherInnovators = allUsers
       .filter((user: User) => user.id !== userId)
       .map((user: User) => userToInnovator(user));
+    
+    // Log to verify conversion
+    console.log('Current innovator:', currentInnovator);
+    
+    // Ensure current user has tags for matching to work
+    if (!currentInnovator.tags || currentInnovator.tags.length === 0) {
+      // If current user has no tags, we can't match effectively
+      console.warn('Current user has no tags defined, adding placeholder tags');
+      // Add some default tags based on user role and bio to enable matching
+      currentInnovator.tags = generateDefaultTags(currentInnovator);
+    }
+    
+    // Ensure other users have tags for matching
+    otherInnovators.forEach((innovator: Innovator) => {
+      if (!innovator.tags || innovator.tags.length === 0) {
+        innovator.tags = generateDefaultTags(innovator);
+      }
+    });
 
     // Use our matching algorithm to find potential matches
     const matches = findPotentialMatches(currentInnovator, otherInnovators);
-
+    console.log('Matches found:', matches.length);
+    
     return matches.map(match => match.innovator);
   } catch (error) {
     console.error('Error fetching potential matches:', error);
     return [];
   }
 };
+
+// Helper function to generate default tags based on user data
+function generateDefaultTags(innovator: Innovator): string[] {
+  const defaultTags: string[] = [];
+  
+  // Add role-based tags
+  defaultTags.push(innovator.type);
+  
+  // Add organization-based tag if available
+  if (innovator.organization) {
+    defaultTags.push(innovator.organization.toLowerCase());
+  }
+  
+  // Add location-based tag if available
+  if (innovator.location) {
+    defaultTags.push(innovator.location.toLowerCase());
+  }
+  
+  // Extract potential keywords from description
+  if (innovator.description) {
+    const descriptionWords = innovator.description.toLowerCase().split(/\s+/);
+    const keywordCandidates = descriptionWords.filter(word => 
+      word.length > 5 && !['people', 'about', 'their', 'there', 'these', 'those', 'other'].includes(word)
+    );
+    
+    // Add up to 3 keywords from description
+    defaultTags.push(...keywordCandidates.slice(0, 3));
+  }
+  
+  // Add expertise if available
+  if (innovator.expertise && innovator.expertise.length > 0) {
+    defaultTags.push(...innovator.expertise);
+  }
+  
+  return [...new Set(defaultTags)]; // Remove duplicates
+}
 
 /**
  * Save a match preference (like/dislike)

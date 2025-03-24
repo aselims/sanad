@@ -24,7 +24,12 @@ import {
   UserPlus,
   MessageSquare,
   X,
-  Clock
+  Clock,
+  Rocket,
+  Home,
+  Eye,
+  ThumbsDown,
+  UserX
 } from 'lucide-react';
 import { Innovator, Collaboration, User as UserType, Message, Conversation, Connection, ConnectionStatus } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,13 +53,15 @@ interface ProfilePageProps {
     date: string;
   }[];
   onBack?: () => void;
+  isLoading?: boolean;
 }
 
 export function ProfilePage({ 
   user, 
   potentialMatches = [], 
   matchRequests = [], 
-  onBack
+  onBack,
+  isLoading: externalLoading
 }: ProfilePageProps) {
   const { user: currentUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -72,7 +79,7 @@ export function ProfilePage({
   const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages' | 'connection-requests'>(initialTab);
   const [showEditModal, setShowEditModal] = useState(false);
   const [profileData, setProfileData] = useState<Innovator>(user);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(externalLoading || false);
   const [error, setError] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [messageStatus, setMessageStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
@@ -774,6 +781,7 @@ export function ProfilePage({
 
     // Calculate matches using the new matching logic
     const matchResults = findPotentialMatches(user, matches);
+    console.log('Match results in ProfilePage:', matchResults);
 
     // Filter out invalid matches (with undefined or NaN scores)
     const validMatches = matchResults.filter(match => 
@@ -810,9 +818,9 @@ export function ProfilePage({
             </p>
           </div>
           <div className="border-t border-gray-200">
-            <ul className="divide-y divide-gray-200">
-              {sortedMatches.length > 0 ? (
-                sortedMatches.map((match) => (
+            {sortedMatches.length > 0 ? (
+              <ul className="divide-y divide-gray-200">
+                {sortedMatches.map((match) => (
                   <li key={match.innovator.id} className="px-6 py-6 hover:bg-gray-50">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start">
@@ -821,6 +829,12 @@ export function ProfilePage({
                             <Briefcase className="h-6 w-6 text-indigo-600" />
                           ) : match.innovator.type === 'research' ? (
                             <Award className="h-6 w-6 text-purple-600" />
+                          ) : match.innovator.type === 'investor' ? (
+                            <DollarSign className="h-6 w-6 text-green-600" />
+                          ) : match.innovator.type === 'accelerator' ? (
+                            <Rocket className="h-6 w-6 text-orange-600" />
+                          ) : match.innovator.type === 'incubator' ? (
+                            <Home className="h-6 w-6 text-blue-600" />
                           ) : (
                             <User className="h-6 w-6 text-gray-600" />
                           )}
@@ -828,6 +842,7 @@ export function ProfilePage({
                         <div className="ml-4">
                           <div className="text-base font-medium text-gray-900">{match.innovator.name}</div>
                           <div className="text-sm text-gray-500 capitalize">{match.innovator.type}</div>
+                          <div className="text-xs text-gray-500">{match.innovator.organization || ''}</div>
                         </div>
                       </div>
                       <div className="flex items-center">
@@ -840,65 +855,78 @@ export function ProfilePage({
                     <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-md">
                       <p className="text-sm flex items-start">
                         <Zap className="h-4 w-4 text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700">{match.highlight || "Located in undefined with complementary expertise."}</span>
+                        <span className="text-gray-700">{match.highlight || `Located in ${match.innovator.location || 'the same region'} with complementary expertise.`}</span>
                       </p>
                     </div>
 
+                    {/* Tags section */}
+                    {match.sharedTags && match.sharedTags.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {match.sharedTags.slice(0, 5).map((tag, index) => (
+                          <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            <Check className="h-3 w-3 mr-1" />
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="mt-4 flex justify-between items-center">
                       <button 
-                        onClick={() => handleViewProfile(match.innovator.id)}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        onClick={() => handleMatchPreference(match.innovator.id, 'like')}
+                        className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
+                          matchPreferences[match.innovator.id] === 'like' 
+                            ? 'bg-green-100 text-green-800 border-green-200' 
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        }`}
                       >
-                        View Profile
+                        <ThumbsUp className={`h-4 w-4 mr-1 ${matchPreferences[match.innovator.id] === 'like' ? 'text-green-600' : 'text-gray-400'}`} />
+                        {matchPreferences[match.innovator.id] === 'like' ? 'Liked' : 'Like'}
                       </button>
                       
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleMatchPreference(match.innovator.id, 'like')}
-                          disabled={preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving'}
-                          className="text-sm font-medium text-gray-700 hover:text-indigo-600"
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleViewProfile(match.innovator.id)}
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium bg-white text-gray-700 hover:bg-gray-50"
                         >
-                          {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving' ? 'Saving...' : 'Like'}
+                          <Eye className="h-4 w-4 mr-1 text-gray-400" />
+                          View Profile
                         </button>
-                        <button
+                        
+                        <button 
                           onClick={() => handleMatchPreference(match.innovator.id, 'dislike')}
-                          disabled={preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving'}
-                          className="text-sm font-medium text-gray-700 hover:text-indigo-600"
+                          className={`inline-flex items-center px-3 py-1.5 border rounded-md text-sm font-medium ${
+                            matchPreferences[match.innovator.id] === 'dislike' 
+                              ? 'bg-red-100 text-red-800 border-red-200' 
+                              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                          }`}
                         >
-                          {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'saving' ? 'Saving...' : 'Hide'}
+                          <ThumbsDown className={`h-4 w-4 mr-1 ${matchPreferences[match.innovator.id] === 'dislike' ? 'text-red-600' : 'text-gray-400'}`} />
+                          {matchPreferences[match.innovator.id] === 'dislike' ? 'Disliked' : 'Dislike'}
                         </button>
                       </div>
                     </div>
-
-                    {/* Show feedback message when preference is saved */}
-                    {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'success' && (
-                      <div className="mt-2 text-sm text-green-600">
-                        Preference saved successfully!
-                      </div>
-                    )}
-                    {preferenceStatus.id === match.innovator.id && preferenceStatus.status === 'error' && (
-                      <div className="mt-2 text-sm text-red-600">
-                        Error saving preference. Please try again.
-                      </div>
-                    )}
                   </li>
-                ))
-              ) : matches.length > 0 ? (
-                <li className="px-4 py-12 sm:px-6 text-center">
-                  <div className="text-gray-500">
-                    <p>You have {matches.length} potential matches, but all have been hidden.</p>
-                    <p className="mt-1 text-sm">Adjust your preferences to see more matches.</p>
-                  </div>
-                </li>
-              ) : (
-                <li className="px-4 py-12 sm:px-6 text-center">
-                  <div className="text-gray-500">
-                    <p>No potential matches found at the moment.</p>
-                    <p className="mt-1 text-sm">Check back later as our AI continues to analyze new innovators.</p>
-                  </div>
-                </li>
-              )}
-            </ul>
+                ))}
+              </ul>
+            ) : (
+              <div className="py-12 px-4 text-center">
+                <UserX className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-base font-medium text-gray-900">No matches found</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  We couldn't find any suitable matches based on your profile information.
+                </p>
+                <div className="mt-6">
+                  <button
+                    onClick={handleEditProfile}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Complete Your Profile
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
