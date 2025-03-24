@@ -48,4 +48,31 @@ api.interceptors.response.use(
   }
 );
 
-export default api; 
+export default api;
+
+// Upload a file to a collaboration
+export const uploadFile = async (collaborationId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  return await api.post(`/collaborations/${collaborationId}/files`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+// Get files for a collaboration
+export const getCollaborationFiles = async (collaborationId: string) => {
+  return await api.get(`/collaborations/${collaborationId}/files`);
+};
+
+// Delete a file
+export const deleteFile = async (fileId: string) => {
+  return await api.delete(`/files/${fileId}`);
+};
+
+// Get file download URL
+export const getFileDownloadUrl = (fileId: string) => {
+  return `${api.defaults.baseURL}/files/${fileId}`;
+}; 

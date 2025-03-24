@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './User';
 import { Milestone } from './Milestone';
+import { CollaborationFile } from './CollaborationFile';
 
 export enum CollaborationType {
   CHALLENGE = 'challenge',
@@ -92,6 +93,9 @@ export class Collaboration {
 
   @Column('simple-array', { nullable: true })
   teamMembers: string[];
+
+  @OneToMany(() => CollaborationFile, file => file.collaboration, { cascade: true })
+  files: CollaborationFile[];
 
   @Column({ default: 'public' })
   visibility: 'public' | 'private' | 'limited';

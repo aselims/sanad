@@ -185,6 +185,7 @@ export interface Collaboration {
   updatedAt: Date;
   upvotes?: number;
   downvotes?: number;
+  files?: CollaborationFile[];
 }
 
 export interface InnovatorBase {
@@ -305,6 +306,16 @@ export interface Conversation {
   user: User;
   latestMessage: Message;
   unreadCount: number;
+}
+
+export interface CollaborationFile {
+  id: string;
+  name: string;
+  path: string;
+  mimeType: string;
+  size: number;
+  uploadedBy: string;
+  uploadedAt: Date;
 }
 
 // Helper function to convert User to Innovator format for frontend

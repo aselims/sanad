@@ -21,6 +21,12 @@
     "debug:backend": "cd backend && npm run dev:debug"
   },
   "devDependencies": {
+    "@types/multer": "^1.4.12",
+    "@types/uuid": "^10.0.0",
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "multer": "^1.4.5-lts.2",
+    "uuid": "^11.1.0"
   }
-} 
+}

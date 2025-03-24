@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, Calendar, ArrowLeft, FileText, 
   MessageSquare, Target, BarChart, Link as LinkIcon,
@@ -15,6 +15,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { getUserById } from '../services/users';
 import { sendMessage } from '../services/messages';
 import { useAuth } from '../contexts/AuthContext';
+import CollaborationFiles from './CollaborationFiles';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
@@ -104,6 +105,36 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
   const [voteError, setVoteError] = useState<string | null>(null);
   const [creator, setCreator] = useState<{ name: string; role?: string } | null>(null);
   const [isLoadingCreator, setIsLoadingCreator] = useState(false);
+  
+  // Check if current user is owner or participant
+  const isOwnerOrParticipant = useMemo(() => {
+    if (!isAuthenticated || !user) return false;
+    
+    // Check if user is the owner
+    if (collaboration.createdById === user.id) return true;
+    
+    // Check if user is in participants (participants can be string[] or User[] depending on API)
+    if (collaboration.participants && collaboration.participants.length > 0) {
+      // If participants are string IDs
+      if (typeof collaboration.participants[0] === 'string') {
+        if (collaboration.participants.includes(user.id)) return true;
+      } 
+      // If participants are objects with ids
+      else if (typeof collaboration.participants[0] === 'object') {
+        // @ts-ignore - Handle potential type mismatch in API response
+        if (collaboration.participants.some(p => p && p.id === user.id)) return true;
+      }
+    }
+    
+    // Check if user is in team members
+    if (collaboration.teamMembers && collaboration.teamMembers.includes(user.id)) return true;
+    
+    // For testing/development purposes, temporarily allow all users to upload
+    // Remove this in production
+    // return true;
+    
+    return false;
+  }, [isAuthenticated, user, collaboration]);
   
   // Progress tracking state
   const [progressValue, setProgressValue] = useState(60);
@@ -1014,6 +1045,14 @@ You can respond directly to this message to contact them.
                 </div>
               )}
             </div>
+          </div>
+          
+          {/* Files Section */}
+          <div className="border-t border-gray-200 p-6">
+            <CollaborationFiles 
+              collaborationId={collaboration.id} 
+              isOwnerOrParticipant={isOwnerOrParticipant} 
+            />
           </div>
         </div>
 
