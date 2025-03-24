@@ -4,12 +4,13 @@ import {
   MessageSquare, Target, BarChart, Link as LinkIcon,
   UserPlus, Briefcase, Award, Handshake,
   Clock, DollarSign, AlertCircle, Lightbulb,
-  Tag, Zap, ThumbsUp, ThumbsDown
+  Tag, Zap, ThumbsUp, ThumbsDown, Plus, Check, 
+  Calendar as CalendarIcon, Flag, Edit3, Trash2, PlusCircle
 } from 'lucide-react';
 import type { Collaboration, CollaborationRequest, InterestSubmission } from '../types';
 import { ExpressInterestModal } from './ExpressInterestModal';
 import ProtectedAction from './auth/ProtectedAction';
-import { saveVote } from '../services/collaborations';
+import { saveVote, updateCollaborationProgress } from '../services/collaborations';
 import { useNavigate, Link } from 'react-router-dom';
 import { getUserById } from '../services/users';
 import { sendMessage } from '../services/messages';
@@ -43,7 +44,7 @@ function ComingSoonOverlay({ children, title }: { children: React.ReactNode, tit
           {title || 'Coming Soon'}
         </p>
         <p className={`text-sm text-gray-600 mt-1 ${isTransparent ? 'opacity-50' : 'opacity-100'}`}>
-          This feature will be available in Q3 2024
+          This feature will be available in Q2 2025
         </p>
         <p className="text-xs text-indigo-600 mt-3 font-medium">
           {isTransparent ? 'Click to hide details' : 'Click to preview'}
@@ -103,6 +104,24 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
   const [voteError, setVoteError] = useState<string | null>(null);
   const [creator, setCreator] = useState<{ name: string; role?: string } | null>(null);
   const [isLoadingCreator, setIsLoadingCreator] = useState(false);
+  
+  // Progress tracking state
+  const [progressValue, setProgressValue] = useState(60);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [isEditingProgress, setIsEditingProgress] = useState(false);
+  const [isSavingProgress, setIsSavingProgress] = useState(false);
+  const [isAddingMilestone, setIsAddingMilestone] = useState(false);
+  const [isSavingMilestone, setIsSavingMilestone] = useState(false);
+  const [activeMilestoneId, setActiveMilestoneId] = useState<string | null>(null);
+  const [progressError, setProgressError] = useState<string | null>(null);
+  const [milestones, setMilestones] = useState<{id: string; name: string; dueDate: string; completed: boolean}[]>([
+    { id: '1', name: 'Project kickoff', dueDate: '2024-06-15', completed: true },
+    { id: '2', name: 'First prototype', dueDate: '2024-07-20', completed: false },
+    { id: '3', name: 'User testing', dueDate: '2024-08-15', completed: false },
+    { id: '4', name: 'Final delivery', dueDate: '2024-09-30', completed: false }
+  ]);
+  const [newMilestone, setNewMilestone] = useState({ name: '', dueDate: '' });
 
   // Update votes when collaboration prop changes
   useEffect(() => {
@@ -111,6 +130,17 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
       downvotes: collaboration.downvotes || 0
     });
   }, [collaboration.upvotes, collaboration.downvotes]);
+
+  // Calculate the duration based on start and end dates
+  useEffect(() => {
+    // Default start date to today if not set
+    const start = startDate ? new Date(startDate) : new Date();
+    // Default end date to 6 months from now if not set
+    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
+    
+    setStartDate(start.toISOString().split('T')[0]);
+    setEndDate(end.toISOString().split('T')[0]);
+  }, []);
 
   // Add useEffect to fetch creator details
   useEffect(() => {
@@ -135,6 +165,12 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
 
     fetchCreatorDetails();
   }, [collaboration.createdById]);
+
+  // Calculate percentage of completed milestones
+  const completedMilestones = milestones.filter(milestone => milestone.completed).length;
+  const milestonesProgress = milestones.length > 0 
+    ? Math.round((completedMilestones / milestones.length) * 100) 
+    : 0;
 
   const handleExpressInterest = (request: CollaborationRequest) => {
     setSelectedRequest(request);
@@ -249,6 +285,140 @@ You can respond directly to this message to contact them.
       // Don't update UI state if the API call fails
     } finally {
       setIsVoting(false);
+    }
+  };
+
+  const handleProgressUpdate = async () => {
+    try {
+      // Show loading state
+      setIsSavingProgress(true);
+      setProgressError(null);
+      
+      // Prepare the progress data
+      const progressData = {
+        progressValue,
+        startDate,
+        endDate,
+        milestones
+      };
+      
+      // Call the service function
+      await updateCollaborationProgress(collaboration.id, progressData);
+      
+      // Update was successful
+      setIsEditingProgress(false);
+      // You could display a success message here
+    } catch (error) {
+      console.error('Failed to update progress:', error);
+      setProgressError('Failed to save progress. Please try again.');
+    } finally {
+      setIsSavingProgress(false);
+    }
+  };
+
+  const handleAddMilestone = async () => {
+    if (!newMilestone.name || !newMilestone.dueDate) return;
+    
+    const newMilestoneItem = {
+      id: Date.now().toString(),
+      ...newMilestone,
+      completed: false
+    };
+    
+    try {
+      setIsSavingMilestone(true);
+      setProgressError(null);
+      
+      // Update local state first for immediate UI response
+      const updatedMilestones = [...milestones, newMilestoneItem];
+      setMilestones(updatedMilestones);
+      
+      // Then send to backend
+      await updateCollaborationProgress(collaboration.id, {
+        progressValue,
+        startDate,
+        endDate,
+        milestones: updatedMilestones
+      });
+      
+      // Clear form and close
+      setNewMilestone({ name: '', dueDate: '' });
+      setIsAddingMilestone(false);
+    } catch (error) {
+      console.error('Failed to add milestone:', error);
+      setProgressError('Failed to add milestone. Please try again.');
+    } finally {
+      setIsSavingMilestone(false);
+    }
+  };
+
+  const handleToggleMilestone = async (id: string) => {
+    try {
+      setActiveMilestoneId(id);
+      setProgressError(null);
+      
+      // Update local state first for immediate UI response
+      const updatedMilestones = milestones.map(m => 
+        m.id === id ? { ...m, completed: !m.completed } : m
+      );
+      setMilestones(updatedMilestones);
+      
+      // Then send to backend
+      await updateCollaborationProgress(collaboration.id, {
+        progressValue,
+        startDate,
+        endDate,
+        milestones: updatedMilestones
+      });
+      
+      // Optionally update overall progress based on milestone completion
+      if (updatedMilestones.length > 0) {
+        const newCompletedCount = updatedMilestones.filter(m => m.completed).length;
+        const newProgressValue = Math.round((newCompletedCount / updatedMilestones.length) * 100);
+        setProgressValue(newProgressValue);
+      }
+    } catch (error) {
+      console.error('Failed to toggle milestone:', error);
+      setProgressError('Failed to update milestone. Please try again.');
+      
+      // Revert the local state in case of error
+      setMilestones(milestones);
+    } finally {
+      setActiveMilestoneId(null);
+    }
+  };
+
+  const handleDeleteMilestone = async (id: string) => {
+    try {
+      setActiveMilestoneId(id);
+      setProgressError(null);
+      
+      // Update local state first for immediate UI response
+      const updatedMilestones = milestones.filter(m => m.id !== id);
+      setMilestones(updatedMilestones);
+      
+      // Then send to backend
+      await updateCollaborationProgress(collaboration.id, {
+        progressValue,
+        startDate,
+        endDate,
+        milestones: updatedMilestones
+      });
+      
+      // Optionally update overall progress based on milestone completion
+      if (updatedMilestones.length > 0) {
+        const newCompletedCount = updatedMilestones.filter(m => m.completed).length;
+        const newProgressValue = Math.round((newCompletedCount / updatedMilestones.length) * 100);
+        setProgressValue(newProgressValue);
+      }
+    } catch (error) {
+      console.error('Failed to delete milestone:', error);
+      setProgressError('Failed to delete milestone. Please try again.');
+      
+      // Revert the local state in case of error
+      setMilestones(milestones);
+    } finally {
+      setActiveMilestoneId(null);
     }
   };
 
@@ -509,31 +679,243 @@ You can respond directly to this message to contact them.
               </div>
 
               {/* Progress */}
-              <ComingSoonOverlay title="Progress Tracking Coming Soon">
-                <div className="bg-gray-50 rounded-lg p-5">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-gray-50 rounded-lg p-5">
+                <ComingSoonOverlay title="Progress Tracking Feature">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                     <BarChart className="h-5 w-5 mr-2 text-indigo-600" />
-                    Progress Tracking Coming Soon
+                    Progress Tracking
                   </h3>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-600 rounded-full" style={{ width: '60%' }} />
+                  {isAuthenticated && (collaboration.createdById === user?.id || collaboration.participants?.includes(user?.id as any)) && (
+                    <button 
+                      onClick={() => setIsEditingProgress(!isEditingProgress)}
+                      disabled={isSavingProgress}
+                      className={`text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center ${isSavingProgress ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <Edit3 className="h-4 w-4 mr-1" />
+                      {isEditingProgress ? 'Cancel' : 'Edit'}
+                    </button>
+                  )}
+                </div>
+                
+                {progressError && (
+                  <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-md text-sm">
+                    {progressError}
                   </div>
-                  <div className="mt-4 grid grid-cols-3 text-sm">
+                )}
+                
+                {isEditingProgress ? (
+                  <div className="space-y-4 mb-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input
+                          id="startDate"
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                          disabled={isSavingProgress}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input
+                          id="endDate"
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                          disabled={isSavingProgress}
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <p className="text-gray-500">Start Date</p>
-                      <p className="font-medium">Jan 15, 2025</p>
+                      <label htmlFor="progressValue" className="block text-sm font-medium text-gray-700 mb-1">Overall Progress: {progressValue}%</label>
+                      <input
+                        id="progressValue"
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={progressValue}
+                        onChange={(e) => setProgressValue(parseInt(e.target.value))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        disabled={isSavingProgress}
+                      />
                     </div>
-                    <div className="text-center">
-                      <p className="text-gray-500">Duration</p>
-                      <p className="font-medium">6 months</p>
+                    <button
+                      onClick={handleProgressUpdate}
+                      className={`bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center ${isSavingProgress ? 'opacity-70 cursor-not-allowed' : ''}`}
+                      disabled={isSavingProgress}
+                    >
+                      {isSavingProgress ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Saving...
+                        </>
+                      ) : (
+                        'Save Changes'
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${progressValue}%` }} />
                     </div>
-                    <div className="text-right">
-                      <p className="text-gray-500">End Date</p>
-                      <p className="font-medium">Jul 15, 2025</p>
+                    <div className="mt-4 grid grid-cols-3 text-sm">
+                      <div>
+                        <p className="text-gray-500">Start Date</p>
+                        <p className="font-medium">
+                          {startDate ? new Date(startDate).toLocaleDateString() : 'Not set'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-gray-500">Progress</p>
+                        <p className="font-medium">{progressValue}% completed</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-gray-500">End Date</p>
+                        <p className="font-medium">
+                          {endDate ? new Date(endDate).toLocaleDateString() : 'Not set'}
+                        </p>
+                      </div>
                     </div>
+                  </>
+                )}
+
+                {/* Milestones */}
+                <div className="mt-6">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-medium text-gray-900 flex items-center">
+                      <Flag className="h-4 w-4 mr-2 text-indigo-600" />
+                      Milestones ({completedMilestones}/{milestones.length})
+                    </h4>
+                    {isAuthenticated && (collaboration.createdById === user?.id || collaboration.participants?.includes(user?.id as any)) && (
+                      <button
+                        onClick={() => setIsAddingMilestone(!isAddingMilestone)}
+                        disabled={isSavingMilestone}
+                        className={`text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center ${isSavingMilestone ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <PlusCircle className="h-4 w-4 mr-1" />
+                        {isAddingMilestone ? 'Cancel' : 'Add'}
+                      </button>
+                    )}
                   </div>
                 </div>
-              </ComingSoonOverlay>
+
+                {isAddingMilestone && (
+                  <div className="bg-white p-3 rounded-md shadow-sm mb-3 border border-gray-200">
+                    <div className="grid grid-cols-1 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Milestone name"
+                        value={newMilestone.name}
+                        onChange={(e) => setNewMilestone({...newMilestone, name: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        disabled={isSavingMilestone}
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={newMilestone.dueDate}
+                          onChange={(e) => setNewMilestone({...newMilestone, dueDate: e.target.value})}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                          disabled={isSavingMilestone}
+                        />
+                        <button
+                          onClick={handleAddMilestone}
+                          disabled={isSavingMilestone || !newMilestone.name || !newMilestone.dueDate}
+                          className={`bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center ${(isSavingMilestone || !newMilestone.name || !newMilestone.dueDate) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        >
+                          {isSavingMilestone ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Adding...
+                            </>
+                          ) : (
+                            <>
+                              <PlusCircle className="h-4 w-4 mr-1" />
+                              Add
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  {milestones.length > 0 ? (
+                    milestones.map(milestone => (
+                      <div 
+                        key={milestone.id} 
+                        className={`bg-white p-3 rounded-md shadow-sm flex items-center justify-between border ${
+                          activeMilestoneId === milestone.id 
+                            ? 'border-indigo-300 animate-pulse' 
+                            : milestone.completed 
+                              ? 'border-green-200' 
+                              : 'border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <button
+                            onClick={() => handleToggleMilestone(milestone.id)}
+                            disabled={activeMilestoneId === milestone.id}
+                            className={`mt-1 flex-shrink-0 h-5 w-5 rounded-full border flex items-center justify-center ${
+                              milestone.completed 
+                                ? 'bg-green-500 border-green-500 text-white' 
+                                : 'border-gray-300'
+                            } ${activeMilestoneId === milestone.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {milestone.completed && <Check className="h-3 w-3" />}
+                            {activeMilestoneId === milestone.id && (
+                              <svg className="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            )}
+                          </button>
+                          <div>
+                            <p className={`font-medium text-sm ${milestone.completed ? 'text-gray-600 line-through' : 'text-gray-900'}`}>
+                              {milestone.name}
+                            </p>
+                            <div className="flex items-center text-xs text-gray-500 mt-1">
+                              <CalendarIcon className="h-3 w-3 mr-1" />
+                              {new Date(milestone.dueDate).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        {isAuthenticated && (collaboration.createdById === user?.id || collaboration.participants?.includes(user?.id as any)) && (
+                          <button
+                            onClick={() => handleDeleteMilestone(milestone.id)}
+                            disabled={activeMilestoneId === milestone.id}
+                            className={`text-gray-400 hover:text-red-500 ${activeMilestoneId === milestone.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {activeMilestoneId === milestone.id ? (
+                              <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-3">No milestones yet</p>
+                  )}
+                </div>
+                </ComingSoonOverlay>
+              </div>
 
               {/* Activity Stats */}
               <ComingSoonOverlay title="Activity Stats Coming Soon">

@@ -192,4 +192,41 @@ export const getUserCollaborations = async (userId: string): Promise<Collaborati
       return [];
     }
   }
+};
+
+/**
+ * Update progress tracking information for a collaboration
+ * @param collaborationId ID of the collaboration 
+ * @param progressData Progress data to update
+ * @returns Promise with the updated collaboration
+ */
+export const updateCollaborationProgress = async (
+  collaborationId: string, 
+  progressData: {
+    progressValue: number;
+    startDate?: string;
+    endDate?: string;
+    milestones?: Array<{
+      id: string;
+      name: string;
+      dueDate: string;
+      completed: boolean;
+    }>;
+  }
+): Promise<Collaboration> => {
+  try {
+    console.log(`Updating progress for collaboration ${collaborationId}:`, progressData);
+    
+    const response = await api.put(`/collaborations/${collaborationId}/progress`, progressData);
+    
+    console.log('Progress update response:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error updating collaboration progress:', error);
+    console.error('Error details:', error.response?.data || error.message);
+    
+    // If the API endpoint fails, we'll just return what we have
+    // In a production app, you'd want to handle this more gracefully
+    throw error;
+  }
 }; 

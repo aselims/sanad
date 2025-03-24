@@ -3,7 +3,10 @@ import { AppDataSource } from '../config/data-source';
 import { Challenge } from '../entities/Challenge';
 import { Partnership } from '../entities/Partnership';
 import { Idea } from '../entities/Idea';
-import { authenticate } from '../middlewares/authenticate';
+import { authenticateJWT } from '../middlewares/auth';
+import { Collaboration } from '../entities/Collaboration';
+import { Milestone } from '../entities/Milestone';
+import * as milestoneService from '../services/milestoneService';
 
 // Add type interfaces for vote tracking
 interface VotableEntity {
@@ -107,7 +110,7 @@ router.get('/search', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 // Handle voting for a collaboration
-router.post('/:id/vote', authenticate, asyncHandler(async (req: Request, res: Response) => {
+router.post('/:id/vote', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { voteType } = req.body;
   const userId = req.user?.id;
@@ -220,5 +223,256 @@ function processVote(item: VotableEntity, userId: string, voteType: 'up' | 'down
     downvotes: item.downvotes
   };
 }
+
+// Get milestones for a collaboration
+router.get('/:id/milestones', asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  
+  try {
+    const milestones = await milestoneService.getMilestonesByCollaborationId(id);
+    
+    return res.status(200).json({
+      status: 'success',
+      data: milestones
+    });
+  } catch (error) {
+    console.error('Error getting milestones:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to get milestones'
+    });
+  }
+}));
+
+// Update progress information for a collaboration
+router.put('/:id/progress', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { progressValue, startDate, endDate, milestones } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'User ID is required for updating progress'
+    });
+  }
+
+  try {
+    const updatedCollaboration = await milestoneService.updateCollaborationProgress(
+      id,
+      { progressValue, startDate, endDate, milestones },
+      userId
+    );
+    
+    return res.status(200).json({
+      status: 'success',
+      data: updatedCollaboration
+    });
+  } catch (error: any) {
+    console.error('Error updating progress:', error);
+    
+    // Handle specific errors
+    if (error.message === 'Collaboration not found') {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Collaboration not found'
+      });
+    } else if (error.message === 'Not authorized to update this collaboration') {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You are not authorized to update this collaboration'
+      });
+    }
+    
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to update progress',
+      details: error.message
+    });
+  }
+}));
+
+// Create a milestone for a collaboration
+router.post('/:id/milestones', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, dueDate, completed } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'User ID is required for creating milestones'
+    });
+  }
+
+  if (!name || !dueDate) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Name and due date are required'
+    });
+  }
+
+  try {
+    // First check if the user is authorized to modify this collaboration
+    const collaborationRepo = AppDataSource.getRepository(Collaboration);
+    const collaboration = await collaborationRepo.findOne({
+      where: { id }
+    });
+
+    if (!collaboration) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Collaboration not found'
+      });
+    }
+
+    // Check authorization (only owner or team members can update)
+    const isOwner = collaboration.ownerId === userId;
+    const isTeamMember = collaboration.teamMembers?.includes(userId) || false;
+
+    if (!isOwner && !isTeamMember) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You are not authorized to update this collaboration'
+      });
+    }
+
+    // Create the milestone
+    const milestone = await milestoneService.createMilestone(id, {
+      name,
+      dueDate,
+      completed
+    });
+    
+    return res.status(201).json({
+      status: 'success',
+      data: milestone
+    });
+  } catch (error: any) {
+    console.error('Error creating milestone:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to create milestone',
+      details: error.message
+    });
+  }
+}));
+
+// Update a milestone
+router.put('/milestones/:id', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, dueDate, completed } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'User ID is required for updating milestones'
+    });
+  }
+
+  try {
+    // Get the milestone to check its collaboration
+    const milestoneRepo = AppDataSource.getRepository(Milestone);
+    const milestone = await milestoneRepo.findOne({
+      where: { id },
+      relations: ['collaboration']
+    });
+
+    if (!milestone) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Milestone not found'
+      });
+    }
+
+    // Check authorization (only owner or team members can update)
+    const collaboration = milestone.collaboration;
+    const isOwner = collaboration.ownerId === userId;
+    const isTeamMember = collaboration.teamMembers?.includes(userId) || false;
+
+    if (!isOwner && !isTeamMember) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You are not authorized to update this milestone'
+      });
+    }
+
+    // Update the milestone
+    const updatedMilestone = await milestoneService.updateMilestone(id, {
+      name,
+      dueDate,
+      completed
+    });
+    
+    return res.status(200).json({
+      status: 'success',
+      data: updatedMilestone
+    });
+  } catch (error: any) {
+    console.error('Error updating milestone:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to update milestone',
+      details: error.message
+    });
+  }
+}));
+
+// Delete a milestone
+router.delete('/milestones/:id', authenticateJWT, asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'User ID is required for deleting milestones'
+    });
+  }
+
+  try {
+    // Get the milestone to check its collaboration
+    const milestoneRepo = AppDataSource.getRepository(Milestone);
+    const milestone = await milestoneRepo.findOne({
+      where: { id },
+      relations: ['collaboration']
+    });
+
+    if (!milestone) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Milestone not found'
+      });
+    }
+
+    // Check authorization (only owner or team members can delete)
+    const collaboration = milestone.collaboration;
+    const isOwner = collaboration.ownerId === userId;
+    const isTeamMember = collaboration.teamMembers?.includes(userId) || false;
+
+    if (!isOwner && !isTeamMember) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'You are not authorized to delete this milestone'
+      });
+    }
+
+    // Delete the milestone
+    await milestoneService.deleteMilestone(id);
+    
+    return res.status(200).json({
+      status: 'success',
+      message: 'Milestone deleted successfully'
+    });
+  } catch (error: any) {
+    console.error('Error deleting milestone:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to delete milestone',
+      details: error.message
+    });
+  }
+}));
 
 export default router; 

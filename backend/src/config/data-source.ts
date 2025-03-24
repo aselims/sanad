@@ -2,6 +2,8 @@ import { DataSource } from 'typeorm';
 import dotenv from 'dotenv';
 import path from 'path';
 import logger from '../utils/logger';
+import { Collaboration } from '../entities/Collaboration';
+import { Milestone } from '../entities/Milestone';
 
 // Load environment variables
 dotenv.config();
@@ -28,7 +30,11 @@ export const AppDataSource = new DataSource({
   database: DB_DATABASE || 'sanad_db',
   synchronize: shouldSynchronize, // Only synchronize when explicitly enabled
   logging: NODE_ENV === 'development' ? ['error', 'warn'] : false, // Reduce logging in development
-  entities: [path.join(__dirname, '../entities/**/*.{ts,js}')],
+  entities: [
+    path.join(__dirname, '../entities/**/*.{ts,js}'),
+    Collaboration,
+    Milestone
+  ],
   migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
   subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
   // Add performance optimizations

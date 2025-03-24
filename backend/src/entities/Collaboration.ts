@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './User';
+import { Milestone } from './Milestone';
 
 export enum CollaborationType {
   CHALLENGE = 'challenge',
@@ -63,6 +64,12 @@ export class Collaboration {
 
   @Column({ nullable: true, type: 'date' })
   endDate: Date;
+
+  @Column({ default: 0 })
+  progressValue: number;
+
+  @OneToMany(() => Milestone, milestone => milestone.collaboration, { cascade: true })
+  milestones: Milestone[];
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'ownerId' })
