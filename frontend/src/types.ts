@@ -320,6 +320,21 @@ export interface CollaborationFile {
   uploadedAt: Date;
 }
 
+export interface Comment {
+  id: string;
+  collaborationId: string;
+  content: string;
+  userId: string;
+  user?: User;
+  createdAt: Date;
+  updatedAt: Date;
+  parentCommentId?: string;
+  replies?: Comment[];
+  upvotes: number;
+  downvotes: number;
+  userVote?: 'up' | 'down' | null;
+}
+
 // Helper function to convert User to Innovator format for frontend
 export const userToInnovator = (user: User): Innovator => {
   const baseInnovator: InnovatorBase = {

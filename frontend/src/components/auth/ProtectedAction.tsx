@@ -10,6 +10,7 @@ interface ProtectedActionProps {
   redirectPath?: string;
   actionName?: string;
   message?: string;
+  renderUnprotected?: React.ReactNode;
 }
 
 /**
@@ -24,6 +25,7 @@ const ProtectedAction: React.FC<ProtectedActionProps> = ({
   redirectPath = '/auth',
   actionName = 'perform this action',
   message,
+  renderUnprotected,
 }) => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -40,6 +42,11 @@ const ProtectedAction: React.FC<ProtectedActionProps> = ({
       setShowAuthModal(true);
     }
   };
+
+  // If there's a custom unprotected view and user is not authenticated, render that instead
+  if (renderUnprotected && !isAuthenticated) {
+    return <>{renderUnprotected}</>;
+  }
 
   return (
     <>

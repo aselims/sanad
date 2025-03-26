@@ -16,6 +16,7 @@ import { getUserById } from '../services/users';
 import { sendMessage } from '../services/messages';
 import { useAuth } from '../contexts/AuthContext';
 import CollaborationFiles from './CollaborationFiles';
+import { CommentSection } from './CommentSection';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
@@ -1054,6 +1055,16 @@ You can respond directly to this message to contact them.
               isOwnerOrParticipant={isOwnerOrParticipant} 
             />
           </div>
+          
+          {/* Comments Section - Only show for 'idea' type collaborations */}
+          {collaboration.type === 'idea' && (
+            <div className="border-t border-gray-200 p-6">
+              <CommentSection 
+                collaborationId={collaboration.id}
+                className="mt-4"
+              />
+            </div>
+          )}
         </div>
 
         {/* Express Interest Modal for Open Positions */}
