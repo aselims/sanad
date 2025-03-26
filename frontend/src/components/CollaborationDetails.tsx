@@ -711,6 +711,7 @@ You can respond directly to this message to contact them.
               </div>
 
               {/* Progress */}
+              {collaboration.type !== 'idea' && (
               <div className="bg-gray-50 rounded-lg p-5">
                 <ComingSoonOverlay title="Progress Tracking Feature">
                 <div className="flex justify-between items-center mb-4">
@@ -948,6 +949,7 @@ You can respond directly to this message to contact them.
                 </div>
                 </ComingSoonOverlay>
               </div>
+              )}
 
               {/* Activity Stats */}
               <ComingSoonOverlay title="Activity Stats Coming Soon">
