@@ -14,6 +14,8 @@ import partnershipRoutes from './routes/partnershipRoutes';
 import challengeRoutes from './routes/challengeRoutes';
 import collaborationRoutes from './routes/collaborationRoutes';
 import fileRoutes from './routes/fileRoutes';
+import authRoutes from './routes/auth.routes';
+import path from 'path';
 
 // Load environment variables
 dotenv.config();
@@ -45,12 +47,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 // Routes
 app.use('/api', apiRoutes);
-app.use('/api/matches', matchRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/ideas', ideaRoutes);
 app.use('/api/partnerships', partnershipRoutes);
 app.use('/api/challenges', challengeRoutes);
+app.use('/api/matches', matchRoutes);
 app.use('/api/collaborations', collaborationRoutes);
-app.use('/api', fileRoutes);
+app.use('/api/files', fileRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Bell, UserCircle, LogOut, Settings, X, Users, MessageSquare, Briefcase, Search } from 'lucide-react';
+import { Menu, UserCircle, LogOut, Settings, X, Users, MessageSquare, Briefcase, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { SearchComponent } from './SearchComponent';
 import { SearchResults } from '../services/search';
+import { NotificationDropdown } from './NotificationDropdown';
 
 interface HeaderProps {
   onNavigateToWorkspace?: () => void;
@@ -26,8 +27,35 @@ interface HeaderProps {
   isAuthenticated?: boolean;
 }
 
+interface MenuItemProps {
+  icon: React.ReactNode;
+  text: string;
+  onClick: () => void;
+  className?: string;
+}
+
+const MenuItem = ({ icon, text, onClick, className = '' }: MenuItemProps) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center text-gray-700 hover:text-indigo-600 w-full text-left ${className}`}
+  >
+    <span className="inline-flex items-center justify-center mr-2">{icon}</span>
+    <span>{text}</span>
+  </button>
+);
+
+const LinkMenuItem = ({ icon, text, to, onClick, className = '' }: MenuItemProps & { to: string }) => (
+  <Link
+    to={to}
+    className={`flex items-center text-gray-700 hover:text-indigo-600 ${className}`}
+    onClick={onClick}
+  >
+    <span className="inline-flex items-center justify-center mr-2">{icon}</span>
+    <span>{text}</span>
+  </Link>
+);
+
 export function Header({ 
-  onNavigateToWorkspace,
   onNavigateToChallenges,
   onNavigateToPartnerships,
   onNavigateToIdeas,
@@ -54,100 +82,43 @@ export function Header({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
 
-  // Create handler functions that check if the callbacks exist before calling them
-  const handleChallengesClick = () => {
-    console.log("Challenges clicked");
-    if (onNavigateToChallenges) {
-      onNavigateToChallenges();
-    }
+  // Helper function for navigation
+  const handleNavigation = (callback?: () => void, defaultPath?: string) => {
+    return () => {
+      if (callback) {
+        callback();
+      } else if (defaultPath) {
+        navigate(defaultPath);
+      }
+      setShowUserMenu(false);
+      setShowMobileMenu(false);
+    };
   };
 
-  const handlePartnershipsClick = () => {
-    console.log("Partnerships clicked");
-    if (onNavigateToPartnerships) {
-      onNavigateToPartnerships();
-    }
+  // Navigation handlers
+  const navHandlers = {
+    challenges: handleNavigation(onNavigateToChallenges, '/workspace?filter=challenges'),
+    partnerships: handleNavigation(onNavigateToPartnerships, '/workspace?filter=partnerships'),
+    ideas: handleNavigation(onNavigateToIdeas, '/workspace?filter=ideas'),
+    innovators: handleNavigation(onNavigateToInnovators, '/innovators'),
+    home: handleNavigation(onNavigateToHome, '/'),
+    profile: handleNavigation(onNavigateToProfile, user ? `/profile/${user.id}` : '/auth'),
+    connections: handleNavigation(onNavigateToConnections, user ? `/profile/${user.id}?tab=connections` : '/auth'),
+    collaborations: handleNavigation(onNavigateToCollaborations, user ? `/profile/${user.id}?tab=collaborations` : '/auth'),
+    messages: handleNavigation(onNavigateToMessages, user ? `/profile/${user.id}?tab=messages` : '/auth'),
+    auth: handleNavigation(onNavigateToAuth, '/auth'),
+    logout: () => {
+      logout();
+      setShowUserMenu(false);
+      setShowMobileMenu(false);
+    },
+    search: () => setIsSearchOpen(true),
+    closeSearch: () => setIsSearchOpen(false)
   };
 
-  const handleIdeasClick = () => {
-    console.log("Ideas clicked");
-    if (onNavigateToIdeas) {
-      onNavigateToIdeas();
-    }
-  };
-
-  const handleInnovatorsClick = () => {
-    console.log("Innovators clicked");
-    if (onNavigateToInnovators) {
-      onNavigateToInnovators();
-    }
-  };
-
-  const handleLogoClick = () => {
-    if (onNavigateToHome) {
-      onNavigateToHome();
-    }
-  };
-
-  const handleProfileClick = () => {
-    console.log("Profile clicked");
-    setShowUserMenu(false);
-    if (onNavigateToProfile) {
-      onNavigateToProfile();
-    }
-  };
-
-  const handleAuthClick = () => {
-    console.log("Auth clicked");
-    if (onNavigateToAuth) {
-      onNavigateToAuth();
-    }
-  };
-
-  const handleLogout = () => {
-    console.log("Logout clicked");
-    setShowUserMenu(false);
-    logout();
-  };
-
-  const handleConnectionsClick = () => {
-    if (onNavigateToConnections) {
-      onNavigateToConnections();
-    } else {
-      navigate('/connections');
-    }
-    setShowUserMenu(false);
-  };
-
-  const handleMessagesClick = () => {
-    if (onNavigateToMessages) {
-      onNavigateToMessages();
-    } else {
-      navigate(user ? `/profile/${user.id}?tab=messages` : '/profile?tab=messages');
-    }
-    setShowUserMenu(false);
-  };
-
-  const handleCollaborationsClick = () => {
-    if (onNavigateToCollaborations) {
-      onNavigateToCollaborations();
-    } else {
-      navigate(`/profile/${user?.id}?tab=collaborations`);
-    }
-    setShowUserMenu(false);
-  };
-
-  // New handler for search button
-  const handleSearchClick = () => {
-    setIsSearchOpen(true);
-  };
-
-  const handleSearchClose = () => {
-    setIsSearchOpen(false);
-  };
-
-  // Close user menu and mobile menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -165,163 +136,129 @@ export function Header({
     };
   }, []);
 
-  // Add the user menu with connections and messages links
-  const renderUserMenu = () => {
-    return (
-      <div 
-        ref={userMenuRef}
-        className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50 ${showUserMenu ? 'block' : 'hidden'}`}
+  // Menu items configuration
+  const menuItems = [
+    {
+      icon: <UserCircle className="h-5 w-5" />,
+      text: 'Profile',
+      to: user ? `/profile/${user.id}` : "/auth",
+      onClick: navHandlers.profile
+    },
+    {
+      icon: <Users className="h-5 w-5" />,
+      text: 'Connections',
+      to: user ? `/profile/${user.id}?tab=connections` : "/auth",
+      onClick: navHandlers.connections
+    },
+    {
+      icon: <Briefcase className="h-5 w-5" />,
+      text: 'Collaborations',
+      to: user ? `/profile/${user.id}?tab=collaborations` : "/auth",
+      onClick: navHandlers.collaborations
+    },
+    {
+      icon: <MessageSquare className="h-5 w-5" />,
+      text: 'Messages',
+      to: user ? `/profile/${user.id}?tab=messages` : "/auth",
+      onClick: navHandlers.messages
+    }
+  ];
+
+  // User menu component
+  const renderUserMenu = () => (
+    <div 
+      ref={userMenuRef}
+      className={`absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 z-50 ${showUserMenu ? 'block' : 'hidden'}`}
+    >
+      {menuItems.map((item, index) => (
+        <Link
+          key={index}
+          to={item.to}
+          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          onClick={() => setShowUserMenu(false)}
+        >
+          <div className="flex items-center">
+            <span className="inline-flex items-center justify-center mr-2">{item.icon}</span>
+            <span>{item.text}</span>
+          </div>
+        </Link>
+      ))}
+      
+      <button
+        onClick={navHandlers.logout}
+        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
       >
-        <Link
-          to={user ? `/profile/${user.id}` : "/auth"}
-          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          onClick={() => setShowUserMenu(false)}
+        <div className="flex items-center">
+          <LogOut className="h-5 w-5 mr-2" />
+          <span>Sign out</span>
+        </div>
+      </button>
+    </div>
+  );
+
+  // Mobile menu component
+  const renderMobileMenu = () => (
+    <div 
+      ref={mobileMenuRef}
+      className={`fixed inset-0 z-50 bg-white ${showMobileMenu ? 'block' : 'hidden'}`}
+    >
+      <div className="p-4 flex justify-between items-center border-b">
+        <div className="font-bold text-xl">Menu</div>
+        <button 
+          onClick={() => setShowMobileMenu(false)}
+          className="p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
         >
-          <UserCircle className="inline-block h-4 w-4 mr-2" />
-          Profile
-        </Link>
-        
-        <Link
-          to={user ? `/profile/${user.id}?tab=connections` : "/auth"}
-          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          onClick={() => setShowUserMenu(false)}
-        >
-          <Users className="inline-block h-4 w-4 mr-2" />
-          Connections
-        </Link>
-        
-        <Link
-          to={user ? `/profile/${user.id}?tab=collaborations` : "/auth"}
-          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          onClick={() => setShowUserMenu(false)}
-        >
-          <Briefcase className="inline-block h-4 w-4 mr-2" />
-          Collaborations
-        </Link>
-        
-        <Link
-          to={user ? `/profile/${user.id}?tab=messages` : "/auth"}
-          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          onClick={() => setShowUserMenu(false)}
-        >
-          <MessageSquare className="inline-block h-4 w-4 mr-2" />
-          Messages
-        </Link>
-        
-        <button
-          onClick={handleLogout}
-          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-        >
-          <LogOut className="inline-block h-4 w-4 mr-2" />
-          Sign out
+          <X className="h-6 w-6" />
         </button>
       </div>
-    );
-  };
-
-  // Add the mobile menu with connections and messages links
-  const renderMobileMenu = () => {
-    return (
-      <div 
-        ref={mobileMenuRef}
-        className={`fixed inset-0 z-50 bg-white ${showMobileMenu ? 'block' : 'hidden'}`}
-      >
-        <div className="p-4 flex justify-between items-center border-b">
-          <div className="font-bold text-xl">Menu</div>
-          <button 
-            onClick={() => setShowMobileMenu(false)}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-        
-        <div className="p-4">
-          <ul className="space-y-4">
-            <li>
-              <button
-                onClick={() => {
-                  setShowMobileMenu(false);
-                  handleSearchClick();
-                }}
-                className="flex items-center text-gray-700 hover:text-indigo-600 w-full text-left"
-              >
-                <Search className="h-5 w-5 mr-2" />
-                Search
-              </button>
-            </li>
-            
-            {isAuthenticated ? (
-              <>
-                <li>
-                  <Link
-                    to={user ? `/profile/${user.id}` : "/auth"}
-                    className="flex items-center text-gray-700 hover:text-indigo-600"
+      
+      <div className="p-4">
+        <ul className="space-y-4">
+          <li>
+            <MenuItem 
+              icon={<Search className="h-6 w-6 mr-2" />}
+              text="Search"
+              onClick={() => {
+                setShowMobileMenu(false);
+                navHandlers.search();
+              }}
+            />
+          </li>
+          
+          {isAuthenticated ? (
+            <>
+              {menuItems.map((item, index) => (
+                <li key={index}>
+                  <LinkMenuItem 
+                    icon={item.icon}
+                    text={item.text}
+                    to={item.to}
                     onClick={() => setShowMobileMenu(false)}
-                  >
-                    <UserCircle className="h-5 w-5 mr-2" />
-                    Profile
-                  </Link>
+                  />
                 </li>
-                <li>
-                  <Link
-                    to="/connections"
-                    className="flex items-center text-gray-700 hover:text-indigo-600"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    <Users className="h-5 w-5 mr-2" />
-                    Connections
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to={user ? `/profile/${user.id}?tab=collaborations` : "/auth"}
-                    className="flex items-center text-gray-700 hover:text-indigo-600"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    <Briefcase className="h-5 w-5 mr-2" />
-                    Collaborations
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to={user ? `/profile/${user.id}?tab=messages` : "/auth"}
-                    className="flex items-center text-gray-700 hover:text-indigo-600"
-                    onClick={() => setShowMobileMenu(false)}
-                  >
-                    <MessageSquare className="h-5 w-5 mr-2" />
-                    Messages
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    onClick={() => {
-                      setShowMobileMenu(false);
-                      handleLogout();
-                    }}
-                    className="flex items-center text-gray-700 hover:text-indigo-600"
-                  >
-                    <LogOut className="h-5 w-5 mr-2" />
-                    Sign out
-                  </button>
-                </li>
-              </>
-            ) : (
+              ))}
               <li>
-                <Link
-                  to="/auth"
-                  className="flex items-center text-gray-700 hover:text-indigo-600"
-                  onClick={() => setShowMobileMenu(false)}
-                >
-                  Sign in
-                </Link>
+                <MenuItem 
+                  icon={<LogOut className="h-6 w-6 mr-2" />}
+                  text="Sign out"
+                  onClick={navHandlers.logout}
+                />
               </li>
-            )}
-          </ul>
-        </div>
+            </>
+          ) : (
+            <li>
+              <LinkMenuItem 
+                icon={<UserCircle className="h-6 w-6 mr-2" />}
+                text="Sign in"
+                to="/auth"
+                onClick={() => setShowMobileMenu(false)}
+              />
+            </li>
+          )}
+        </ul>
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <>
@@ -332,6 +269,7 @@ export function Header({
               <Link 
                 to="/"
                 className="text-2xl font-bold text-indigo-600 focus:outline-none cursor-pointer"
+                onClick={navHandlers.home}
               >
                 Saned
               </Link>
@@ -341,48 +279,55 @@ export function Header({
               <Link 
                 to="/workspace?filter=challenges"
                 className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
+                onClick={navHandlers.challenges}
               >
                 Challenges
               </Link>
               <Link 
                 to="/workspace?filter=partnerships"
                 className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
+                onClick={navHandlers.partnerships}
               >
                 Partnerships
               </Link>
               <Link 
                 to="/workspace?filter=ideas"
                 className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
+                onClick={navHandlers.ideas}
               >
                 Ideas
               </Link>
               <Link 
                 to="/innovators"
                 className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
+                onClick={navHandlers.innovators}
               >
                 Innovators
               </Link>
             </nav>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center h-16 space-x-4">
               {/* Search Button */}
               <button 
-                onClick={handleSearchClick}
-                className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer"
+                onClick={navHandlers.search}
+                className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer h-full px-2 flex items-center"
                 aria-label="Search"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-6 w-6" />
               </button>
               
               {isAuthenticated ? (
                 <>
-                  <button className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer">
-                    <Bell className="h-6 w-6" />
-                  </button>
-                  <div className="relative" ref={userMenuRef}>
+                  <div className="h-full flex items-center px-2">
+                    <NotificationDropdown 
+                      isOpen={showNotificationsMenu}
+                      setIsOpen={setShowNotificationsMenu}
+                    />
+                  </div>
+                  <div className="relative h-full flex items-center" ref={userMenuRef}>
                     <button 
                       onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer flex items-center"
+                      className="text-gray-500 hover:text-indigo-600 focus:outline-none cursor-pointer h-full flex items-center"
                     >
                       {user?.profilePicture ? (
                         <img 
@@ -390,12 +335,11 @@ export function Header({
                           alt={`${user.firstName} ${user.lastName}`} 
                           className="h-8 w-8 rounded-full object-cover"
                           onError={(e) => {
-                            // If image fails to load, replace with UserCircle icon
                             e.currentTarget.style.display = 'none';
                             const parent = e.currentTarget.parentElement;
                             if (parent) {
                               const icon = document.createElement('div');
-                              icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>';
+                              icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" style="display: block"><circle cx="12" cy="8" r="5"></circle><path d="M20 21a8 8 0 0 0-16 0"></path></svg>';
                               parent.appendChild(icon.firstChild as Node);
                             }
                           }}
@@ -417,6 +361,7 @@ export function Header({
                 <Link
                   to="/auth"
                   className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  onClick={navHandlers.auth}
                 >
                   Login / Register
                 </Link>
@@ -438,7 +383,7 @@ export function Header({
       {/* Search Component */}
       <SearchComponent 
         isOpen={isSearchOpen}
-        onClose={handleSearchClose}
+        onClose={navHandlers.closeSearch}
       />
     </>
   );

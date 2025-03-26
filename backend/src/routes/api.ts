@@ -8,6 +8,7 @@ import { sendMessage, getConversation, getConversations } from '../controllers/m
 import { Partnership } from '../entities/Partnership';
 import { Challenge } from '../entities/Challenge';
 import { Idea } from '../entities/Idea';
+import notificationRoutes from './notificationRoutes';
 
 const router = Router();
 
@@ -340,5 +341,6 @@ router.get('/ai-search', asyncHandler(async (req: Request, res: Response) => {
 
 // Mount routes
 router.use('/auth', authRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router; 

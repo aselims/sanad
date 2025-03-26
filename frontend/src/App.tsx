@@ -11,6 +11,7 @@ import { Blog } from './components/Blog';
 import AuthPage from './components/auth/AuthPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import type { Collaboration, Innovator } from './types';
 import { getAllCollaborations } from './services/collaborations';
 import { saveIdea, createIdea } from './services/ideas';
@@ -302,143 +303,145 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Routes>
-        <Route path="/*" element={
-          <Header 
-            onNavigateToWorkspace={handleNavigateToWorkspace}
-            onNavigateToChallenges={handleNavigateToChallenges}
-            onNavigateToPartnerships={handleNavigateToPartnerships}
-            onNavigateToIdeas={handleNavigateToIdeas}
-            onNavigateToInnovators={handleNavigateToInnovators}
-            onNavigateToHome={handleNavigateToHome}
-            onNavigateToProfile={handleNavigateToProfile}
-            onNavigateToAuth={handleNavigateToAuth}
-            onNavigateToHowItWorks={handleNavigateToHowItWorks}
-            onNavigateToSuccessStories={handleNavigateToSuccessStories}
-            onNavigateToFAQ={handleNavigateToFAQ}
-            onNavigateToSupport={handleNavigateToSupport}
-            onNavigateToContactUs={handleNavigateToContactUs}
-            onNavigateToLegalPage={handleNavigateToLegalPage}
-            onNavigateToConnections={handleNavigateToConnections}
-            onNavigateToCollaborations={handleNavigateToCollaborations}
-            onNavigateToMessages={handleNavigateToMessages}
-            isAuthenticated={isAuthenticated}
-          />
-        } />
-      </Routes>
-      
-      <main className="flex-grow">
+    <NotificationProvider>
+      <div className="min-h-screen flex flex-col">
         <Routes>
-          <Route path="/" element={
-            <HomePage 
+          <Route path="/*" element={
+            <Header 
               onNavigateToWorkspace={handleNavigateToWorkspace}
-              onNavigateToCollaboration={handleNavigateToCollaboration}
               onNavigateToChallenges={handleNavigateToChallenges}
               onNavigateToPartnerships={handleNavigateToPartnerships}
               onNavigateToIdeas={handleNavigateToIdeas}
               onNavigateToInnovators={handleNavigateToInnovators}
-              onNavigateToProfileById={(id) => navigate(`/profile/${id}`)}
+              onNavigateToHome={handleNavigateToHome}
+              onNavigateToProfile={handleNavigateToProfile}
+              onNavigateToAuth={handleNavigateToAuth}
+              onNavigateToHowItWorks={handleNavigateToHowItWorks}
+              onNavigateToSuccessStories={handleNavigateToSuccessStories}
+              onNavigateToFAQ={handleNavigateToFAQ}
+              onNavigateToSupport={handleNavigateToSupport}
+              onNavigateToContactUs={handleNavigateToContactUs}
+              onNavigateToLegalPage={handleNavigateToLegalPage}
+              onNavigateToConnections={handleNavigateToConnections}
+              onNavigateToCollaborations={handleNavigateToCollaborations}
+              onNavigateToMessages={handleNavigateToMessages}
+              isAuthenticated={isAuthenticated}
             />
-          } />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/workspace" element={
-            <div className="bg-gray-50 min-h-screen">
-              <WorkspaceHeader 
-                onCreateCollaboration={handleCreateCollaboration}
-                activeFilter={activeFilter}
-                onFilterChange={(filter) => setActiveFilter(filter as 'all' | 'challenges' | 'partnerships' | 'ideas')}
-                onSearch={handleWorkspaceSearch}
-                viewMode={viewMode}
-                onViewModeChange={handleViewModeChange}
-                onNavigateToHome={handleNavigateToHome}
-                onNavigateToProfile={handleNavigateToProfile}
-                onNavigateToAuth={handleNavigateToAuth}
-              />
-              
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <CollaborationList 
-                  collaborations={filteredCollaborations}
-                  onViewDetails={handleViewCollaboration}
-                  viewMode={viewMode}
-                />
-              </div>
-            </div>
-          } />
-          
-          <Route path="/collaboration/:id" element={
-            <CollaborationDetails 
-              collaboration={collaborations.find(c => c.id === window.location.pathname.split('/collaboration/')[1]) || {
-                id: '',
-                title: 'Collaboration not found',
-                description: 'This collaboration does not exist or has been removed.',
-                participants: [],
-                status: 'completed',
-                createdAt: new Date(),
-                updatedAt: new Date()
-              }}
-              onBack={() => navigate(-1)}
-              cameFromSearch={false}
-            />
-          } />
-          
-          <Route path="/how-it-works" element={<HowItWorks onBack={() => navigate(-1)} />} />
-          <Route path="/success-stories" element={<SuccessStories onBack={() => navigate(-1)} />} />
-          <Route path="/faq" element={<FAQ onBack={() => navigate(-1)} />} />
-          <Route path="/support" element={<Support onBack={() => navigate(-1)} />} />
-          <Route path="/contact" element={<ContactUs onBack={() => navigate(-1)} />} />
-          <Route path="/legal/:page" element={
-            <LegalPage 
-              onBack={() => navigate(-1)} 
-              pageType={window.location.pathname.split('/legal/')[1] as 'terms' | 'privacy' | 'cookies'}
-            />
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              {user ? <ProfilePageWrapper innovators={innovators} onBack={() => navigate(-1)} /> : null}
-            </ProtectedRoute>
-          } />
-          <Route path="/profile/:id" element={<ProfilePageWrapper innovators={innovators} onBack={() => navigate(-1)} />} />
-          
-          {/* Add new routes for messages */}
-          <Route path="/messages" element={
-            <ProtectedRoute>
-              <MessagesPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/messages/:userId" element={
-            <ProtectedRoute>
-              <MessagesPage />
-            </ProtectedRoute>
-          } />
-          <Route path="/innovators" element={
-            <div className="bg-gray-50 min-h-screen p-6">
-              <InnovatorsList 
-                innovators={innovators}
-                onViewProfile={handleViewInnovator}
-              />
-            </div>
           } />
         </Routes>
-      </main>
-      
-      <Footer 
-        onNavigateToTerms={() => navigate('/legal/terms')}
-        onNavigateToPrivacy={() => navigate('/legal/privacy')}
-        onNavigateToCookies={() => navigate('/legal/cookies')}
-        onNavigateToContactUs={() => navigate('/contact')}
-        onNavigateToFAQ={() => navigate('/faq')}
-      />
-
-      {/* User Profile Modal */}
-      {viewProfileUserId && (
-        <UserProfileModal
-          userId={viewProfileUserId}
-          isOpen={isProfileModalOpen}
-          onClose={() => setIsProfileModalOpen(false)}
+        
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={
+              <HomePage 
+                onNavigateToWorkspace={handleNavigateToWorkspace}
+                onNavigateToCollaboration={handleNavigateToCollaboration}
+                onNavigateToChallenges={handleNavigateToChallenges}
+                onNavigateToPartnerships={handleNavigateToPartnerships}
+                onNavigateToIdeas={handleNavigateToIdeas}
+                onNavigateToInnovators={handleNavigateToInnovators}
+                onNavigateToProfileById={(id) => navigate(`/profile/${id}`)}
+              />
+            } />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/workspace" element={
+              <div className="bg-gray-50 min-h-screen">
+                <WorkspaceHeader 
+                  onCreateCollaboration={handleCreateCollaboration}
+                  activeFilter={activeFilter}
+                  onFilterChange={(filter) => setActiveFilter(filter as 'all' | 'challenges' | 'partnerships' | 'ideas')}
+                  onSearch={handleWorkspaceSearch}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  onNavigateToHome={handleNavigateToHome}
+                  onNavigateToProfile={handleNavigateToProfile}
+                  onNavigateToAuth={handleNavigateToAuth}
+                />
+                
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                  <CollaborationList 
+                    collaborations={filteredCollaborations}
+                    onViewDetails={handleViewCollaboration}
+                    viewMode={viewMode}
+                  />
+                </div>
+              </div>
+            } />
+            
+            <Route path="/collaboration/:id" element={
+              <CollaborationDetails 
+                collaboration={collaborations.find(c => c.id === window.location.pathname.split('/collaboration/')[1]) || {
+                  id: '',
+                  title: 'Collaboration not found',
+                  description: 'This collaboration does not exist or has been removed.',
+                  participants: [],
+                  status: 'completed',
+                  createdAt: new Date(),
+                  updatedAt: new Date()
+                }}
+                onBack={() => navigate(-1)}
+                cameFromSearch={false}
+              />
+            } />
+            
+            <Route path="/how-it-works" element={<HowItWorks onBack={() => navigate(-1)} />} />
+            <Route path="/success-stories" element={<SuccessStories onBack={() => navigate(-1)} />} />
+            <Route path="/faq" element={<FAQ onBack={() => navigate(-1)} />} />
+            <Route path="/support" element={<Support onBack={() => navigate(-1)} />} />
+            <Route path="/contact" element={<ContactUs onBack={() => navigate(-1)} />} />
+            <Route path="/legal/:page" element={
+              <LegalPage 
+                onBack={() => navigate(-1)} 
+                pageType={window.location.pathname.split('/legal/')[1] as 'terms' | 'privacy' | 'cookies'}
+              />
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                {user ? <ProfilePageWrapper innovators={innovators} onBack={() => navigate(-1)} /> : null}
+              </ProtectedRoute>
+            } />
+            <Route path="/profile/:id" element={<ProfilePageWrapper innovators={innovators} onBack={() => navigate(-1)} />} />
+            
+            {/* Add new routes for messages */}
+            <Route path="/messages" element={
+              <ProtectedRoute>
+                <MessagesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/messages/:userId" element={
+              <ProtectedRoute>
+                <MessagesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/innovators" element={
+              <div className="bg-gray-50 min-h-screen p-6">
+                <InnovatorsList 
+                  innovators={innovators}
+                  onViewProfile={handleViewInnovator}
+                />
+              </div>
+            } />
+          </Routes>
+        </main>
+        
+        <Footer 
+          onNavigateToTerms={() => navigate('/legal/terms')}
+          onNavigateToPrivacy={() => navigate('/legal/privacy')}
+          onNavigateToCookies={() => navigate('/legal/cookies')}
+          onNavigateToContactUs={() => navigate('/contact')}
+          onNavigateToFAQ={() => navigate('/faq')}
         />
-      )}
-    </div>
+
+        {/* User Profile Modal */}
+        {viewProfileUserId && (
+          <UserProfileModal
+            userId={viewProfileUserId}
+            isOpen={isProfileModalOpen}
+            onClose={() => setIsProfileModalOpen(false)}
+          />
+        )}
+      </div>
+    </NotificationProvider>
   );
 }
 

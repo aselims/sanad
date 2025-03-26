@@ -26,9 +26,9 @@ export class Message {
   @JoinColumn({ name: 'receiverId' })
   receiver: User;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'createdAt' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updatedAt' })
   updatedAt: Date;
 } 
