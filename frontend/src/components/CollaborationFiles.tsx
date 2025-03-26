@@ -135,23 +135,23 @@ const CollaborationFiles: React.FC<CollaborationFilesProps> = ({
   );
   
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 mt-5">
+    <div>
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <FileUp className="w-5 h-5" />
-        Collaboration Files
+        Files
       </h3>
       
       {/* File upload section (only for owner/participant) */}
       {isOwnerOrParticipant && (
-        <div className="mb-6">
-          <div className="flex items-center">
+        <div className="mb-4">
+          <div className="flex flex-col space-y-2">
             <input
               type="file"
               id="file-upload"
-              className="block w-full text-sm text-slate-500
-                file:mr-4 file:py-2 file:px-4
+              className="block w-full text-xs text-slate-500
+                file:mr-2 file:py-1.5 file:px-3
                 file:rounded-md file:border-0
-                file:text-sm file:font-semibold
+                file:text-xs file:font-semibold
                 file:bg-blue-50 file:text-blue-700
                 hover:file:bg-blue-100
               "
@@ -159,7 +159,7 @@ const CollaborationFiles: React.FC<CollaborationFilesProps> = ({
               accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
             />
             <button
-              className={`ml-4 px-4 py-2 rounded-md text-sm font-medium ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium w-full ${
                 selectedFile && !isUploading
                   ? 'bg-blue-600 text-white hover:bg-blue-700'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -172,92 +172,82 @@ const CollaborationFiles: React.FC<CollaborationFilesProps> = ({
           </div>
           
           {uploadError && (
-            <div className="flex items-center text-red-600 text-sm mt-2">
-              <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+            <div className="flex items-center text-red-600 text-xs mt-2">
+              <AlertCircle className="w-3 h-3 mr-1 flex-shrink-0" />
               <span>{uploadError}</span>
             </div>
           )}
           
-          <p className="text-xs text-gray-500 mt-2">
-            Max 5 files • PDF or images only • 5MB limit per file
+          <p className="text-xs text-gray-500 mt-1">
+            5MB limit • PDF/images only
           </p>
-
-          {/* Uncomment for debugging */}
-          {/* {permissionsDebug} */}
         </div>
       )}
       
       {/* Loading state */}
       {isLoading && (
-        <div className="text-center py-8 text-gray-500">
-          <div className="animate-pulse flex justify-center mb-3">
-            <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+        <div className="text-center py-4 text-gray-500">
+          <div className="animate-pulse flex justify-center mb-2">
+            <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
           </div>
-          <p>Loading files...</p>
+          <p className="text-sm">Loading files...</p>
         </div>
       )}
       
       {/* Error state */}
       {loadError && !isLoading && (
-        <div className="text-center py-8 text-red-500">
-          <AlertCircle className="w-12 h-12 mx-auto mb-3" />
-          <p>Error loading files</p>
-          <p className="text-sm mt-1">{loadError}</p>
+        <div className="text-center py-4 text-red-500">
+          <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+          <p className="text-sm">Error loading files</p>
         </div>
       )}
       
       {/* Files list */}
       {!isLoading && !loadError && (
         files.length > 0 ? (
-          <div className="border rounded-md overflow-hidden">
+          <div className="border rounded-md overflow-hidden text-sm">
             <div className="divide-y">
               {files.map(file => (
-                <div key={file.id} className="flex items-center px-4 py-3 hover:bg-gray-50">
-                  <div className="flex-shrink-0 mr-3 text-gray-500">
-                    {getFileIcon(file.mimeType)}
-                  </div>
-                  
-                  <div className="flex-grow min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:justify-between">
-                      <h4 className="text-sm font-medium truncate">{file.name}</h4>
-                      <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(file.uploadedAt), { addSuffix: true })}
-                      </span>
+                <div key={file.id} className="p-2 hover:bg-gray-50">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 mr-2 text-gray-500">
+                      {getFileIcon(file.mimeType)}
                     </div>
                     
-                    <div className="mt-1 flex flex-col sm:flex-row sm:justify-between">
-                      <div className="flex items-center">
-                        <span className="text-xs text-gray-500">
-                          Uploaded by {typeof file.uploadedBy === 'string' ? file.uploadedBy : 'Unknown'}
-                        </span>
-                        <span className="text-xs text-gray-400 mx-2">•</span>
-                        <span className="text-xs text-gray-500">
-                          {formatFileSize(file.size)}
-                        </span>
-                      </div>
+                    <div className="flex-grow min-w-0">
+                      <h4 className="text-xs font-medium truncate">{file.name}</h4>
+                      <span className="text-xs text-gray-500">
+                        {formatFileSize(file.size)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-1 flex justify-between items-center">
+                    <span className="text-xs text-gray-500">
+                      {formatDistanceToNow(new Date(file.uploadedAt), { addSuffix: true })}
+                    </span>
+                    
+                    <div className="flex gap-1 text-xs">
+                      <a
+                        href={getFileDownloadUrl(file.id)}
+                        download={file.name}
+                        className="text-blue-600 hover:text-blue-800 flex items-center"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        Download
+                      </a>
                       
-                      <div className="mt-2 sm:mt-0 flex gap-2">
-                        <a
-                          href={getFileDownloadUrl(file.id)}
-                          download={file.name}
-                          className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {isOwnerOrParticipant && (
+                        <button
+                          onClick={() => handleDelete(file.id)}
+                          className="text-red-500 hover:text-red-700 ml-2 flex items-center"
                         >
-                          <Download className="w-4 h-4 mr-1" />
-                          Download
-                        </a>
-                        
-                        {isOwnerOrParticipant && (
-                          <button
-                            onClick={() => handleDelete(file.id)}
-                            className="text-red-600 hover:text-red-800 text-sm flex items-center"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </button>
-                        )}
-                      </div>
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -265,11 +255,12 @@ const CollaborationFiles: React.FC<CollaborationFilesProps> = ({
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <FileUp className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-            <p>No files uploaded yet</p>
+          <div className="text-center border border-dashed border-gray-300 rounded-md p-4 bg-gray-50">
+            <p className="text-sm text-gray-500">No files uploaded yet</p>
             {isOwnerOrParticipant && (
-              <p className="text-sm mt-1">Upload files using the form above</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Upload files to share with collaborators
+              </p>
             )}
           </div>
         )

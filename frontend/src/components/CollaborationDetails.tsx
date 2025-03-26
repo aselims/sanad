@@ -533,10 +533,10 @@ You can respond directly to this message to contact them.
             </div>
           </div>
 
-          {/* Main content */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6">
-            {/* Left column - Details */}
-            <div className="space-y-6 md:col-span-1">
+          {/* Main content - Switch from grid to flexbox for more flexible layout */}
+          <div className="flex flex-col md:flex-row gap-6 p-6">
+            {/* Left column - Details (fixed width) */}
+            <div className="space-y-6 md:w-64 flex-shrink-0">
               {/* Basic Info */}
               <div className="bg-gray-50 rounded-lg p-5">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Details</h3>
@@ -671,10 +671,18 @@ You can respond directly to this message to contact them.
                   Express Interest
                 </ProtectedAction>
               </div>
+
+              {/* Files Section - Moved from standalone to details column */}
+              <div className="bg-gray-50 rounded-lg p-5">
+                <CollaborationFiles 
+                  collaborationId={collaboration.id} 
+                  isOwnerOrParticipant={isOwnerOrParticipant} 
+                />
+              </div>
             </div>
 
-            {/* Center column - Activity */}
-            <div className="md:col-span-2 space-y-6">
+            {/* Center column - Activity (takes remaining space) */}
+            <div className="flex-grow space-y-6">
               {/* Current Participants */}
               <div className="bg-gray-50 rounded-lg p-5">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -984,10 +992,19 @@ You can respond directly to this message to contact them.
                   </div>
                 </div>
               </ComingSoonOverlay>
+
+              {/* Comments Section - Only show for 'idea' type collaborations */}
+              {collaboration.type === 'idea' && (
+                <div className="bg-gray-50 rounded-lg p-5">
+                  <CommentSection 
+                    collaborationId={collaboration.id}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Right column - Open Positions */}
-            <div className="md:col-span-1 space-y-6">
+            {/* Right column - Open Positions (fixed width) */}
+            <div className="space-y-6 md:w-64 flex-shrink-0">
               {openRequests.length > 0 && (
                 <div className="bg-gray-50 rounded-lg p-5">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -1049,24 +1066,6 @@ You can respond directly to this message to contact them.
               )}
             </div>
           </div>
-          
-          {/* Files Section */}
-          <div className="border-t border-gray-200 p-6">
-            <CollaborationFiles 
-              collaborationId={collaboration.id} 
-              isOwnerOrParticipant={isOwnerOrParticipant} 
-            />
-          </div>
-          
-          {/* Comments Section - Only show for 'idea' type collaborations */}
-          {collaboration.type === 'idea' && (
-            <div className="border-t border-gray-200 p-6">
-              <CommentSection 
-                collaborationId={collaboration.id}
-                className="mt-4"
-              />
-            </div>
-          )}
         </div>
 
         {/* Express Interest Modal for Open Positions */}
