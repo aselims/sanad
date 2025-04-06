@@ -14,6 +14,41 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    - name: Install Docker and configure sudo
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          # Check if Docker is installed
+          if ! command -v docker &> /dev/null; then
+            # Install Docker
+            curl -fsSL https://get.docker.com -o get-docker.sh
+            chmod +x get-docker.sh
+            bash get-docker.sh
+          fi
+
+          # Check if Docker Compose is installed
+          if ! command -v docker-compose &> /dev/null; then
+            # Install Docker Compose
+            sudo apt update
+            sudo apt install -y docker-compose
+          fi
+
+          # Add user to docker group if not already
+          if ! groups | grep -q docker; then
+            sudo usermod -aG docker $USER
+            echo "Added user to docker group. This will take effect after next login."
+          fi
+          
+          # Configure passwordless sudo for docker and docker-compose
+          echo "Configuring passwordless sudo for docker commands..."
+          sudo tee /etc/sudoers.d/docker-commands > /dev/null << EOL
+          $USER ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose
+          EOL
+          sudo chmod 440 /etc/sudoers.d/docker-commands
+    
     - name: Deploy to server
       uses: appleboy/ssh-action@master
       with:
@@ -44,6 +79,6 @@ jobs:
           POSTGRES_DB=sanad
           EOL
           
-          # Build and run with Docker
-          docker-compose build
-          docker-compose up -d 
+          # Run docker commands with sudo (doesn't require password now)
+          sudo docker-compose build
+          sudo docker-compose up -d 
