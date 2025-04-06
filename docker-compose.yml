@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   frontend:
-    image: aselims/sanad-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "80:80"
     depends_on:
@@ -10,7 +12,9 @@ services:
     restart: unless-stopped
 
   backend:
-    image: aselims/sanad-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
