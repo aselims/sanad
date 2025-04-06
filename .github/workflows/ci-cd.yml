@@ -21,8 +21,8 @@ jobs:
         username: ${{ secrets.SERVER_USERNAME }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          mkdir -p /opt/sanad
-          cd /opt/sanad
+          mkdir -p ~/sanad
+          cd ~/sanad
           
           # Clone or update repository
           if [ -d ".git" ]; then
