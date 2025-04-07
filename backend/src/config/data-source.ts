@@ -14,6 +14,7 @@ const {
   DB_USERNAME,
   DB_PASSWORD,
   DB_DATABASE,
+  DATABASE_URL,
   NODE_ENV,
 } = process.env;
 
@@ -21,28 +22,48 @@ const {
 // This allows more control over when schema synchronization happens
 const shouldSynchronize = NODE_ENV === 'development' && process.env.DB_SYNC === 'true';
 
-export const AppDataSource = new DataSource({
-  type: 'postgres',
-  host: DB_HOST || 'localhost',
-  port: parseInt(DB_PORT || '5432', 10),
-  username: DB_USERNAME || 'postgres',
-  password: DB_PASSWORD || 'postgres',
-  database: DB_DATABASE || 'sanad_db',
-  synchronize: shouldSynchronize, // Only synchronize when explicitly enabled
-  logging: NODE_ENV === 'development' ? ['error', 'warn'] : false, // Reduce logging in development
-  entities: [
-    path.join(__dirname, '../entities/**/*.{ts,js}'),
-    Collaboration,
-    Milestone
-  ],
-  migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
-  subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
-  // Add performance optimizations
-  cache: true,
-  poolSize: 10, // Adjust based on your needs
-  maxQueryExecutionTime: 1000, // Log slow queries (>1000ms)
-  connectTimeoutMS: 10000,
-});
+// Use DATABASE_URL if provided, otherwise use individual connection parameters
+export const AppDataSource = new DataSource(
+  DATABASE_URL
+    ? {
+        type: 'postgres',
+        url: DATABASE_URL,
+        synchronize: shouldSynchronize,
+        logging: NODE_ENV === 'development' ? ['error', 'warn'] : false,
+        entities: [
+          path.join(__dirname, '../entities/**/*.{ts,js}'),
+          Collaboration,
+          Milestone
+        ],
+        migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
+        subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
+        cache: true,
+        poolSize: 10,
+        maxQueryExecutionTime: 1000,
+        connectTimeoutMS: 10000,
+      }
+    : {
+        type: 'postgres',
+        host: DB_HOST || 'localhost',
+        port: parseInt(DB_PORT || '5432', 10),
+        username: DB_USERNAME || 'postgres',
+        password: DB_PASSWORD || 'postgres',
+        database: DB_DATABASE || 'sanad_db',
+        synchronize: shouldSynchronize,
+        logging: NODE_ENV === 'development' ? ['error', 'warn'] : false,
+        entities: [
+          path.join(__dirname, '../entities/**/*.{ts,js}'),
+          Collaboration,
+          Milestone
+        ],
+        migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
+        subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
+        cache: true,
+        poolSize: 10,
+        maxQueryExecutionTime: 1000,
+        connectTimeoutMS: 10000,
+      }
+);
 
 // Initialize database connection
 export const initializeDatabase = async () => {

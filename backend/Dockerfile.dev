@@ -1,0 +1,29 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install build dependencies for bcrypt
+RUN apk add --no-cache python3 make g++ git
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Remove node_modules if it exists and reinstall from scratch
+RUN rm -rf node_modules
+RUN npm ci --force
+
+# Force rebuild of bcrypt
+RUN npm uninstall bcrypt
+RUN npm install bcrypt
+
+# Install missing dependencies
+RUN npm install multer
+
+# Copy source code
+COPY . .
+
+# Expose the port
+EXPOSE 3000
+
+# Start the development server
+CMD ["npm", "run", "dev"] 

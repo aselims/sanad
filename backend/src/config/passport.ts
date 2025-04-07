@@ -3,7 +3,7 @@ import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { AppDataSource } from './data-source';
 import { User } from '../entities/User';
-import { comparePassword } from '../utils/password';
+import { verifyPassword } from '../utils/password';
 import logger from '../utils/logger';
 
 // Get JWT secret from environment variables
@@ -64,7 +64,7 @@ export const initializePassport = () => {
           return done(null, false, { message: 'User account is inactive' });
         }
 
-        const isMatch = await comparePassword(password, user.password);
+        const isMatch = await verifyPassword(password, user.password);
         if (!isMatch) {
           return done(null, false, { message: 'Incorrect password' });
         }

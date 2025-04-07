@@ -1,6 +1,6 @@
 import { AppDataSource } from '../config/data-source';
 import { User, UserRole } from '../entities/User';
-import * as bcrypt from 'bcrypt';
+import { hashPassword } from '../utils/password';
 import logger from '../utils/logger';
 
 // Sample data for each innovator type
@@ -218,15 +218,12 @@ const seedUsers = async () => {
           continue;
         }
         
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
-        
-        // Create and save the user
+        // Create the user
         const user = new User();
+        user.email = userData.email;
+        user.password = await hashPassword(userData.password);
         user.firstName = userData.firstName;
         user.lastName = userData.lastName;
-        user.email = userData.email;
-        user.password = hashedPassword;
         user.role = userData.role;
         user.organization = userData.organization;
         user.position = userData.position;
@@ -271,15 +268,12 @@ const seedUsers = async () => {
           continue;
         }
         
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
-        
-        // Create and save the user
+        // Create the user
         const user = new User();
+        user.email = userData.email;
+        user.password = await hashPassword(userData.password);
         user.firstName = userData.firstName;
         user.lastName = userData.lastName;
-        user.email = userData.email;
-        user.password = hashedPassword;
         user.role = userData.role;
         user.organization = userData.organization;
         user.position = userData.position;

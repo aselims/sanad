@@ -3,7 +3,7 @@ import passport from 'passport';
 import { AppDataSource } from '../config/data-source';
 import { User, UserRole } from '../entities/User';
 import { AppError } from '../middlewares/errorHandler';
-import { hashPassword } from '../utils/password';
+import { hashPassword, verifyPassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
 import logger from '../utils/logger';
 import { comparePassword } from '../utils/password';
@@ -146,8 +146,8 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
       return next(new AppError('User not found', 404));
     }
 
-    // Verify current password using the comparePassword utility
-    const isMatch = await comparePassword(currentPassword, user.password);
+    // Verify current password using the verifyPassword utility
+    const isMatch = await verifyPassword(currentPassword, user.password);
     if (!isMatch) {
       return next(new AppError('Current password is incorrect', 401));
     }
