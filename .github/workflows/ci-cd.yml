@@ -48,6 +48,15 @@ jobs:
           $USER ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose
           EOL
           sudo chmod 440 /etc/sudoers.d/docker-commands
+          
+          # Install Apache2 if not already installed
+          if ! command -v apache2ctl &> /dev/null; then
+            sudo apt update
+            sudo apt install -y apache2
+          fi
+          
+          # Enable necessary Apache modules
+          sudo a2enmod proxy proxy_http proxy_wstunnel ssl rewrite
     
     - name: Deploy to server
       uses: appleboy/ssh-action@master
@@ -79,6 +88,64 @@ jobs:
           POSTGRES_DB=sanad
           EOL
           
-          # Run docker commands with sudo (doesn't require password now)
-          sudo docker-compose -f docker-compose.dev.yml build
-          sudo docker-compose -f docker-compose.dev.yml up -d 
+          # Run docker commands with sudo
+          sudo docker-compose -f docker-compose.dev.yml up -d --build
+          
+          # Configure Apache Virtual Host for reverse proxy
+          sudo tee /etc/apache2/sites-available/sanad.conf > /dev/null << EOL
+          <VirtualHost *:80>
+              ServerName sanad.selimsalman.de
+              
+              # Redirect HTTP to HTTPS
+              RewriteEngine On
+              RewriteCond %{HTTPS} off
+              RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+          </VirtualHost>
+          
+          <VirtualHost *:443>
+              ServerName sanad.selimsalman.de
+              
+              # SSL Configuration
+              SSLEngine on
+              SSLCertificateFile /etc/letsencrypt/live/sanad.selimsalman.de/fullchain.pem
+              SSLCertificateKeyFile /etc/letsencrypt/live/sanad.selimsalman.de/privkey.pem
+              
+              # Frontend proxy
+              ProxyPreserveHost On
+              ProxyPass / http://localhost:8081/
+              ProxyPassReverse / http://localhost:8081/
+              
+              # API proxy
+              ProxyPass /api http://localhost:3001/
+              ProxyPassReverse /api http://localhost:3001/
+              
+              # WebSocket support
+              RewriteEngine On
+              RewriteCond %{HTTP:Upgrade} =websocket [NC]
+              RewriteRule /(.*)  ws://localhost:8081/$1 [P,L]
+              
+              ErrorLog \${APACHE_LOG_DIR}/sanad-error.log
+              CustomLog \${APACHE_LOG_DIR}/sanad-access.log combined
+          </VirtualHost>
+          EOL
+          
+          # Enable site and reload Apache
+          sudo a2ensite sanad.conf
+          sudo systemctl reload apache2
+          
+          # Setup Certbot for SSL if certificates don't exist
+          if [ ! -d "/etc/letsencrypt/live/sanad.selimsalman.de" ]; then
+            # Install certbot if not available
+            if ! command -v certbot &> /dev/null; then
+              sudo apt update
+              sudo apt install -y certbot python3-certbot-apache
+            fi
+            
+            # Get SSL certificate
+            sudo certbot --apache -d sanad.selimsalman.de --non-interactive --agree-tos --email admin@selimsalman.de
+            
+            # Reload Apache after certificate installation
+            sudo systemctl reload apache2
+          fi
+          
+          echo "Deployment complete. Site is available at https://sanad.selimsalman.de"

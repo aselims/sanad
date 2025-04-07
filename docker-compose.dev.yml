@@ -11,8 +11,10 @@ services:
       - backend
     restart: unless-stopped
     environment:
-      - VITE_API_URL=http://localhost:3001
+      - VITE_API_URL=https://sanad.selimsalman.de/api
       - VITE_APP_DOMAIN=sanad.selimsalman.de
+    networks:
+      - sanad_network
 
   backend:
     build:
@@ -29,11 +31,13 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    networks:
+      - sanad_network
 
   db:
     image: postgres:14-alpine
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"  # Only expose to localhost for security
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -41,6 +45,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    networks:
+      - sanad_network
+
+networks:
+  sanad_network:
+    driver: bridge
 
 volumes:
   postgres_data: 
