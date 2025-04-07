@@ -1,3 +1,19 @@
+# Development stage
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+# Expose development server port
+EXPOSE 5173
+
+# Start the development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
 # Build stage
 FROM node:18-alpine as build
 

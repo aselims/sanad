@@ -6,10 +6,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "5173:5173"
     depends_on:
       - backend
     restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000
 
   backend:
     build:
@@ -18,13 +23,16 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/sanad
       - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       - db
     restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
 
   db:
     image: postgres:14-alpine
