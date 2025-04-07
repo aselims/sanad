@@ -1,10 +1,9 @@
 import axios from 'axios';
 
 // Determine the API URL based on environment
-// In development, directly target the backend server
 const API_URL = import.meta.env.DEV 
-  ? 'http://localhost:3000/api' 
-  : '/api';  // In production, use relative path which will be handled by deployment configuration
+  ? import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + '/api' : '/api'
+  : '/api';  // Use relative path for production, will be handled by nginx proxy
 
 // Create an axios instance with default config
 const api = axios.create({

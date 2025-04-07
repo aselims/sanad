@@ -7,9 +7,11 @@ services:
       dockerfile: Dockerfile
       target: production
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - backend
+    environment:
+      - VITE_APP_DOMAIN=sanad.selimsalman.de
     restart: unless-stopped
 
   backend:

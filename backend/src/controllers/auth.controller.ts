@@ -6,7 +6,6 @@ import { AppError } from '../middlewares/errorHandler';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
 import logger from '../utils/logger';
-import { comparePassword } from '../utils/password';
 
 /**
  * Register a new user
@@ -14,7 +13,7 @@ import { comparePassword } from '../utils/password';
  */
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { firstName, lastName, email, password, role = UserRole.INNOVATOR } = req.body;
+    const { firstName, lastName, email, password, role = UserRole.INDIVIDUAL } = req.body;
 
     // Validate required fields
     if (!firstName || !lastName || !email || !password) {
