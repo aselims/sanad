@@ -91,24 +91,44 @@ jobs:
           # Run docker commands with sudo
           sudo docker-compose -f docker-compose.dev.yml up -d --build
           
-          # Configure Apache Virtual Host for reverse proxy
+          # First create a basic HTTP virtual host for Certbot validation
           sudo tee /etc/apache2/sites-available/sanad.conf > /dev/null << EOL
           <VirtualHost *:80>
               ServerName sanad.selimsalman.de
               
-              # Redirect HTTP to HTTPS
-              RewriteEngine On
-              RewriteCond %{HTTPS} off
-              RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+              # Frontend proxy
+              ProxyPreserveHost On
+              ProxyPass / http://localhost:8081/
+              ProxyPassReverse / http://localhost:8081/
+              
+              # API proxy
+              ProxyPass /api http://localhost:3001/
+              ProxyPassReverse /api http://localhost:3001/
+              
+              ErrorLog \${APACHE_LOG_DIR}/sanad-error.log
+              CustomLog \${APACHE_LOG_DIR}/sanad-access.log combined
           </VirtualHost>
+          EOL
           
+          # Enable site and reload Apache
+          sudo a2ensite sanad.conf
+          sudo systemctl reload apache2
+          
+          # Install certbot if not available
+          if ! command -v certbot &> /dev/null; then
+            sudo apt update
+            sudo apt install -y certbot python3-certbot-apache
+          fi
+          
+          # Get SSL certificate using certbot
+          sudo certbot --apache -d sanad.selimsalman.de --non-interactive --agree-tos --email admin@selimsalman.de
+          
+          # Now update the config with proper SSL settings
+          # Certbot should have already updated the Apache config, but we'll make sure our proxies are configured correctly
+          sudo tee /etc/apache2/sites-available/sanad-le-ssl.conf > /dev/null << EOL
+          <IfModule mod_ssl.c>
           <VirtualHost *:443>
               ServerName sanad.selimsalman.de
-              
-              # SSL Configuration
-              SSLEngine on
-              SSLCertificateFile /etc/letsencrypt/live/sanad.selimsalman.de/fullchain.pem
-              SSLCertificateKeyFile /etc/letsencrypt/live/sanad.selimsalman.de/privkey.pem
               
               # Frontend proxy
               ProxyPreserveHost On
@@ -126,26 +146,15 @@ jobs:
               
               ErrorLog \${APACHE_LOG_DIR}/sanad-error.log
               CustomLog \${APACHE_LOG_DIR}/sanad-access.log combined
+              
+              Include /etc/letsencrypt/options-ssl-apache.conf
+              SSLCertificateFile /etc/letsencrypt/live/sanad.selimsalman.de/fullchain.pem
+              SSLCertificateKeyFile /etc/letsencrypt/live/sanad.selimsalman.de/privkey.pem
           </VirtualHost>
+          </IfModule>
           EOL
           
-          # Enable site and reload Apache
-          sudo a2ensite sanad.conf
+          # Reload Apache after configuration update
           sudo systemctl reload apache2
-          
-          # Setup Certbot for SSL if certificates don't exist
-          if [ ! -d "/etc/letsencrypt/live/sanad.selimsalman.de" ]; then
-            # Install certbot if not available
-            if ! command -v certbot &> /dev/null; then
-              sudo apt update
-              sudo apt install -y certbot python3-certbot-apache
-            fi
-            
-            # Get SSL certificate
-            sudo certbot --apache -d sanad.selimsalman.de --non-interactive --agree-tos --email admin@selimsalman.de
-            
-            # Reload Apache after certificate installation
-            sudo systemctl reload apache2
-          fi
           
           echo "Deployment complete. Site is available at https://sanad.selimsalman.de"
