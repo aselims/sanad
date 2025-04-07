@@ -28,6 +28,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/sanad
       - JWT_SECRET=${JWT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CORS_ORIGIN=https://sanad.selimsalman.de
     depends_on:
       - db
     restart: unless-stopped

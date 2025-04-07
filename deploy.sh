@@ -40,7 +40,7 @@ fi
 
 # Enable required Apache modules
 echo -e "${YELLOW}Enabling Apache modules...${NC}"
-sudo a2enmod proxy proxy_http proxy_wstunnel ssl rewrite
+sudo a2enmod proxy proxy_http proxy_wstunnel ssl rewrite headers
 
 # Create or update application directory
 echo -e "${YELLOW}Setting up repository...${NC}"
@@ -88,9 +88,22 @@ sudo tee /etc/apache2/sites-available/$DOMAIN.conf > /dev/null << EOL
     ProxyPass / http://localhost:8081/
     ProxyPassReverse / http://localhost:8081/
     
-    # API proxy
-    ProxyPass /api http://localhost:3001/
-    ProxyPassReverse /api http://localhost:3001/
+    # API proxy with CORS headers
+    <Location /api>
+        ProxyPass http://localhost:3001/
+        ProxyPassReverse http://localhost:3001/
+        
+        # CORS Headers
+        Header always set Access-Control-Allow-Origin "https://$DOMAIN"
+        Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        Header always set Access-Control-Allow-Credentials "true"
+        
+        # Handle OPTIONS requests (preflight)
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=200,L]
+    </Location>
     
     ErrorLog \${APACHE_LOG_DIR}/$DOMAIN-error.log
     CustomLog \${APACHE_LOG_DIR}/$DOMAIN-access.log combined
@@ -122,9 +135,22 @@ sudo tee /etc/apache2/sites-available/$DOMAIN-le-ssl.conf > /dev/null << EOL
     ProxyPass / http://localhost:8081/
     ProxyPassReverse / http://localhost:8081/
     
-    # API proxy
-    ProxyPass /api http://localhost:3001/
-    ProxyPassReverse /api http://localhost:3001/
+    # API proxy with CORS headers
+    <Location /api>
+        ProxyPass http://localhost:3001/
+        ProxyPassReverse http://localhost:3001/
+        
+        # CORS Headers
+        Header always set Access-Control-Allow-Origin "https://$DOMAIN"
+        Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+        Header always set Access-Control-Allow-Credentials "true"
+        
+        # Handle OPTIONS requests (preflight)
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} OPTIONS
+        RewriteRule ^(.*)$ $1 [R=200,L]
+    </Location>
     
     # WebSocket support
     RewriteEngine On
