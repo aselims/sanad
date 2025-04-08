@@ -98,15 +98,15 @@ export function Footer({
             <ul className="space-y-2 text-gray-400">
               <li className="flex items-center">
                 <MapPin size={16} className="mr-2" />
-                <span>Riyadh, Saudi Arabia</span>
+                <span>Riyadh, Sinai, Duesseldorf</span>
               </li>
               <li className="flex items-center">
                 <Phone size={16} className="mr-2" />
-                <span>+966 12 345 6789</span>
+                <span>+94 17676796292</span>
               </li>
               <li className="flex items-center">
                 <Mail size={16} className="mr-2" />
-                <span>info@saned-platform.com</span>
+                <span>s@selimsalman.de</span>
               </li>
             </ul>
           </div>
