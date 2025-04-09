@@ -4,25 +4,25 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://backend:3000
-      - SKIP_TESTS=true
-      - CI=true
+      - VITE_API_URL=http://localhost:3000
+      - NODE_ENV=development
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - t3awanu-network
 
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
-    platform: linux/amd64
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     depends_on:
@@ -37,13 +37,14 @@ services:
       - DB_DATABASE=sanad_db
       - JWT_SECRET=your_jwt_secret_key_change_in_production
       - JWT_EXPIRES_IN=1d
-      - LOG_LEVEL=info
-      - SKIP_TESTS=true
-      - CI=true
+      - LOG_LEVEL=debug
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - ./backend/uploads:/app/uploads
     restart: unless-stopped
+    networks:
+      - t3awanu-network
 
   postgres:
     image: postgres:14-alpine
@@ -56,6 +57,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - t3awanu-network
 
 volumes:
-  postgres_data: 
+  postgres_data:
+
+networks:
+  t3awanu-network:
+    driver: bridge 
