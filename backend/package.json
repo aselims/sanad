@@ -7,6 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "dev:debug": "ts-node-dev --inspect --respawn --transpile-only src/index.ts",
     "build": "tsc",
+    "build:prod": "tsc",
     "lint": "eslint . --ext .ts",
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm migration:generate -- -d src/config/data-source.ts",
@@ -45,10 +46,13 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/multer": "^1.4.12",
     "@typescript-eslint/eslint-plugin": "^8.26.0",
     "@typescript-eslint/parser": "^8.26.0",
     "eslint": "^9.21.0",
     "nodemon": "^3.1.9",
+    "supertest": "^7.1.0",
     "ts-node-dev": "^2.0.0"
   }
 }

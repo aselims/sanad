@@ -1,103 +1,93 @@
-# T3awanu-2 Project
+# T3awanu Project
 
-A full-stack application with separate frontend and backend directories.
-
-## Project Structure
-
-The project is organized into two main directories:
-
-- **frontend**: Contains the React application built with Vite, TypeScript, and Tailwind CSS
-- **backend**: Contains the Node.js API server built with Express and TypeScript
+## Project Overview
+T3awanu is a collaborative platform that connects innovators, experts, and partners.
 
 ## Getting Started
 
 ### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
-- Node.js (v16 or higher)
-- npm (v7 or higher)
-
-### Installation
+### Running the Development Environment
+This project uses Docker to manage all services (frontend, backend, and database). 
 
 1. Clone the repository:
-   ```
-   git clone <repository-url>
-   cd t3awanu-2
-   ```
-
-2. Install dependencies for both frontend and backend:
-   ```
-   npm run install:all
-   ```
-
-### Running the Application
-
-To run both the frontend and backend concurrently:
-
-```
-npm start
+```bash
+git clone <repository-url>
+cd project
 ```
 
-To run only the frontend:
-
-```
-npm run start:frontend
-```
-
-To run only the backend:
-
-```
-npm run start:backend
+2. Start the development environment:
+```bash
+docker-compose up
 ```
 
-### Debugging in Development Mode
+This will:
+- Start the PostgreSQL database on port 5432
+- Start the backend API server on port 3000
+- Start the frontend development server on port 5173
 
-To run both frontend and backend in debug mode:
+3. Access the application:
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3000/api
 
-```
-npm run debug
-```
+### Running Services Individually
 
-To debug only the frontend:
-
-```
-npm run debug:frontend
-```
-
-To debug only the backend:
-
-```
-npm run debug:backend
+#### Database Only
+```bash
+docker-compose up postgres
 ```
 
-For the backend, this enables the Node.js inspector on the default port (9229), allowing you to connect with Chrome DevTools or VS Code debugger.
-
-### Building for Production
-
-To build both frontend and backend:
-
-```
-npm run build
+#### Backend Only
+```bash
+cd backend
+npm install
+npm run dev
 ```
 
-## Frontend
+#### Frontend Only
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-The frontend is a React application built with:
+## Environment Variables
 
-- Vite
-- TypeScript
-- Tailwind CSS
-- React Router
-- Lucide React for icons
+### Backend (.env)
+The backend uses environment variables defined in `backend/.env`. You can copy `backend/.env.example` to create this file.
 
-For more details, see the [frontend README](./frontend/README.md).
+Key variables:
+- `DB_HOST`: Database hostname (use "localhost" for local development, "postgres" for Docker)
+- `DB_PORT`: Database port (default: 5432)
+- `DB_USERNAME`: Database username
+- `DB_PASSWORD`: Database password
+- `DB_DATABASE`: Database name
+- `JWT_SECRET`: Secret key for JWT tokens
 
-## Backend
+### Frontend
+The frontend uses Vite environment variables defined in `.env` files.
 
-The backend is a Node.js API server built with:
+## Project Structure
+- `/frontend`: React frontend application
+- `/backend`: Node.js Express backend API
+- `/docs`: Project documentation
 
-- Express
-- TypeScript
-- Passport for authentication
-- TypeORM for database operations
+## Development
 
-For more details, see the [backend README](./backend/README.md). 
+### Database Migrations
+```bash
+cd backend
+npm run migration:run
+```
+
+### Seeding Database
+```bash
+cd backend
+npm run seed:users
+```
+
+## Troubleshooting
+- If you encounter database connection issues, ensure the PostgreSQL service is running
+- For Docker-related issues, try rebuilding the containers with `docker-compose up --build` 
