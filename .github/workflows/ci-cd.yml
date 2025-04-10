@@ -88,8 +88,34 @@ jobs:
           POSTGRES_DB=sanad
           EOL
           
-          # Run docker commands with sudo
-          sudo docker-compose -f docker-compose.dev.yml up -d --build
+          # Make dev.sh executable
+          chmod +x dev.sh
+          
+          # Stop any running containers (if they exist)
+          sudo docker compose down || true
+          
+          # Create docker-compose.override.yml for production settings
+          cat > docker-compose.override.yml << EOLDC
+          version: '3.8'
+          services:
+            frontend:
+              environment:
+                - VITE_API_URL=https://sanad.selimsalman.de/api
+                - VITE_APP_DOMAIN=sanad.selimsalman.de
+            backend:
+              environment:
+                - NODE_ENV=production
+                - CORS_ORIGIN=https://sanad.selimsalman.de
+          EOLDC
+          
+          # Start using dev.sh script with dev-compose and remote flags
+          # The --remote flag ensures we use the production API endpoint
+          # The --dev-compose flag ensures we use docker-compose.dev.yml
+          nohup ./dev.sh --remote https://sanad.selimsalman.de/api --dev-compose > deployment.log 2>&1 &
+          
+          # Wait for services to start
+          echo "Waiting for services to start..."
+          sleep 10
           
           # First create a basic HTTP virtual host for Certbot validation
           sudo tee /etc/apache2/sites-available/sanad.conf > /dev/null << EOL

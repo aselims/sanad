@@ -8,6 +8,7 @@ NC='\033[0m' # No Color
 # Default to local mode
 MODE="local"
 REMOTE_URL=""
+USE_DEV_COMPOSE=false
 
 # Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -22,11 +23,15 @@ while [[ "$#" -gt 0 ]]; do
         --local) 
             MODE="local" 
             ;;
+        --dev-compose)
+            USE_DEV_COMPOSE=true
+            ;;
         --help) 
-            echo "Usage: ./dev.sh [--local | --remote [URL]]"
-            echo "  --local    Run with local backend (default)"
-            echo "  --remote   Run with remote backend at Sanad.selimsalman.de"
-            echo "             or specify a different URL"
+            echo "Usage: ./dev.sh [--local | --remote [URL]] [--dev-compose]"
+            echo "  --local        Run with local backend (default)"
+            echo "  --remote       Run with remote backend at Sanad.selimsalman.de"
+            echo "                 or specify a different URL"
+            echo "  --dev-compose  Use docker-compose.dev.yml instead of docker-compose.yml"
             exit 0
             ;;
         *) echo "Unknown parameter: $1"; exit 1 ;;
@@ -35,6 +40,9 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 echo -e "${GREEN}Starting T3awanu development environment in ${MODE} mode...${NC}"
+if [ "$USE_DEV_COMPOSE" = true ]; then
+    echo -e "${GREEN}Using docker-compose.dev.yml configuration...${NC}"
+fi
 
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
@@ -43,9 +51,15 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
+if ! command -v docker compose &> /dev/null; then
     echo -e "${YELLOW}Docker Compose is not installed. Please install Docker Compose first.${NC}"
     exit 1
+fi
+
+# Set compose file based on flag
+COMPOSE_FILE="docker-compose.yml"
+if [ "$USE_DEV_COMPOSE" = true ]; then
+    COMPOSE_FILE="docker-compose.dev.yml"
 fi
 
 # Create docker-compose config based on mode
@@ -62,7 +76,7 @@ services:
 EOL
     
     # Start only frontend
-    docker-compose up frontend
+    docker compose -f ${COMPOSE_FILE} up frontend
 else
     echo -e "${GREEN}Starting complete local development environment${NC}"
     
@@ -73,11 +87,11 @@ else
     
     # Build backend with no cache
     echo -e "${GREEN}Building backend with no cache to ensure correct native module compilation...${NC}"
-    docker-compose build --no-cache backend
+    docker compose -f ${COMPOSE_FILE} build --no-cache backend
     
     # Start all services
-    docker-compose up
+    docker compose -f ${COMPOSE_FILE} up
 fi
 
 # Exit gracefully on Ctrl+C
-trap 'echo -e "${GREEN}Stopping development environment...${NC}"; docker-compose down; if [ -f docker-compose.override.yml ]; then rm docker-compose.override.yml; fi' INT TERM EXIT 
+trap 'echo -e "${GREEN}Stopping development environment...${NC}"; docker compose -f ${COMPOSE_FILE} down; if [ -f docker-compose.override.yml ]; then rm docker-compose.override.yml; fi' INT TERM EXIT 
