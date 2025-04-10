@@ -112,7 +112,7 @@ jobs:
           # The --remote flag ensures we use the production API endpoint
           # The --dev-compose flag ensures we use docker-compose.dev.yml
           # The --verbose flag enables detailed logging
-          nohup ./dev.sh --remote https://sanad.selimsalman.de/api --dev-compose --verbose > deployment.log 2>&1 &
+          nohup ./dev.sh --remote https://sanad.selimsalman.de/ --dev-compose --verbose > deployment.log 2>&1 &
           
           # Wait for services to start
           echo "Waiting for services to start..."
