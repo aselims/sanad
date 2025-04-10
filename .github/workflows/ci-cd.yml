@@ -127,7 +127,7 @@ jobs:
               ProxyPass / http://localhost:8081/
               ProxyPassReverse / http://localhost:8081/
               
-              # API proxy
+              # API proxy - ensure no double /api prefix
               ProxyPass /api http://localhost:3001/
               ProxyPassReverse /api http://localhost:3001/
               
@@ -161,7 +161,7 @@ jobs:
               ProxyPass / http://localhost:8081/
               ProxyPassReverse / http://localhost:8081/
               
-              # API proxy
+              # API proxy - ensure no double /api prefix
               ProxyPass /api http://localhost:3001/
               ProxyPassReverse /api http://localhost:3001/
               

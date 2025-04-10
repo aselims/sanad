@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Determine the API URL based on environment
 const API_URL = import.meta.env.DEV 
-  ? import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + '/api' : '/api'
+  ? import.meta.env.VITE_API_URL || '/api'  // Use VITE_API_URL directly if available, otherwise use '/api'
   : '/api';  // Use relative path for production, will be handled by nginx proxy
 
 // Create an axios instance with default config
