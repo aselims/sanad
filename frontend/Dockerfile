@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install build dependencies for any native modules
+RUN apk add --no-cache --update build-base python3
+
 # Copy package files
 COPY package*.json ./
 

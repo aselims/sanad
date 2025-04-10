@@ -1,6 +1,6 @@
 import { AppDataSource } from '../config/data-source';
 import { User, UserRole } from '../entities/User';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import logger from '../utils/logger';
 
 // Sample data for each innovator type

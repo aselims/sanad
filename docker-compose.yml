@@ -40,8 +40,8 @@ services:
       - LOG_LEVEL=debug
     volumes:
       - ./backend:/app
-      - /app/node_modules
       - ./backend/uploads:/app/uploads
+      - /app/node_modules
     restart: unless-stopped
     networks:
       - t3awanu-network

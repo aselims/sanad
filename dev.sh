@@ -19,9 +19,13 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
+# Force a clean rebuild of the backend to ensure native modules are built correctly
+echo -e "${GREEN}Building backend with no cache to ensure correct native module compilation...${NC}"
+docker-compose build --no-cache backend
+
 # Start the services
 echo -e "${GREEN}Starting services with Docker Compose...${NC}"
-docker-compose up --build
+docker-compose up
 
 # Exit gracefully on Ctrl+C
 trap 'echo -e "${GREEN}Stopping development environment...${NC}"; docker-compose down' INT TERM EXIT 

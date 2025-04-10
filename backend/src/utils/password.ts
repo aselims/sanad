@@ -1,11 +1,11 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import logger from './logger';
 
 // Number of salt rounds for bcrypt
 const SALT_ROUNDS = 10;
 
 /**
- * Hash a password using bcrypt
+ * Hash a password using bcryptjs
  * @param password Plain text password
  * @returns Hashed password
  */
