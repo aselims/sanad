@@ -111,11 +111,17 @@ jobs:
           # Start using dev.sh script with dev-compose and remote flags
           # The --remote flag ensures we use the production API endpoint
           # The --dev-compose flag ensures we use docker-compose.dev.yml
-          nohup ./dev.sh --remote https://sanad.selimsalman.de/api --dev-compose > deployment.log 2>&1 &
+          # The --verbose flag enables detailed logging
+          nohup ./dev.sh --remote https://sanad.selimsalman.de/api --dev-compose --verbose > deployment.log 2>&1 &
           
           # Wait for services to start
           echo "Waiting for services to start..."
-          sleep 10
+          sleep 15
+          
+          # Run database seed script to populate initial data
+          echo "Running database seed script..."
+          # Enter backend container and run the seed script
+          sudo docker compose -f docker-compose.dev.yml exec -T backend node dist/scripts/seed-database.js >> deployment.log 2>&1 || echo "Seed script failed - database may already be populated"
           
           # First create a basic HTTP virtual host for Certbot validation
           sudo tee /etc/apache2/sites-available/sanad.conf > /dev/null << EOL

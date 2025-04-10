@@ -9,6 +9,7 @@ NC='\033[0m' # No Color
 MODE="local"
 REMOTE_URL=""
 USE_DEV_COMPOSE=false
+VERBOSE=false
 
 # Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -26,18 +27,29 @@ while [[ "$#" -gt 0 ]]; do
         --dev-compose)
             USE_DEV_COMPOSE=true
             ;;
+        --verbose)
+            VERBOSE=true
+            ;;
         --help) 
-            echo "Usage: ./dev.sh [--local | --remote [URL]] [--dev-compose]"
+            echo "Usage: ./dev.sh [--local | --remote [URL]] [--dev-compose] [--verbose]"
             echo "  --local        Run with local backend (default)"
             echo "  --remote       Run with remote backend at Sanad.selimsalman.de"
             echo "                 or specify a different URL"
             echo "  --dev-compose  Use docker-compose.dev.yml instead of docker-compose.yml"
+            echo "  --verbose      Show detailed debug information"
             exit 0
             ;;
         *) echo "Unknown parameter: $1"; exit 1 ;;
     esac
     shift
 done
+
+# Set additional docker-compose options based on verbosity
+DC_OPTS=""
+if [ "$VERBOSE" = true ]; then
+    echo -e "${YELLOW}Verbose mode enabled${NC}"
+    DC_OPTS="--verbose"
+fi
 
 echo -e "${GREEN}Starting T3awanu development environment in ${MODE} mode...${NC}"
 if [ "$USE_DEV_COMPOSE" = true ]; then
@@ -62,6 +74,11 @@ if [ "$USE_DEV_COMPOSE" = true ]; then
     COMPOSE_FILE="docker-compose.dev.yml"
 fi
 
+if [ "$VERBOSE" = true ]; then
+    echo -e "${GREEN}Using compose file: ${COMPOSE_FILE}${NC}"
+    echo -e "${GREEN}Docker compose options: ${DC_OPTS}${NC}"
+fi
+
 # Create docker-compose config based on mode
 if [ "$MODE" = "remote" ]; then
     echo -e "${GREEN}Configuring frontend to use remote backend at ${REMOTE_URL}${NC}"
@@ -76,7 +93,7 @@ services:
 EOL
     
     # Start only frontend
-    docker compose -f ${COMPOSE_FILE} up frontend
+    docker compose -f ${COMPOSE_FILE} ${DC_OPTS} up frontend
 else
     echo -e "${GREEN}Starting complete local development environment${NC}"
     
@@ -87,10 +104,10 @@ else
     
     # Build backend with no cache
     echo -e "${GREEN}Building backend with no cache to ensure correct native module compilation...${NC}"
-    docker compose -f ${COMPOSE_FILE} build --no-cache backend
+    docker compose -f ${COMPOSE_FILE} ${DC_OPTS} build --no-cache backend
     
     # Start all services
-    docker compose -f ${COMPOSE_FILE} up
+    docker compose -f ${COMPOSE_FILE} ${DC_OPTS} up
 fi
 
 # Exit gracefully on Ctrl+C

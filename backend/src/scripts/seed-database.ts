@@ -2,13 +2,27 @@ import { AppDataSource } from '../config/data-source';
 import { User, UserRole } from '../entities/User';
 import { Challenge, ChallengeType, ChallengeStatus } from '../entities/Challenge';
 import { Partnership, PartnershipStatus } from '../entities/Partnership';
-import { INNOVATOR_TYPES, ALL_ROLES } from '../constants/roles';
+import { Idea, IdeaStage, IdeaStatus } from '../entities/Idea';
 import * as bcrypt from 'bcryptjs';
 import logger from '../utils/logger';
 
-// Sample data for each innovator type
+// ========== USER SEED DATA ==========
 const innovatorSeedData = [
-  // Startup innovators
+  // Admin user
+  {
+    firstName: 'Admin',
+    lastName: 'User',
+    email: 'admin@sanad.sa',
+    password: 'Admin123!',
+    role: UserRole.ADMIN,
+    organization: 'Sanad Platform',
+    position: 'System Administrator',
+    bio: 'Managing the Sanad platform and its users.',
+    location: 'Riyadh',
+    interests: ['System Administration', 'Platform Management', 'User Support'],
+    tags: ['technology', 'administration', 'support', 'management']
+  },
+  // Startup innovator
   {
     firstName: 'Ahmed',
     lastName: 'Al-Farsi',
@@ -18,19 +32,11 @@ const innovatorSeedData = [
     organization: 'EcoTech Solutions',
     position: 'Founder & CEO',
     bio: 'Leading a startup focused on sustainable technology solutions for urban environments in Saudi Arabia.',
+    location: 'Jeddah',
+    interests: ['Sustainable Technology', 'Urban Planning', 'Green Energy', 'Entrepreneurship'],
+    tags: ['sustainability', 'cleantech', 'urban', 'startup', 'green energy']
   },
-  {
-    firstName: 'Fatima',
-    lastName: 'Al-Zahrani',
-    email: 'fatima@aihealth.sa',
-    password: 'Password123!',
-    role: UserRole.STARTUP,
-    organization: 'AI Health Innovations',
-    position: 'Co-founder & CTO',
-    bio: 'Developing AI-powered healthcare solutions to improve patient outcomes and medical efficiency.',
-  },
-  
-  // Research innovators
+  // Research innovator
   {
     firstName: 'Dr. Mohammed',
     lastName: 'Al-Qahtani',
@@ -40,19 +46,11 @@ const innovatorSeedData = [
     organization: 'King Abdullah University of Science and Technology',
     position: 'Research Director',
     bio: 'Leading research in renewable energy technologies with a focus on solar applications in desert environments.',
+    location: 'Thuwal',
+    interests: ['Renewable Energy', 'Solar Technology', 'Materials Science', 'Desert Applications'],
+    tags: ['research', 'solar', 'renewable', 'energy', 'academic', 'science']
   },
-  {
-    firstName: 'Dr. Layla',
-    lastName: 'Ibrahim',
-    email: 'layla@ksu.edu.sa',
-    password: 'Password123!',
-    role: UserRole.RESEARCH,
-    organization: 'King Saud University',
-    position: 'Associate Professor',
-    bio: 'Specializing in biotechnology research with applications in agriculture and food security.',
-  },
-  
-  // Corporate innovators
+  // Corporate innovator
   {
     firstName: 'Khalid',
     lastName: 'Al-Saud',
@@ -62,19 +60,11 @@ const innovatorSeedData = [
     organization: 'Saudi Aramco',
     position: 'Innovation Director',
     bio: 'Leading digital transformation and sustainability initiatives at Saudi Aramco.',
+    location: 'Dhahran',
+    interests: ['Digital Transformation', 'Corporate Innovation', 'Oil & Gas', 'Sustainability'],
+    tags: ['corporate', 'innovation', 'energy', 'digital', 'transformation', 'oil']
   },
-  {
-    firstName: 'Nora',
-    lastName: 'Al-Rashid',
-    email: 'nora@sabic.com',
-    password: 'Password123!',
-    role: UserRole.CORPORATE,
-    organization: 'SABIC',
-    position: 'Head of R&D',
-    bio: 'Driving research and development of new materials and chemical processes at SABIC.',
-  },
-  
-  // Government innovators
+  // Government innovator
   {
     firstName: 'Abdullah',
     lastName: 'Al-Otaibi',
@@ -84,19 +74,11 @@ const innovatorSeedData = [
     organization: 'Ministry of Communications and Information Technology',
     position: 'Digital Transformation Lead',
     bio: 'Working on national digital transformation initiatives as part of Saudi Vision 2030.',
+    location: 'Riyadh',
+    interests: ['Digital Government', 'Public Policy', 'Smart Cities', 'Vision 2030'],
+    tags: ['government', 'policy', 'digital', 'transformation', 'vision2030', 'smart cities']
   },
-  {
-    firstName: 'Hana',
-    lastName: 'Al-Harbi',
-    email: 'hana@misa.gov.sa',
-    password: 'Password123!',
-    role: UserRole.GOVERNMENT,
-    organization: 'Ministry of Investment',
-    position: 'Innovation Program Manager',
-    bio: 'Developing programs to attract and support innovative investments in Saudi Arabia.',
-  },
-  
-  // Investor innovators
+  // Investor innovator
   {
     firstName: 'Saad',
     lastName: 'Al-Faisal',
@@ -106,19 +88,11 @@ const innovatorSeedData = [
     organization: 'Saudi Venture Capital',
     position: 'Investment Director',
     bio: 'Investing in early-stage technology startups across Saudi Arabia and the MENA region.',
+    location: 'Riyadh',
+    interests: ['Venture Capital', 'Investment', 'Startup Funding', 'Financial Analysis'],
+    tags: ['investment', 'venture capital', 'funding', 'startups', 'finance', 'technology']
   },
-  {
-    firstName: 'Reem',
-    lastName: 'Al-Malik',
-    email: 'reem@impactfund.sa',
-    password: 'Password123!',
-    role: UserRole.INVESTOR,
-    organization: 'Impact Investment Fund',
-    position: 'Managing Partner',
-    bio: 'Leading investments in social enterprises and sustainable businesses in Saudi Arabia.',
-  },
-  
-  // Individual innovators
+  // Individual innovator
   {
     firstName: 'Youssef',
     lastName: 'Al-Hamdan',
@@ -128,19 +102,11 @@ const innovatorSeedData = [
     organization: 'Independent',
     position: 'Entrepreneur',
     bio: 'Serial entrepreneur with experience in e-commerce and fintech sectors.',
+    location: 'Jeddah',
+    interests: ['E-commerce', 'Fintech', 'Entrepreneurship', 'Digital Marketing'],
+    tags: ['entrepreneur', 'e-commerce', 'fintech', 'startup', 'digital']
   },
-  {
-    firstName: 'Aisha',
-    lastName: 'Al-Ghamdi',
-    email: 'aisha@outlook.com',
-    password: 'Password123!',
-    role: UserRole.INDIVIDUAL,
-    organization: 'Freelance',
-    position: 'Innovation Consultant',
-    bio: 'Helping organizations develop and implement innovation strategies and frameworks.',
-  },
-  
-  // Organization innovators
+  // Organization innovator
   {
     firstName: 'Omar',
     lastName: 'Al-Amoudi',
@@ -150,32 +116,69 @@ const innovatorSeedData = [
     organization: 'King Abdulaziz City for Science and Technology',
     position: 'Executive Director',
     bio: 'Leading national research and development initiatives at KACST.',
+    location: 'Riyadh',
+    interests: ['Research Management', 'Technology Transfer', 'Innovation Policy', 'Science Administration'],
+    tags: ['research', 'science', 'technology', 'innovation', 'policy', 'development']
   },
+  // Accelerator innovator
   {
-    firstName: 'Maryam',
-    lastName: 'Al-Dossari',
-    email: 'maryam@innovationhub.org',
-    password: 'Password123!',
-    role: UserRole.ORGANIZATION,
-    organization: 'Saudi Innovation Hub',
+    firstName: 'Nadia',
+    lastName: 'Al-Qahtani',
+    email: 'accelerator@example.com',
+    password: 'Accelerator123!',
+    role: UserRole.ACCELERATOR,
+    organization: 'Riyadh Accelerator',
     position: 'Program Director',
-    bio: 'Running innovation programs and incubation services for Saudi entrepreneurs.',
+    bio: 'Leading a startup accelerator program that helps early-stage companies scale rapidly through mentorship and funding.',
+    location: 'Riyadh',
+    interests: ['Startup Acceleration', 'Mentorship', 'Seed Funding', 'Entrepreneurship Development'],
+    tags: ['accelerator', 'startups', 'mentorship', 'funding', 'entrepreneurship', 'scaling']
   },
-  
-  // Admin user
+  // Incubator innovator
   {
-    firstName: 'Admin',
-    lastName: 'User',
-    email: 'admin@sanad.sa',
-    password: 'Admin123!',
-    role: ALL_ROLES.ADMIN,
-    organization: 'SANAD Platform',
-    position: 'System Administrator',
-    bio: 'Managing the SANAD platform and its users.',
+    firstName: 'Tariq',
+    lastName: 'Al-Mansour',
+    email: 'incubator@example.com',
+    password: 'Incubator123!',
+    role: UserRole.INCUBATOR,
+    organization: 'Jeddah Innovation Incubator',
+    position: 'Executive Director',
+    bio: 'Managing an incubator that provides resources, space, and support for early-stage startups to develop their ideas.',
+    location: 'Jeddah',
+    interests: ['Startup Incubation', 'Business Development', 'Innovation Management', 'Entrepreneurship Support'],
+    tags: ['incubator', 'startups', 'innovation', 'entrepreneurship', 'business development']
+  },
+  // Female Entrepreneur
+  {
+    firstName: 'Fatima',
+    lastName: 'Al-Zahrani',
+    email: 'fatima@aihealth.sa',
+    password: 'Password123!',
+    role: UserRole.STARTUP,
+    organization: 'AI Health Innovations',
+    position: 'Co-founder & CTO',
+    bio: 'Developing AI-powered healthcare solutions to improve patient outcomes and medical efficiency.',
+    location: 'Riyadh',
+    interests: ['Artificial Intelligence', 'Healthcare Innovation', 'Women in Tech', 'Entrepreneurship'],
+    tags: ['ai', 'healthcare', 'technology', 'startup', 'womenintechnology']
+  },
+  // Female Researcher
+  {
+    firstName: 'Layla',
+    lastName: 'Ibrahim',
+    email: 'layla@ksu.edu.sa',
+    password: 'Password123!',
+    role: UserRole.RESEARCH,
+    organization: 'King Saud University',
+    position: 'Associate Professor',
+    bio: 'Specializing in biotechnology research with applications in agriculture and food security.',
+    location: 'Riyadh',
+    interests: ['Biotechnology', 'Agricultural Science', 'Food Security', 'Research'],
+    tags: ['biotech', 'research', 'agriculture', 'academic', 'science', 'food']
   },
 ];
 
-// Sample challenges data
+// ========== CHALLENGE SEED DATA ==========
 const challengeSeedData = [
   {
     title: 'Sustainable Water Management Solutions',
@@ -239,7 +242,7 @@ const challengeSeedData = [
   },
 ];
 
-// Sample partnerships data
+// ========== PARTNERSHIP SEED DATA ==========
 const partnershipSeedData = [
   {
     title: 'Sustainable Agriculture Research Initiative',
@@ -288,132 +291,369 @@ const partnershipSeedData = [
   },
 ];
 
-// Function to seed the database
-const seedDatabase = async () => {
-  try {
-    // Initialize the database connection
-    await AppDataSource.initialize();
-    logger.info('Database connection established for seeding');
+// ========== IDEA SEED DATA ==========
+const ideasData = [
+  {
+    title: 'Smart Water Conservation System',
+    description: 'A smart IoT-based water management system that monitors and optimizes water usage in agricultural settings, reducing waste by up to 40% while maintaining crop yields.',
+    category: 'Agriculture',
+    stage: IdeaStage.PROTOTYPE,
+    targetAudience: 'Farmers and agricultural businesses in arid regions',
+    potentialImpact: 'Significant reduction in water consumption for agriculture, enabling sustainable farming in water-scarce regions',
+    resourcesNeeded: 'IoT hardware expertise, agricultural partnerships for field testing, and funding for prototype deployment',
+    creatorEmail: 'ahmed@techstartup.sa',
+  },
+  {
+    title: 'AI-Powered Medical Diagnosis Assistant',
+    description: 'An artificial intelligence system that helps doctors diagnose rare diseases by analyzing patient symptoms, medical history, and comparing with global medical databases.',
+    category: 'Healthcare',
+    stage: IdeaStage.VALIDATED,
+    targetAudience: 'Healthcare providers, hospitals, and medical clinics',
+    potentialImpact: 'Faster and more accurate diagnosis of rare conditions, reducing misdiagnosis rates and improving patient outcomes',
+    resourcesNeeded: 'Medical data partnerships, AI development expertise, and regulatory compliance support',
+    creatorEmail: 'fatima@aihealth.sa',
+  },
+  {
+    title: 'Solar-Powered Desalination Units',
+    description: 'Compact, modular desalination units powered entirely by solar energy, designed for deployment in coastal communities with limited access to fresh water.',
+    category: 'Environment',
+    stage: IdeaStage.CONCEPT,
+    targetAudience: 'Coastal communities facing water scarcity',
+    potentialImpact: 'Sustainable access to clean drinking water without reliance on fossil fuels or extensive infrastructure',
+    resourcesNeeded: 'Engineering expertise in desalination technology, solar power integration, and funding for initial prototypes',
+    creatorEmail: 'mohammed@kaust.edu.sa',
+  },
+  {
+    title: 'Blockchain-Based Supply Chain Verification',
+    description: 'A blockchain platform that enables end-to-end verification of product origins and handling, ensuring authenticity and ethical sourcing for consumers.',
+    category: 'Technology',
+    stage: IdeaStage.PROTOTYPE,
+    targetAudience: 'Retail businesses, manufacturers, and conscious consumers',
+    potentialImpact: 'Increased transparency in global supply chains, reduction in counterfeit products, and support for ethical business practices',
+    resourcesNeeded: 'Blockchain developers, industry partnerships for pilot implementation, and UX design expertise',
+    creatorEmail: 'layla@ksu.edu.sa',
+  },
+  {
+    title: 'Microplastic Filtering System for Washing Machines',
+    description: 'An affordable filter attachment for washing machines that captures microplastics from synthetic clothing before they enter the water system.',
+    category: 'Environment',
+    stage: IdeaStage.SCALING,
+    targetAudience: 'Environmentally conscious consumers and appliance manufacturers',
+    potentialImpact: 'Significant reduction in microplastic pollution in oceans and waterways',
+    resourcesNeeded: 'Manufacturing partnerships, distribution channels, and marketing support',
+    creatorEmail: 'ahmed@techstartup.sa',
+  },
+  {
+    title: 'Virtual Reality Educational Platform for Cultural Heritage',
+    description: 'A VR platform that allows students to explore historical sites and cultural artifacts in an immersive, interactive environment, preserving cultural heritage while making it accessible globally.',
+    category: 'Education',
+    stage: IdeaStage.CONCEPT,
+    targetAudience: 'Educational institutions, museums, and cultural organizations',
+    potentialImpact: 'Enhanced preservation and global access to cultural heritage, improved educational outcomes through immersive learning',
+    resourcesNeeded: '3D modeling expertise, cultural heritage partnerships, and VR development resources',
+    creatorEmail: 'fatima@aihealth.sa',
+  },
+  {
+    title: 'Biodegradable Packaging from Agricultural Waste',
+    description: 'A process to convert agricultural waste into fully biodegradable packaging materials, reducing both waste and plastic pollution.',
+    category: 'Sustainability',
+    stage: IdeaStage.VALIDATED,
+    targetAudience: 'Food producers, retailers, and packaging manufacturers',
+    potentialImpact: 'Reduction in plastic waste and repurposing of agricultural byproducts into valuable materials',
+    resourcesNeeded: 'Materials science expertise, manufacturing facilities, and certification support',
+    creatorEmail: 'mohammed@kaust.edu.sa',
+  },
+  {
+    title: 'Peer-to-Peer Energy Trading Platform',
+    description: 'A platform enabling households with solar panels to sell excess energy directly to neighbors, creating a localized renewable energy marketplace.',
+    category: 'Energy',
+    stage: IdeaStage.PROTOTYPE,
+    targetAudience: 'Homeowners with renewable energy installations and energy consumers',
+    potentialImpact: 'Accelerated adoption of renewable energy and more efficient use of locally generated power',
+    resourcesNeeded: 'Software development, regulatory navigation expertise, and pilot community partnerships',
+    creatorEmail: 'layla@ksu.edu.sa',
+  }
+];
 
-    // Clear existing data if needed
-    // Uncomment these lines if you want to clear existing data before seeding
-    // await AppDataSource.query('DELETE FROM partnerships');
-    // await AppDataSource.query('DELETE FROM challenges');
-    // await AppDataSource.query('DELETE FROM users');
-    
+// =================== UTILITY FUNCTIONS ===================
+
+/**
+ * Hash a password using bcrypt
+ */
+const hashPassword = async (password: string): Promise<string> => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(password, salt);
+};
+
+// =================== SEEDING FUNCTIONS ===================
+
+/**
+ * Seed users
+ */
+const seedUsers = async (): Promise<User | null> => {
+  try {
     logger.info('Seeding users...');
     
     // Create users
     const userRepository = AppDataSource.getRepository(User);
-    const createdUsers: Record<string, User> = {};
     
     // Check if admin user already exists to avoid duplicates
     const existingAdmin = await userRepository.findOne({ where: { email: 'admin@sanad.sa' } });
     
-    if (!existingAdmin) {
-      // Process and insert all users
-      for (const userData of innovatorSeedData) {
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(userData.password, 10);
-        
-        // Create and save the user
-        const user = new User();
-        user.firstName = userData.firstName;
-        user.lastName = userData.lastName;
-        user.email = userData.email;
-        user.password = hashedPassword;
-        user.role = userData.role;
-        user.organization = userData.organization;
-        user.position = userData.position;
-        user.bio = userData.bio;
-        user.isVerified = true; // All seed users are verified
-        
-        const savedUser = await userRepository.save(user);
-        createdUsers[userData.email] = savedUser;
-        logger.info(`Created user: ${userData.firstName} ${userData.lastName} (${userData.role})`);
-      }
-    } else {
+    if (existingAdmin) {
       logger.info('Admin user already exists, skipping user seeding');
-      // Get existing users for reference in challenges and partnerships
-      const existingUsers = await userRepository.find();
-      existingUsers.forEach(user => {
-        createdUsers[user.email] = user;
-      });
+      return existingAdmin;
     }
     
-    // Seed challenges
+    let adminUser: User | null = null;
+    
+    // Process and insert all users
+    for (const userData of innovatorSeedData) {
+      // Check if user already exists
+      const existingUser = await userRepository.findOne({ where: { email: userData.email } });
+      if (existingUser) {
+        logger.info(`User ${userData.email} already exists, updating with new values`);
+        
+        // Update existing user with new values
+        existingUser.firstName = userData.firstName;
+        existingUser.lastName = userData.lastName;
+        existingUser.role = userData.role;
+        existingUser.organization = userData.organization;
+        existingUser.position = userData.position;
+        existingUser.bio = userData.bio;
+        
+        // Add new profile fields
+        if (userData.location) existingUser.location = userData.location;
+        if (userData.interests) existingUser.interests = userData.interests;
+        if (userData.tags) existingUser.tags = userData.tags;
+        
+        await userRepository.save(existingUser);
+        logger.info(`Updated user: ${userData.firstName} ${userData.lastName} (${userData.role})`);
+        
+        if (userData.email === 'admin@sanad.sa') {
+          adminUser = existingUser;
+        }
+        
+        continue;
+      }
+      
+      // Create the user
+      const user = new User();
+      user.email = userData.email;
+      user.password = await hashPassword(userData.password);
+      user.firstName = userData.firstName;
+      user.lastName = userData.lastName;
+      user.role = userData.role;
+      user.organization = userData.organization;
+      user.position = userData.position;
+      user.bio = userData.bio;
+      user.isVerified = true; // All seed users are verified
+      
+      // Add new profile fields
+      if (userData.location) user.location = userData.location;
+      if (userData.interests) user.interests = userData.interests;
+      if (userData.tags) user.tags = userData.tags;
+      
+      await userRepository.save(user);
+      logger.info(`Created user: ${userData.firstName} ${userData.lastName} (${userData.role})`);
+      
+      if (userData.email === 'admin@sanad.sa') {
+        adminUser = user;
+      }
+    }
+    
+    logger.info('User seeding completed successfully');
+    return adminUser;
+  } catch (error) {
+    logger.error(`Error seeding users: ${error}`);
+    return null;
+  }
+};
+
+/**
+ * Seed challenges
+ */
+const seedChallenges = async (adminUser: User): Promise<void> => {
+  try {
     logger.info('Seeding challenges...');
+    
+    // Get repository
     const challengeRepository = AppDataSource.getRepository(Challenge);
     
     // Check if challenges already exist
     const existingChallengesCount = await challengeRepository.count();
     
-    if (existingChallengesCount === 0) {
-      // Get a random user to be the creator of challenges
-      const adminUser = createdUsers['admin@sanad.sa'] || Object.values(createdUsers)[0];
-      
-      for (const challengeData of challengeSeedData) {
-        const challenge = new Challenge();
-        challenge.title = challengeData.title;
-        challenge.description = challengeData.description;
-        challenge.organization = challengeData.organization;
-        challenge.type = challengeData.type;
-        challenge.status = challengeData.status;
-        challenge.deadline = challengeData.deadline;
-        challenge.reward = challengeData.reward;
-        challenge.eligibilityCriteria = challengeData.eligibilityCriteria;
-        challenge.createdById = adminUser.id;
-        challenge.createdBy = adminUser;
-        
-        await challengeRepository.save(challenge);
-        logger.info(`Created challenge: ${challengeData.title}`);
-      }
-    } else {
+    if (existingChallengesCount > 0) {
       logger.info('Challenges already exist, skipping challenge seeding');
+      return;
     }
     
-    // Seed partnerships
+    // Create and save challenges
+    for (const challengeData of challengeSeedData) {
+      const challenge = new Challenge();
+      challenge.title = challengeData.title;
+      challenge.description = challengeData.description;
+      challenge.organization = challengeData.organization;
+      challenge.type = challengeData.type;
+      challenge.status = challengeData.status;
+      challenge.deadline = challengeData.deadline;
+      challenge.reward = challengeData.reward;
+      challenge.eligibilityCriteria = challengeData.eligibilityCriteria;
+      challenge.createdById = adminUser.id;
+      
+      await challengeRepository.save(challenge);
+      logger.info(`Created challenge: ${challengeData.title}`);
+    }
+    
+    logger.info('Challenge seeding completed successfully');
+  } catch (error) {
+    logger.error(`Error seeding challenges: ${error}`);
+  }
+};
+
+/**
+ * Seed partnerships
+ */
+const seedPartnerships = async (adminUser: User): Promise<void> => {
+  try {
     logger.info('Seeding partnerships...');
+    
+    // Get repository
     const partnershipRepository = AppDataSource.getRepository(Partnership);
     
     // Check if partnerships already exist
     const existingPartnershipsCount = await partnershipRepository.count();
     
-    if (existingPartnershipsCount === 0) {
-      // Get a random user to be the creator of partnerships
-      const adminUser = createdUsers['admin@sanad.sa'] || Object.values(createdUsers)[0];
-      
-      for (const partnershipData of partnershipSeedData) {
-        const partnership = new Partnership();
-        partnership.title = partnershipData.title;
-        partnership.description = partnershipData.description;
-        partnership.participants = partnershipData.participants;
-        partnership.status = partnershipData.status;
-        partnership.duration = partnershipData.duration;
-        partnership.resources = partnershipData.resources;
-        partnership.expectedOutcomes = partnershipData.expectedOutcomes;
-        partnership.createdById = adminUser.id;
-        partnership.createdBy = adminUser;
-        
-        await partnershipRepository.save(partnership);
-        logger.info(`Created partnership: ${partnershipData.title}`);
-      }
-    } else {
+    if (existingPartnershipsCount > 0) {
       logger.info('Partnerships already exist, skipping partnership seeding');
+      return;
     }
     
-    logger.info('Database seeding completed successfully');
+    // Create and save partnerships
+    for (const partnershipData of partnershipSeedData) {
+      const partnership = new Partnership();
+      partnership.title = partnershipData.title;
+      partnership.description = partnershipData.description;
+      partnership.participants = partnershipData.participants;
+      partnership.status = partnershipData.status;
+      partnership.duration = partnershipData.duration;
+      partnership.resources = partnershipData.resources;
+      partnership.expectedOutcomes = partnershipData.expectedOutcomes;
+      partnership.createdById = adminUser.id;
+      
+      await partnershipRepository.save(partnership);
+      logger.info(`Created partnership: ${partnershipData.title}`);
+    }
+    
+    logger.info('Partnership seeding completed successfully');
+  } catch (error) {
+    logger.error(`Error seeding partnerships: ${error}`);
+  }
+};
+
+/**
+ * Seed ideas
+ */
+const seedIdeas = async (): Promise<void> => {
+  try {
+    logger.info('Seeding ideas...');
+    
+    const ideaRepository = AppDataSource.getRepository(Idea);
+    const userRepository = AppDataSource.getRepository(User);
+    
+    // Check if ideas already exist
+    const existingIdeasCount = await ideaRepository.count();
+    if (existingIdeasCount > 0) {
+      logger.info(`${existingIdeasCount} ideas already exist in the database. Skipping seed.`);
+      return;
+    }
+    
+    // Create ideas
+    for (const ideaData of ideasData) {
+      // Find the creator user
+      const creator = await userRepository.findOne({
+        where: { email: ideaData.creatorEmail }
+      });
+      
+      if (!creator) {
+        logger.warn(`Creator with email ${ideaData.creatorEmail} not found. Skipping idea: ${ideaData.title}`);
+        continue;
+      }
+      
+      // Create the idea
+      const idea = new Idea();
+      idea.title = ideaData.title;
+      idea.description = ideaData.description;
+      idea.category = ideaData.category;
+      idea.stage = ideaData.stage;
+      idea.targetAudience = ideaData.targetAudience;
+      idea.potentialImpact = ideaData.potentialImpact;
+      idea.resourcesNeeded = ideaData.resourcesNeeded;
+      idea.status = IdeaStatus.PROPOSED;
+      idea.createdBy = creator;
+      idea.createdById = creator.id;
+      
+      // Set participants (creator is always the first participant)
+      const creatorName = `${creator.firstName} ${creator.lastName}`;
+      idea.participants = [creatorName];
+      
+      await ideaRepository.save(idea);
+      logger.info(`Created idea: ${idea.title}`);
+    }
+    
+    logger.info(`Successfully seeded ${ideasData.length} ideas`);
+  } catch (error) {
+    logger.error('Error seeding ideas:', error);
+  }
+};
+
+/**
+ * Main seeding function
+ */
+const seedDatabase = async () => {
+  try {
+    // Initialize the database connection
+    await AppDataSource.initialize();
+    logger.info('Database connection established for seeding');
+    
+    // Seed users first (since other entities depend on them)
+    const adminUser = await seedUsers();
+    
+    if (!adminUser) {
+      logger.error('Failed to create or find admin user. Cannot proceed with seeding other entities.');
+      process.exit(1);
+    }
+    
+    // Seed challenges, partnerships, and ideas
+    await seedChallenges(adminUser);
+    await seedPartnerships(adminUser);
+    await seedIdeas();
     
     // Close the database connection
     await AppDataSource.destroy();
     logger.info('Database connection closed');
     
+    logger.info('All database seeding completed successfully');
     process.exit(0);
   } catch (error) {
     logger.error(`Error seeding database: ${error}`);
+    // Try to close connection if it was opened
+    try {
+      if (AppDataSource.isInitialized) {
+        await AppDataSource.destroy();
+      }
+    } catch (e) {
+      logger.error(`Error closing database connection: ${e}`);
+    }
+    
     process.exit(1);
   }
 };
 
-// Run the seeding function
-seedDatabase(); 
+// Run the seeding function if this file is executed directly
+if (require.main === module) {
+  seedDatabase();
+}
+
+// Export for programmatic usage
+export { seedDatabase }; 
