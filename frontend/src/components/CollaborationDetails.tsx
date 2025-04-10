@@ -17,6 +17,7 @@ import { sendMessage } from '../services/messages';
 import { useAuth } from '../contexts/AuthContext';
 import CollaborationFiles from './CollaborationFiles';
 import { CommentSection } from './CommentSection';
+import { submitInterest } from '../services/api';
 
 type CollaboratorType = 'startup' | 'research' | 'corporate' | 'government' | 'investor' | 'individual' | 'accelerator' | 'incubator';
 
@@ -216,54 +217,42 @@ export function CollaborationDetails({ collaboration, onBack, cameFromSearch = f
         return;
       }
       
-      // Here you would typically send this to your backend
-      console.log('Interest submitted:', submission);
+      // Format additional info based on submission type
+      let additionalInfo = '';
       
-      // If there's a createdById in the collaboration, send a message to the owner
-      if (collaboration.createdById && user.id !== collaboration.createdById) {
-        // Create a message title based on the collaboration type and title
-        const messageTitle = `Interest in your ${collaboration.type || 'collaboration'}: ${collaboration.title}`;
-        
-        // Format any expertise information
-        const expertise = submission.expertise && submission.expertise.length > 0 
-          ? `Expertise: ${submission.expertise.join(', ')}` 
-          : submission.expertiseText 
-            ? `Expertise: ${submission.expertiseText}` 
-            : '';
-        
-        // Build the message content from the submission details with improved formatting
-        const messageContent = `
-✨ ${messageTitle} ✨
-
-Someone has expressed interest in your collaboration!
-
--------------------------------------------------
-📋 CONTACT INFORMATION
--------------------------------------------------
-• Name: ${submission.name} 
-• Email: ${submission.email}
-• Organization: ${submission.organization || 'Not specified'}
-• Type: ${submission.collaboratorType || 'Individual'}
-${expertise ? `• ${expertise}` : ''}
-${submission.foundingYear ? `• Founding Year: ${submission.foundingYear}` : ''}
-${submission.researchArea ? `• Research Area: ${submission.researchArea}` : ''}
-${submission.investmentFocus ? `• Investment Focus: ${submission.investmentFocus}` : ''}
-
--------------------------------------------------
-💬 MESSAGE FROM INTERESTED PARTY
--------------------------------------------------
-${submission.message}
-
--------------------------------------------------
-You can respond directly to this message to contact them.
-`;
-        
-        // Send the message to the collaboration owner
-        await sendMessage(collaboration.createdById, messageContent);
+      if (submission.expertiseText || (submission.expertise && submission.expertise.length > 0)) {
+        additionalInfo += `• Expertise: ${submission.expertiseText || submission.expertise.join(', ')}\n`;
       }
       
-      // Show success message
-      alert('Your interest has been submitted successfully! The collaboration team will review your application and contact you soon.');
+      if (submission.foundingYear) {
+        additionalInfo += `• Founding Year: ${submission.foundingYear}\n`;
+      }
+      
+      if (submission.researchArea) {
+        additionalInfo += `• Research Area: ${submission.researchArea}\n`;
+      }
+      
+      if (submission.investmentFocus) {
+        additionalInfo += `• Investment Focus: ${submission.investmentFocus}\n`;
+      }
+      
+      // Send interest data to API
+      if (collaboration.createdById && user.id !== collaboration.createdById) {
+        await submitInterest({
+          entityId: collaboration.id,
+          entityType: collaboration.type || 'collaboration',
+          entityTitle: collaboration.title,
+          ownerId: collaboration.createdById,
+          message: submission.message,
+          additionalInfo
+        });
+        
+        // Show success message
+        alert('Your interest has been submitted successfully! The collaboration team will review your application and contact you soon.');
+      } else {
+        console.error('Cannot express interest: Missing owner ID or you are the owner');
+        alert('Cannot submit interest. Missing owner information or you are the owner of this collaboration.');
+      }
     } catch (error) {
       console.error('Error submitting interest:', error);
       alert('There was an error submitting your interest. Please try again later.');

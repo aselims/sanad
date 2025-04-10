@@ -77,4 +77,35 @@ export const deleteFile = async (fileId: string) => {
 // Get file download URL
 export const getFileDownloadUrl = (fileId: string) => {
   return `${api.defaults.baseURL}/files/${fileId}`;
+};
+
+/**
+ * Send a message to another user
+ * @param receiverId ID of the message recipient
+ * @param content Message content
+ * @returns Response data
+ */
+export const sendMessage = async (receiverId: string, content: string) => {
+  const response = await api.post('/messages', {
+    recipientId: receiverId,
+    content
+  });
+  return response.data;
+};
+
+/**
+ * Submit interest in a collaboration/opportunity
+ * @param data Interest submission data
+ * @returns Response data
+ */
+export const submitInterest = async (data: {
+  entityId: string;
+  entityType: string;
+  entityTitle: string;
+  ownerId: string;
+  message: string;
+  additionalInfo?: string;
+}) => {
+  const response = await api.post('/interest/submit', data);
+  return response.data;
 }; 

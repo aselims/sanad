@@ -9,6 +9,7 @@ import { Partnership } from '../entities/Partnership';
 import { Challenge } from '../entities/Challenge';
 import { Idea } from '../entities/Idea';
 import notificationRoutes from './notificationRoutes';
+import interestRoutes from './interestRoutes';
 
 const router = Router();
 
@@ -342,5 +343,6 @@ router.get('/ai-search', asyncHandler(async (req: Request, res: Response) => {
 // Mount routes
 router.use('/auth', authRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/interest', interestRoutes);
 
 export default router; 
