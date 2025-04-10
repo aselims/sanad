@@ -48,37 +48,20 @@ You can deploy the application locally using the provided scripts:
 - `./dev.sh` for development
 - `./prod.sh` for production
 
-### Cloud Deployment
-The Docker configuration is compatible with various cloud platforms:
+Simple usage: ./dev.sh --local or ./dev.sh --remote
+No .env file editing required to switch modes
+Custom remote URL support: ./dev.sh --remote https://custom-api.example.com
+Help documentation built in: ./dev.sh --help
+Clean state management: Creates/removes override files automatically
+Explicit feedback showing which mode is active
+Default behavior (local mode) when run without parameters
+You can run it with:
+./dev.sh (defaults to local)
+./dev.sh --local (explicitly local)
+./dev.sh --remote (uses default remote URL)
+./dev.sh --remote https://custom-url.com (uses custom remote URL)
+This eliminates any manual configuration steps while providing total flexibility.
 
-#### AWS
-```bash
-# Build and push Docker images to ECR
-aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <account-id>.dkr.ecr.<region>.amazonaws.com
-docker-compose -f docker-compose.prod.yml build
-docker tag project_frontend:latest <account-id>.dkr.ecr.<region>.amazonaws.com/project_frontend:latest
-docker tag project_backend:latest <account-id>.dkr.ecr.<region>.amazonaws.com/project_backend:latest
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/project_frontend:latest
-docker push <account-id>.dkr.ecr.<region>.amazonaws.com/project_backend:latest
-```
-
-#### Digital Ocean
-```bash
-# Deploy using Docker Compose to a Droplet
-scp docker-compose.prod.yml root@<droplet-ip>:/root/
-ssh root@<droplet-ip> "cd /root && docker-compose -f docker-compose.prod.yml up -d"
-```
-
-#### Google Cloud Platform
-```bash
-# Build and push Docker images to Google Container Registry
-gcloud auth configure-docker
-docker-compose -f docker-compose.prod.yml build
-docker tag project_frontend:latest gcr.io/<project-id>/project_frontend:latest
-docker tag project_backend:latest gcr.io/<project-id>/project_backend:latest
-docker push gcr.io/<project-id>/project_frontend:latest
-docker push gcr.io/<project-id>/project_backend:latest
-```
 
 ## Environment Variables
 The application uses environment variables for configuration. For production, create a `.env` file in the project root with the following variables:
