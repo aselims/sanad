@@ -106,17 +106,41 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Development Environment
 The development environment includes hot-reloading for both frontend and backend, and is configured for debugging.
 
+#### Using dev.sh script (Recommended)
+
+The project has been simplified to use only two modes:
+
 ```bash
-# Start the development environment
-./dev.sh
-# or
-docker-compose up
+# Start the development environment with local backend
+./dev.sh --local
+
+# Start the development environment with remote backend
+./dev.sh --remote
+
+# Seed the database with initial data
+./dev.sh --local --seed-db
 ```
 
-This will:
-- Start the PostgreSQL database on port 5432
-- Start the backend API server on port 3000 with hot-reloading
-- Start the frontend development server on port 5173 with hot-reloading
+#### Docker Compose Files
+We now use two specific docker-compose files based on the deployment mode:
+
+1. `docker-compose.dev-local.yml`: For local development with all services running locally
+2. `docker-compose.dev-remote.yml`: For development using a remote backend API
+
+The simplified `dev.sh` script automatically uses the appropriate file based on your selected mode.
+
+### Command Line Options
+
+```
+Usage: ./dev.sh [OPTIONS]
+Options:
+  --local              Run with local backend (default)
+  --remote             Run with remote backend
+  --seed-db            Seed the database with initial data
+  --jwt-secret VALUE   Set JWT secret for authentication
+  --openai-key VALUE   Set OpenAI API key
+  --help               Show this help message
+```
 
 ### Production Environment
 The production environment is optimized for performance and security.

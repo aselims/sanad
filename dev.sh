@@ -3,112 +3,112 @@
 # Colors for terminal output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Default to local mode
+# Default configuration
 MODE="local"
-REMOTE_URL=""
-USE_DEV_COMPOSE=false
-VERBOSE=false
+SEED_DB=false
+JWT_SECRET=""
+OPENAI_API_KEY=""
 
 # Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --remote) 
             MODE="remote"
-            REMOTE_URL="${2:-https://sanad.selimsalman.de}"
-            if [[ $2 != --* && $2 != "" ]]; then
-                shift
-            fi
             ;;
         --local) 
             MODE="local" 
             ;;
-        --dev-compose)
-            USE_DEV_COMPOSE=true
+        --seed-db)
+            SEED_DB=true
             ;;
-        --verbose)
-            VERBOSE=true
+        --jwt-secret)
+            JWT_SECRET="$2"
+            shift
+            ;;
+        --openai-key)
+            OPENAI_API_KEY="$2"
+            shift
             ;;
         --help) 
-            echo "Usage: ./dev.sh [--local | --remote [URL]] [--dev-compose] [--verbose]"
-            echo "  --local        Run with local backend (default)"
-            echo "  --remote       Run with remote backend at Sanad.selimsalman.de"
-            echo "                 or specify a different URL"
-            echo "  --dev-compose  Use docker-compose.dev.yml instead of docker-compose.yml"
-            echo "  --verbose      Show detailed debug information"
+            echo "Usage: ./dev.sh [OPTIONS]"
+            echo "Options:"
+            echo "  --local              Run with local backend (default)"
+            echo "  --remote             Run with remote backend"
+            echo "  --seed-db            Seed the database with initial data"
+            echo "  --jwt-secret VALUE   Set JWT secret for authentication"
+            echo "  --openai-key VALUE   Set OpenAI API key"
+            echo "  --help               Show this help message"
             exit 0
             ;;
-        *) echo "Unknown parameter: $1"; exit 1 ;;
+        *) echo -e "${RED}Unknown parameter: $1${NC}"; exit 1 ;;
     esac
     shift
 done
 
-# Set additional docker-compose options based on verbosity
-DC_OPTS=""
-if [ "$VERBOSE" = true ]; then
-    echo -e "${YELLOW}Verbose mode enabled${NC}"
-    DC_OPTS="--verbose"
-fi
-
-echo -e "${GREEN}Starting T3awanu development environment in ${MODE} mode...${NC}"
-if [ "$USE_DEV_COMPOSE" = true ]; then
-    echo -e "${GREEN}Using docker-compose.dev.yml configuration...${NC}"
-fi
-
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
-    echo -e "${YELLOW}Docker is not installed. Please install Docker first.${NC}"
-    exit 1
+    echo -e "${YELLOW}Docker is not installed. Installing Docker...${NC}"
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    chmod +x get-docker.sh
+    bash get-docker.sh
+    sudo usermod -aG docker $USER
+    echo -e "${YELLOW}Added user to docker group. You may need to log out and back in.${NC}"
 fi
 
 # Check if Docker Compose is installed
 if ! command -v docker compose &> /dev/null; then
-    echo -e "${YELLOW}Docker Compose is not installed. Please install Docker Compose first.${NC}"
-    exit 1
+    echo -e "${YELLOW}Docker Compose is not installed. Installing...${NC}"
+    sudo apt update
+    sudo apt install -y docker-compose
 fi
 
-# Set compose file based on flag
-COMPOSE_FILE="docker-compose.yml"
-if [ "$USE_DEV_COMPOSE" = true ]; then
-    COMPOSE_FILE="docker-compose.dev.yml"
-fi
-
-if [ "$VERBOSE" = true ]; then
-    echo -e "${GREEN}Using compose file: ${COMPOSE_FILE}${NC}"
-    echo -e "${GREEN}Docker compose options: ${DC_OPTS}${NC}"
-fi
-
-# Create docker-compose config based on mode
-if [ "$MODE" = "remote" ]; then
-    echo -e "${GREEN}Configuring frontend to use remote backend at ${REMOTE_URL}${NC}"
+# Create .env file if JWT_SECRET or OPENAI_API_KEY is provided
+if [ ! -z "$JWT_SECRET" ] || [ ! -z "$OPENAI_API_KEY" ]; then
+    echo -e "${GREEN}Creating .env file with provided credentials...${NC}"
     
-    # Create docker-compose.override.yml for remote mode
-    cat > docker-compose.override.yml << EOL
-version: '3.8'
-services:
-  frontend:
-    environment:
-      - VITE_API_URL=${REMOTE_URL}
-EOL
-    
-    # Start only frontend
-    docker compose -f ${COMPOSE_FILE} ${DC_OPTS} up frontend
-else
-    echo -e "${GREEN}Starting complete local development environment${NC}"
-    
-    # Remove any existing override file
-    if [ -f docker-compose.override.yml ]; then
-        rm docker-compose.override.yml
+    # Read existing .env if it exists
+    if [ -f .env ]; then
+        source .env
     fi
     
-    # Build backend with no cache
-    echo -e "${GREEN}Building backend with no cache to ensure correct native module compilation...${NC}"
-    docker compose -f ${COMPOSE_FILE} ${DC_OPTS} build --no-cache backend
+    # Use provided values or keep existing ones
+    JWT_SECRET=${JWT_SECRET:-$JWT_SECRET}
+    OPENAI_API_KEY=${OPENAI_API_KEY:-$OPENAI_API_KEY}
     
-    # Start all services
-    docker compose -f ${COMPOSE_FILE} ${DC_OPTS} up
+    # Create .env file
+    cat > .env << EOL
+JWT_SECRET=$JWT_SECRET
+OPENAI_API_KEY=$OPENAI_API_KEY
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=sanad
+EOL
 fi
 
-# Exit gracefully on Ctrl+C
-trap 'echo -e "${GREEN}Stopping development environment...${NC}"; docker compose -f ${COMPOSE_FILE} down; if [ -f docker-compose.override.yml ]; then rm docker-compose.override.yml; fi' INT TERM EXIT 
+# Select Docker Compose file based on mode
+if [ "$MODE" = "remote" ]; then
+    COMPOSE_FILE="docker-compose.dev-remote.yml"
+    echo -e "${GREEN}Starting in remote mode using ${COMPOSE_FILE}...${NC}"
+else
+    COMPOSE_FILE="docker-compose.dev-local.yml"
+    echo -e "${GREEN}Starting in local mode using ${COMPOSE_FILE}...${NC}"
+fi
+
+# Start containers
+echo -e "${GREEN}Starting Docker containers...${NC}"
+docker compose -f ${COMPOSE_FILE} down
+docker compose -f ${COMPOSE_FILE} up -d --build
+
+# Run database seed if requested
+if [ "$SEED_DB" = true ]; then
+    echo -e "${YELLOW}Seeding the database...${NC}"
+    docker compose -f ${COMPOSE_FILE} exec -T backend node dist/scripts/seed-database.js || echo "Seed script failed - database may already be populated"
+fi
+
+echo -e "${GREEN}Development environment is up and running!${NC}"
+echo -e "Use ${YELLOW}docker compose -f ${COMPOSE_FILE} logs -f${NC} to view logs"
+echo -e "Use ${YELLOW}docker compose -f ${COMPOSE_FILE} down${NC} to stop the environment"
+

@@ -5,9 +5,12 @@ const API_URL = import.meta.env.DEV
   ? import.meta.env.VITE_API_URL || '/api'  // Use VITE_API_URL directly if available, otherwise use '/api'
   : '/api';  // Use relative path for production, will be handled by nginx proxy
 
+// Ensure API_URL has /api at the end if it doesn't already
+const baseURL = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
