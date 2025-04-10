@@ -1,36 +1,35 @@
-# Development stage
-FROM node:18-alpine
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# Install build dependencies for any native modules
+RUN apk add --no-cache --update build-base python3
 
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+ENV NODE_ENV=production
+RUN npm ci && npm cache clean --force
+
+# Copy all files
 COPY . .
 
-# Expose development server port
-EXPOSE 5173
-
-# Start the development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
-# Build stage
-FROM node:18-alpine as build
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
+# Build the application
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine as production
+# Production stage with Nginx for serving static files
+FROM nginx:stable-alpine
 
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy Nginx configuration
+COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copy our custom Nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d
+
+# Expose the port
 EXPOSE 80
 
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"] 

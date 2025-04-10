@@ -9,7 +9,6 @@ export enum UserRole {
   GOVERNMENT = 'government',
   INVESTOR = 'investor',
   INDIVIDUAL = 'individual',
-  // INNOVATOR = 'individual', // Legacy support - comment out to avoid duplicate enum value
   ORGANIZATION = 'organization',
   ACCELERATOR = 'accelerator',
   INCUBATOR = 'incubator',

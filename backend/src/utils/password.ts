@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 import logger from './logger';
 
 // In development mode, we'll use a simpler hash function
@@ -8,9 +8,9 @@ const isDev = process.env.NODE_ENV === 'development';
 const SALT_ROUNDS = 10;
 
 /**
- * Hash a password using a simple algorithm for development or bcrypt for production
- * @param password - The plain text password
- * @returns The hashed password
+ * Hash a password using bcryptjs
+ * @param password Plain text password
+ * @returns Hashed password
  */
 export async function hashPassword(password: string): Promise<string> {
   if (isDev) {

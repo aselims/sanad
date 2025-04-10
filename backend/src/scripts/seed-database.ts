@@ -3,7 +3,7 @@ import { User, UserRole } from '../entities/User';
 import { Challenge, ChallengeType, ChallengeStatus } from '../entities/Challenge';
 import { Partnership, PartnershipStatus } from '../entities/Partnership';
 import { INNOVATOR_TYPES, ALL_ROLES } from '../constants/roles';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import logger from '../utils/logger';
 
 // Sample data for each innovator type
