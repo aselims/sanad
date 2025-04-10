@@ -1,5 +1,6 @@
-import bcrypt from 'bcryptjs';
+import * as bcryptjs from 'bcryptjs';
 import logger from './logger';
+import crypto from 'crypto';
 
 // In development mode, we'll use a simpler hash function
 const isDev = process.env.NODE_ENV === 'development';
@@ -17,15 +18,12 @@ export async function hashPassword(password: string): Promise<string> {
     // Simple hash for development - DO NOT USE IN PRODUCTION
     return crypto.createHash('sha256').update(password).digest('hex');
   } else {
-    // This code path won't be used in development, so it won't fail
-    // with the bcrypt architecture mismatch
+    // Use bcryptjs for production
     try {
-      // Dynamically import bcrypt only in production
-      const bcrypt = await import('bcrypt');
-      const salt = await bcrypt.default.genSalt(SALT_ROUNDS);
-      return await bcrypt.default.hash(password, salt);
+      const salt = await bcryptjs.genSalt(SALT_ROUNDS);
+      return await bcryptjs.hash(password, salt);
     } catch (error) {
-      console.error('Error importing bcrypt:', error);
+      console.error('Error hashing password:', error);
       // Fallback to simple hash
       return crypto.createHash('sha256').update(password).digest('hex');
     }
@@ -45,11 +43,10 @@ export async function verifyPassword(password: string, hashedPassword: string): 
     return hashed === hashedPassword;
   } else {
     try {
-      // Dynamically import bcrypt only in production
-      const bcrypt = await import('bcrypt');
-      return await bcrypt.default.compare(password, hashedPassword);
+      // Use bcryptjs for production
+      return await bcryptjs.compare(password, hashedPassword);
     } catch (error) {
-      console.error('Error importing bcrypt:', error);
+      console.error('Error verifying password:', error);
       // Fallback to simple verification
       const hashed = crypto.createHash('sha256').update(password).digest('hex');
       return hashed === hashedPassword;

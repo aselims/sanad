@@ -25,11 +25,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick }) => 
 
     setIsSubmitting(true);
     try {
-      await login(email, password);
-      if (onSuccess) {
-        onSuccess();
-      }
+      const result = await login(email, password);
+      console.log('Login successful, result:', result);
+      
+      // Debug user data in local storage
+      const storedUser = localStorage.getItem('user');
+      console.log('User in localStorage:', storedUser ? JSON.parse(storedUser) : null);
+      
+      // Add a small delay before redirecting to ensure state is updated
+      setTimeout(() => {
+        if (onSuccess) {
+          console.log('Calling onSuccess callback');
+          onSuccess();
+        }
+      }, 500);
     } catch (error: any) {
+      console.error('Form login error:', error);
       setFormError(error.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);

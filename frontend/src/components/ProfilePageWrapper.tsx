@@ -17,6 +17,13 @@ export function ProfilePageWrapper({ onBack }: ProfilePageWrapperProps) {
   const { user: currentUser } = useAuth();
   const { getProfileById, isCurrentUserProfile } = useProfiles();
   
+  // Add debugging to see what data is available
+  console.log('ProfilePageWrapper debug:', { 
+    id, 
+    currentUser, 
+    pathname: location.pathname
+  });
+  
   // Get profile data for the current user
   const { matchRequests, potentialMatches, isLoading } = useProfileData(id);
   
@@ -27,6 +34,12 @@ export function ProfilePageWrapper({ onBack }: ProfilePageWrapperProps) {
   const userToDisplay = innovator || 
     (currentUser && (!id || isCurrentUserProfile(id)) ? 
       currentUser as unknown as Innovator : undefined);
+  
+  console.log('Profile data:', { 
+    innovator, 
+    currentUser, 
+    userToDisplay
+  });
   
   if (!userToDisplay) {
     return (

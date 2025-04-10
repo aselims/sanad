@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import multer from 'multer';
 import { authenticateJWT } from '../middlewares/auth';
 import * as fileService from '../services/fileService';
+import { routeHandler } from '../utils/express-types';
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ const upload = multer({
 });
 
 // Get all files for a collaboration
-router.get('/collaborations/:collaborationId/files', authenticateJWT, async (req: Request, res: Response) => {
+router.get('/collaborations/:collaborationId/files', authenticateJWT, routeHandler(async (req: Request, res: Response) => {
   try {
     const { collaborationId } = req.params;
     const files = await fileService.getCollaborationFiles(collaborationId);
@@ -38,14 +39,14 @@ router.get('/collaborations/:collaborationId/files', authenticateJWT, async (req
     console.error('Error getting files:', error);
     return res.status(500).json({ error: error.message || 'Failed to get files' });
   }
-});
+}));
 
 // Upload a file to a collaboration
 router.post(
   '/collaborations/:collaborationId/files', 
   authenticateJWT, 
   upload.single('file'), 
-  async (req: Request, res: Response) => {
+  routeHandler(async (req: Request, res: Response) => {
     try {
       const { collaborationId } = req.params;
       const userId = req.user?.id;
@@ -92,11 +93,11 @@ router.post(
       
       return res.status(500).json({ error: error.message || 'Failed to upload file' });
     }
-  }
+  })
 );
 
 // Download a file
-router.get('/files/:fileId', async (req: Request, res: Response) => {
+router.get('/files/:fileId', authenticateJWT, routeHandler(async (req: Request, res: Response) => {
   try {
     const { fileId } = req.params;
     const userId = req.user?.id;
@@ -128,10 +129,10 @@ router.get('/files/:fileId', async (req: Request, res: Response) => {
     console.error('Error downloading file:', error);
     return res.status(500).json({ error: error.message || 'Failed to download file' });
   }
-});
+}));
 
 // Delete a file
-router.delete('/files/:fileId', authenticateJWT, async (req: Request, res: Response) => {
+router.delete('/files/:fileId', authenticateJWT, routeHandler(async (req: Request, res: Response) => {
   try {
     const { fileId } = req.params;
     const userId = req.user?.id;
@@ -149,6 +150,6 @@ router.delete('/files/:fileId', authenticateJWT, async (req: Request, res: Respo
               error.message.includes('not found') ? 404 : 500)
       .json({ error: error.message || 'Failed to delete file' });
   }
-});
+}));
 
 export default router; 

@@ -55,12 +55,46 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
   // Get the current user's profile
   const getCurrentUserProfile = (): Innovator | undefined => {
     if (!currentUser) return undefined;
-    return innovators.find(innovator => innovator.id === currentUser.id);
+    
+    // First try to find in innovators list
+    const innovatorProfile = innovators.find(innovator => innovator.id === currentUser.id);
+    
+    if (innovatorProfile) return innovatorProfile;
+    
+    // If not found in innovators list, convert current user to Innovator format
+    if (currentUser) {
+      console.log('Creating innovator from current user', currentUser);
+      // Convert User to Innovator format
+      return {
+        id: currentUser.id,
+        name: `${currentUser.firstName} ${currentUser.lastName}`,
+        email: currentUser.email,
+        type: currentUser.role?.toLowerCase() || 'individual',
+        description: currentUser.bio || 'No bio available',
+        position: currentUser.position || '',
+        organization: currentUser.organization || '',
+        interests: currentUser.interests || [],
+        connections: [],
+        collaborations: [],
+        connectionsCount: 0
+      } as Innovator;
+    }
+    
+    return undefined;
   };
 
   // Get a profile by ID
   const getProfileById = (id: string): Innovator | undefined => {
-    return innovators.find(innovator => innovator.id === id);
+    // First try to find in innovators list
+    const innovatorProfile = innovators.find(innovator => innovator.id === id);
+    if (innovatorProfile) return innovatorProfile;
+    
+    // If the ID matches the current user, convert it
+    if (currentUser && currentUser.id === id) {
+      return getCurrentUserProfile();
+    }
+    
+    return undefined;
   };
 
   // Check if a given ID belongs to the current user

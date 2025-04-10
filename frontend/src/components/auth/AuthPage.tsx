@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import { useAuth } from '../../contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 interface AuthPageProps {
@@ -12,10 +12,28 @@ interface AuthPageProps {
 const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
   const [activeForm, setActiveForm] = useState<'login' | 'register'>('login');
   const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   // If user is already authenticated, redirect to home
-  if (isAuthenticated && !isLoading) {
-    return <Navigate to="/" replace />;
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      console.log('User is authenticated, redirecting to home');
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  const handleLoginSuccess = () => {
+    console.log('Login successful, navigating to home');
+    navigate('/', { replace: true });
+  };
+
+  // Don't render the auth page while checking auth status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
   }
 
   return (
@@ -30,19 +48,19 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         {activeForm === 'login' ? (
           <LoginForm
-            onSuccess={onSuccess}
+            onSuccess={handleLoginSuccess}
             onRegisterClick={() => setActiveForm('register')}
           />
         ) : (
           <RegisterForm
-            onSuccess={onSuccess}
+            onSuccess={handleLoginSuccess}
             onLoginClick={() => setActiveForm('login')}
           />
         )}
         
         <div className="mt-6 text-center">
           <button 
-            onClick={onSuccess}
+            onClick={onSuccess || (() => navigate('/'))}
             className="inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />

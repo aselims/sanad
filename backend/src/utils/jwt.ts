@@ -1,9 +1,9 @@
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { User } from '../entities/User';
 import logger from './logger';
 
 // Get JWT secret from environment variables
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
+const JWT_SECRET: Secret = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
 
 /**
@@ -19,9 +19,13 @@ export const generateToken = (user: User): string => {
       role: user.role,
     };
 
-    return jwt.sign(payload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
-    });
+    // Create a simple object for the JWT options with the correct type
+    const options: jwt.SignOptions = { 
+      expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn']
+    };
+    
+    // Sign with properly typed parameters
+    return jwt.sign(payload, JWT_SECRET, options);
   } catch (error) {
     logger.error(`Error generating token: ${error}`);
     throw new Error('Error generating token');

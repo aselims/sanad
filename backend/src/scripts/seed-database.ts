@@ -378,11 +378,14 @@ const ideasData = [
 // =================== UTILITY FUNCTIONS ===================
 
 /**
- * Hash a password using bcrypt
+ * Hash a password using the same method as the main application
+ * Instead of defining our own function, import the hashPassword utility
+ * to ensure consistency between seeded users and registered users
  */
 const hashPassword = async (password: string): Promise<string> => {
-  const salt = await bcrypt.genSalt(10);
-  return bcrypt.hash(password, salt);
+  // Import the password utility from the main application
+  const { hashPassword: appHashPassword } = await import('../utils/password');
+  return appHashPassword(password);
 };
 
 // =================== SEEDING FUNCTIONS ===================
