@@ -14,50 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Install Docker and configure sudo
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        script: |
-          # Check if Docker is installed
-          if ! command -v docker &> /dev/null; then
-            # Install Docker
-            curl -fsSL https://get.docker.com -o get-docker.sh
-            chmod +x get-docker.sh
-            bash get-docker.sh
-          fi
-
-          # Check if Docker Compose is installed
-          if ! command -v docker-compose &> /dev/null; then
-            # Install Docker Compose
-            sudo apt update
-            sudo apt install -y docker-compose
-          fi
-
-          # Add user to docker group if not already
-          if ! groups | grep -q docker; then
-            sudo usermod -aG docker $USER
-            echo "Added user to docker group. This will take effect after next login."
-          fi
-          
-          # Configure passwordless sudo for docker and docker-compose
-          echo "Configuring passwordless sudo for docker commands..."
-          sudo tee /etc/sudoers.d/docker-commands > /dev/null << EOL
-          $USER ALL=(ALL) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose
-          EOL
-          sudo chmod 440 /etc/sudoers.d/docker-commands
-          
-          # Install Apache2 if not already installed
-          if ! command -v apache2ctl &> /dev/null; then
-            sudo apt update
-            sudo apt install -y apache2
-          fi
-          
-          # Enable necessary Apache modules
-          sudo a2enmod proxy proxy_http proxy_wstunnel ssl rewrite
-    
     - name: Deploy to server
       uses: appleboy/ssh-action@master
       with:
@@ -68,11 +24,37 @@ jobs:
           mkdir -p ~/sanad
           cd ~/sanad
           
-          # Clone or update repository
+          # Enable necessary Apache modules
+          sudo a2enmod proxy proxy_http proxy_wstunnel ssl rewrite
+
+          # Backup existing files before deployment
+          timestamp=$(date +%Y%m%d_%H%M%S)
           if [ -d ".git" ]; then
+            # Create backup of any local changes
+            git diff > ~/sanad_changes_$timestamp.patch || true
+            echo "Backed up local changes to ~/sanad_changes_$timestamp.patch"
+            
+            # Track untracked files
+            if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+              mkdir -p ~/sanad_backup_$timestamp
+              git ls-files --others --exclude-standard -z | xargs -0 -I{} cp --parents {} ~/sanad_backup_$timestamp/
+              echo "Backed up untracked files to ~/sanad_backup_$timestamp/"
+            fi
+            
+            # Update repository
             git fetch origin main
             git reset --hard origin/main
+            git clean -fd  # Remove untracked files
           else
+            # Backup entire directory if it's not a git repo
+            if [ "$(ls -A)" ]; then
+              mkdir -p ~/sanad_backup_$timestamp
+              cp -r ./* ~/sanad_backup_$timestamp/ 2>/dev/null || true
+              cp -r ./.[^.]* ~/sanad_backup_$timestamp/ 2>/dev/null || true
+              echo "Backed up existing files to ~/sanad_backup_$timestamp/"
+            fi
+            
+            # Initialize repository
             git init
             git remote add origin https://github.com/aselims/sanad.git
             git fetch origin main
@@ -91,28 +73,13 @@ jobs:
           # Make dev.sh executable
           chmod +x dev.sh
           
-          # Stop any running containers (if they exist)
+          # Stop any running containers
+          echo "Stopping any existing Docker containers..."
           sudo docker compose down || true
           
-          # Create docker-compose.override.yml for production settings
-          cat > docker-compose.override.yml << EOLDC
-          version: '3.8'
-          services:
-            frontend:
-              environment:
-                - VITE_API_URL=https://sanad.selimsalman.de/api
-                - VITE_APP_DOMAIN=sanad.selimsalman.de
-            backend:
-              environment:
-                - NODE_ENV=production
-                - CORS_ORIGIN=https://sanad.selimsalman.de
-          EOLDC
-          
-          # Start using dev.sh script with dev-compose and remote flags
-          # The --remote flag ensures we use the production API endpoint
-          # The --dev-compose flag ensures we use docker-compose.dev.yml
-          # The --verbose flag enables detailed logging
-          nohup ./dev.sh --remote https://sanad.selimsalman.de/ --dev-compose --verbose > deployment.log 2>&1 &
+          # Start using dev.sh script
+          echo "Starting services with dev.sh..."
+          nohup ./dev.sh --remote > deployment.log 2>&1 &
           
           # Wait for services to start
           echo "Waiting for services to start..."
@@ -121,9 +88,20 @@ jobs:
           # Run database seed script to populate initial data
           echo "Running database seed script..."
           # Enter backend container and run the seed script
-          sudo docker compose -f docker-compose.dev.yml exec -T backend node dist/scripts/seed-database.js >> deployment.log 2>&1 || echo "Seed script failed - database may already be populated"
+          sudo docker compose -f docker-compose.dev-remote.yml exec -T backend node dist/scripts/seed-database.js >> deployment.log 2>&1 || echo "Seed script failed - database may already be populated"
           
-          # First create a basic HTTP virtual host for Certbot validation
+          # Backup existing Apache configs if they exist
+          if [ -f "/etc/apache2/sites-available/sanad.conf" ]; then
+            sudo cp /etc/apache2/sites-available/sanad.conf /etc/apache2/sites-available/sanad.conf.bak.$timestamp
+            echo "Backed up existing Apache config to sanad.conf.bak.$timestamp"
+          fi
+          
+          if [ -f "/etc/apache2/sites-available/sanad-le-ssl.conf" ]; then
+            sudo cp /etc/apache2/sites-available/sanad-le-ssl.conf /etc/apache2/sites-available/sanad-le-ssl.conf.bak.$timestamp
+            echo "Backed up existing SSL Apache config to sanad-le-ssl.conf.bak.$timestamp"
+          fi
+          
+          # Create HTTP virtual host for Certbot validation
           sudo tee /etc/apache2/sites-available/sanad.conf > /dev/null << EOL
           <VirtualHost *:80>
               ServerName sanad.selimsalman.de
@@ -152,11 +130,30 @@ jobs:
             sudo apt install -y certbot python3-certbot-apache
           fi
           
-          # Get SSL certificate using certbot
-          sudo certbot --apache -d sanad.selimsalman.de --non-interactive --agree-tos --email admin@selimsalman.de
+          # Check if certificate already exists and is valid
+          cert_exists=false
+          if [ -d "/etc/letsencrypt/live/sanad.selimsalman.de" ]; then
+            cert_exists=true
+            # Check expiry date (30 days threshold)
+            expiry=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/sanad.selimsalman.de/cert.pem | cut -d= -f2)
+            expiry_seconds=$(sudo date -d "$expiry" +%s)
+            now_seconds=$(date +%s)
+            # 30 days in seconds = 30*24*60*60 = 2592000
+            if [ $((expiry_seconds - now_seconds)) -gt 2592000 ]; then
+              echo "SSL certificate exists and is valid for more than 30 days. Skipping renewal."
+            else
+              cert_exists=false
+              echo "SSL certificate exists but expires soon. Will renew."
+            fi
+          fi
           
-          # Now update the config with proper SSL settings
-          # Certbot should have already updated the Apache config, but we'll make sure our proxies are configured correctly
+          # Get SSL certificate using certbot if needed
+          if [ "$cert_exists" = false ]; then
+            echo "Obtaining SSL certificate..."
+            sudo certbot --apache -d sanad.selimsalman.de --non-interactive --agree-tos --email admin@selimsalman.de
+          fi
+          
+          # Update SSL configuration
           sudo tee /etc/apache2/sites-available/sanad-le-ssl.conf > /dev/null << EOL
           <IfModule mod_ssl.c>
           <VirtualHost *:443>

@@ -11,7 +11,7 @@ services:
       - backend
     restart: unless-stopped
     environment:
-      - VITE_API_URL=https://sanad.selimsalman.de/api
+      - VITE_API_URL=https://sanad.selimsalman.de
       - VITE_APP_DOMAIN=sanad.selimsalman.de
     networks:
       - sanad_network
