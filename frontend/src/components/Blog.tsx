@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Share2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { useParams, useNavigate } from 'react-router-dom';
 
 interface BlogProps {
   onNavigateBack: () => void;
@@ -14,8 +15,9 @@ interface BlogPost {
 }
 
 export function Blog({ onNavigateBack }: BlogProps) {
+  const { slug } = useParams();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [selectedPost, setSelectedPost] = useState<string | null>(null);
   const [postContent, setPostContent] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,13 +43,13 @@ export function Blog({ onNavigateBack }: BlogProps) {
       });
   }, []);
 
-  // Fetch a specific blog post content
+  // Fetch a specific blog post content when slug changes
   useEffect(() => {
-    if (selectedPost) {
+    if (slug) {
       setLoading(true);
       
       // Fetch the Markdown file from the public directory
-      fetch(`/blog/${selectedPost}.md`)
+      fetch(`/blog/${slug}.md`)
         .then(response => {
           if (!response.ok) {
             throw new Error(`Failed to fetch blog post: ${response.status} ${response.statusText}`);
@@ -64,22 +66,46 @@ export function Blog({ onNavigateBack }: BlogProps) {
           setLoading(false);
         });
     }
-  }, [selectedPost]);
+  }, [slug]);
+
+  const handlePostClick = (postSlug: string) => {
+    navigate(`/blog/${postSlug}`);
+  };
+
+  const handleShare = () => {
+    if (slug) {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!');
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center">
-            <button 
-              onClick={onNavigateBack}
-              className="mr-4 p-2 rounded-full hover:bg-gray-100"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <h1 className="text-2xl font-bold text-gray-900">Saned Blog</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button 
+                onClick={onNavigateBack}
+                className="mr-4 p-2 rounded-full hover:bg-gray-100"
+                aria-label="Go back"
+              >
+                <ArrowLeft className="h-5 w-5 text-gray-600" />
+              </button>
+              <h1 className="text-2xl font-bold text-gray-900">Saned Blog</h1>
+            </div>
+            {slug && (
+              <button
+                onClick={handleShare}
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
+                aria-label="Share post"
+              >
+                <Share2 className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -94,11 +120,11 @@ export function Blog({ onNavigateBack }: BlogProps) {
           <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700">
             {error}
           </div>
-        ) : selectedPost ? (
+        ) : slug ? (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="p-6 md:p-8">
               <button 
-                onClick={() => setSelectedPost(null)}
+                onClick={() => navigate('/blog')}
                 className="mb-6 text-indigo-600 hover:text-indigo-800 flex items-center"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" /> Back to all posts
@@ -115,7 +141,7 @@ export function Blog({ onNavigateBack }: BlogProps) {
               <div 
                 key={post.slug}
                 className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => setSelectedPost(post.slug)}
+                onClick={() => handlePostClick(post.slug)}
               >
                 <div className="p-6">
                   <p className="text-sm text-gray-500 mb-2">{post.date}</p>
@@ -125,7 +151,7 @@ export function Blog({ onNavigateBack }: BlogProps) {
                     className="text-indigo-600 font-medium hover:text-indigo-800"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedPost(post.slug);
+                      handlePostClick(post.slug);
                     }}
                   >
                     Read more

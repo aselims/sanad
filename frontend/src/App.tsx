@@ -389,6 +389,8 @@ export function App() {
             <Route path="/faq" element={<FAQ onBack={() => navigate(-1)} />} />
             <Route path="/support" element={<Support onBack={() => navigate(-1)} />} />
             <Route path="/contact" element={<ContactUs onBack={() => navigate(-1)} />} />
+            <Route path="/blog" element={<Blog onNavigateBack={() => navigate(-1)} />} />
+            <Route path="/blog/:slug" element={<Blog onNavigateBack={() => navigate(-1)} />} />
             <Route path="/legal/:page" element={
               <LegalPage 
                 onBack={() => navigate(-1)} 
@@ -424,12 +426,13 @@ export function App() {
           </Routes>
         </main>
         
-        <Footer 
-          onNavigateToTerms={() => navigate('/legal/terms')}
-          onNavigateToPrivacy={() => navigate('/legal/privacy')}
-          onNavigateToCookies={() => navigate('/legal/cookies')}
-          onNavigateToContactUs={() => navigate('/contact')}
-          onNavigateToFAQ={() => navigate('/faq')}
+        <Footer
+          onNavigateToTerms={() => handleNavigateToLegalPage('terms')}
+          onNavigateToPrivacy={() => handleNavigateToLegalPage('privacy')}
+          onNavigateToCookies={() => handleNavigateToLegalPage('cookies')}
+          onNavigateToContactUs={handleNavigateToContactUs}
+          onNavigateToFAQ={handleNavigateToFAQ}
+          onNavigateToBlog={handleNavigateToBlog}
         />
 
         {/* User Profile Modal */}

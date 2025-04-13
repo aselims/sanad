@@ -105,6 +105,10 @@ docker compose -f ${COMPOSE_FILE} up -d --build
 # Run database seed if requested
 if [ "$SEED_DB" = true ]; then
     echo -e "${YELLOW}Seeding the database...${NC}"
+    if [ "$MODE" = "remote" ]; then
+        echo -e "${YELLOW}Compiling TypeScript files...${NC}"
+        docker compose -f ${COMPOSE_FILE} exec -T backend npm run build
+    fi
     docker compose -f ${COMPOSE_FILE} exec -T backend node dist/scripts/seed-database.js || echo "Seed script failed - database may already be populated"
 fi
 
