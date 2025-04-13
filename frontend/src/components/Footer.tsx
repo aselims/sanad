@@ -51,17 +51,17 @@ export function Footer({
                   FAQ
                 </button>
               </li>
-              <li>
+              {/* <li>
                 <button onClick={onNavigateToContactUs} className="hover:text-white">
                   Contact Us
                 </button>
-              </li>
+              </li> */}
               <li>
                 <button onClick={onNavigateToBlog} className="hover:text-white">
                   Blog
                 </button>
               </li>
-              <li>
+              {/* <li>
                 <a href="#partnerships" className="hover:text-white">
                   Partnerships
                 </a>
@@ -75,7 +75,7 @@ export function Footer({
                 <a href="#ideas" className="hover:text-white">
                   Ideas
                 </a>
-              </li>
+              </li> */}
             </ul>
           </div>
           
