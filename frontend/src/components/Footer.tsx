@@ -7,6 +7,7 @@ interface FooterProps {
   onNavigateToCookies: () => void;
   onNavigateToContactUs: () => void;
   onNavigateToFAQ: () => void;
+  onNavigateToBlog: () => void;
 }
 
 export function Footer({
@@ -14,7 +15,8 @@ export function Footer({
   onNavigateToPrivacy,
   onNavigateToCookies,
   onNavigateToContactUs,
-  onNavigateToFAQ
+  onNavigateToFAQ,
+  onNavigateToBlog
 }: FooterProps) {
   return (
     <footer className="bg-gray-900 text-white">
@@ -52,6 +54,11 @@ export function Footer({
               <li>
                 <button onClick={onNavigateToContactUs} className="hover:text-white">
                   Contact Us
+                </button>
+              </li>
+              <li>
+                <button onClick={onNavigateToBlog} className="hover:text-white">
+                  Blog
                 </button>
               </li>
               <li>
