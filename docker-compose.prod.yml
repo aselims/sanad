@@ -7,11 +7,24 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+      - "443:443"
     restart: unless-stopped
     depends_on:
       - backend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
-      - t3awanu-network
+      - sanad_network
+    environment:
+      - VIRTUAL_HOST=usaned.local
+      - CORS_ORIGIN=https://usaned.local
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`usaned.local`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   backend:
     build:
@@ -22,22 +35,26 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_DATABASE=${DB_DATABASE:-sanad_db}
-      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_key_change_in_production}
+      - DATABASE_URL=postgresql://${DB_USERNAME:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_DATABASE:-sanad}
+      - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1d}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CORS_ORIGIN=${CORS_ORIGIN:-https://usaned.local}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - FRONTEND_URL=https://usaned.local
     volumes:
       - backend_uploads:/app/uploads
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
-      - t3awanu-network
+      - sanad_network
 
   postgres:
     image: postgres:14-alpine
@@ -46,7 +63,7 @@ services:
     environment:
       - POSTGRES_USER=${DB_USERNAME:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_DATABASE:-sanad_db}
+      - POSTGRES_DB=${DB_DATABASE:-sanad}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -56,12 +73,12 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - t3awanu-network
+      - sanad_network
 
 volumes:
   postgres_data:
   backend_uploads:
 
 networks:
-  t3awanu-network:
+  sanad_network:
     driver: bridge 

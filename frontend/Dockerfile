@@ -1,28 +1,7 @@
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Install build dependencies for any native modules
-RUN apk add --no-cache --update build-base python3
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-ENV NODE_ENV=production
-RUN npm ci && npm cache clean --force
-
-# Copy all files
-COPY . .
-
-# Build the application
-RUN npm run build
-
-# Production stage with Nginx for serving static files
 FROM nginx:stable-alpine
 
-# Copy Nginx configuration
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy pre-built frontend files
+COPY dist /usr/share/nginx/html
 
 # Copy our custom Nginx config
 RUN rm /etc/nginx/conf.d/default.conf

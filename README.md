@@ -39,47 +39,158 @@ Sanad is an open-source innovation collaboration platform that connects innovato
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
-- Docker and Docker Compose (optional)
+- [Node.js](https://nodejs.org/) (v16 or higher)
+- [PostgreSQL](https://www.postgresql.org/) (v12 or higher)
+- [Docker](https://docs.docker.com/get-docker/) (version 20.10.0 or higher)
+- [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0.0 or higher)
 
-### Installation
+## Building and Deploying the Application
 
-1. Clone the repository:
+### Local Development
+
+You can run the application in development mode with both local or remote backend options.
+
+#### 1. Clone the repository
 ```bash
 git clone https://github.com/aselims/sanad.git
 cd sanad
 ```
 
-2. Install dependencies:
+#### 2. Development with Docker (Recommended)
+
+The easiest way to start development is using the provided `dev.sh` script:
+
+```bash
+# Start with local backend (default)
+./dev.sh
+
+# OR start with explicit options
+./dev.sh --local
+
+# Start with remote backend
+./dev.sh --remote
+
+# Seed the database with initial data
+./dev.sh --local --seed-db
+```
+
+This script automatically:
+- Checks for Docker installation
+- Creates necessary environment files
+- Starts the application with hot-reloading for both frontend and backend
+- Sets up the database
+
+#### 3. Manual Development Setup
+
+If you prefer to run components individually:
+
 ```bash
 # Install frontend dependencies
 cd frontend
 npm install
+npm run dev
 
-# Install backend dependencies
-cd ../backend
-npm install
-```
-
-3. Set up environment variables:
-```bash
-# Backend
-cp backend/.env.example backend/.env
-# Frontend
-cp frontend/.env.example frontend/.env
-```
-
-4. Start the development servers:
-```bash
-# Start backend
+# In a separate terminal, install backend dependencies
 cd backend
-npm run dev
-
-# Start frontend (in a new terminal)
-cd frontend
+npm install
 npm run dev
 ```
+
+### Building for Production
+
+#### 1. Building the Frontend
+
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+This creates a `dist` directory with optimized static files.
+
+#### 2. Building the Backend
+
+```bash
+cd backend
+npm install
+npm run build
+```
+
+This compiles TypeScript to JavaScript in a `dist` directory.
+
+### Production Deployment
+
+The application can be easily deployed in production using Docker:
+
+#### 1. Using the Production Script (Recommended)
+
+The included `prod.sh` script handles the entire deployment process:
+
+```bash
+./prod.sh
+```
+
+This script:
+- Verifies prerequisites
+- Creates/validates environment configuration
+- Performs system resource checks
+- Creates database backups if needed
+- Builds and deploys all containers
+- Runs health checks
+- Provides deployment status
+
+#### 2. Manual Production Deployment
+
+```bash
+# Configuration setup
+cp .env.example .env
+# Edit .env with your production values
+
+# Start the production stack
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+#### Production Environment Variables
+
+Create a `.env` file with the following variables:
+```
+DB_USERNAME=postgres
+DB_PASSWORD=your_secure_password
+DB_DATABASE=sanad
+JWT_SECRET=your_jwt_secret
+OPENAI_API_KEY=your_openai_api_key
+JWT_EXPIRES_IN=1d
+CORS_ORIGIN=https://your-domain.com
+LOG_LEVEL=info
+```
+
+### Managing the Production Deployment
+
+- **View logs**: `docker compose -f docker-compose.prod.yml logs -f`
+- **Stop the application**: `docker compose -f docker-compose.prod.yml down`
+- **Restart components**: `docker compose -f docker-compose.prod.yml restart [service]`
+- **Update to new version**:
+  ```bash
+  git pull
+  docker compose -f docker-compose.prod.yml down
+  docker compose -f docker-compose.prod.yml up -d --build
+  ```
+
+### DNS Configuration
+
+For local development, add this entry to your `/etc/hosts` file:
+```
+127.0.0.1 usaned.local
+```
+
+For production, ensure your DNS points to your server IP.
+
+## Troubleshooting
+
+- **Database connection issues**: Ensure PostgreSQL is running with `docker compose ps`
+- **Container failures**: Check logs with `docker compose logs -f [service_name]`
+- **Permission issues**: The scripts require execution permissions (`chmod +x dev.sh prod.sh`)
+- **Build failures**: Check that local Node.js version matches the Dockerfile version
 
 ## Contributing
 
@@ -89,145 +200,26 @@ We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Contact
+
+- Project Link: [https://github.com/aselims/sanad](https://github.com/aselims/sanad)
+- Website: [https://sanad.selimsalman.de](https://sanad.selimsalman.de)
+
 ## Acknowledgments
 
 - Thanks to all contributors who have helped shape this project
 - Special thanks to the open-source community for the amazing tools and libraries
 
-## Contact
-
-- Project Link: [https://github.com/aselims/sanad](https://github.com/aselims/sanad)
-- Website: [https://sanad.selimsalman.de](https://sanad.selimsalman.de) 
-- [Docker](https://docs.docker.com/get-docker/) (version 20.10.0 or higher)
-- [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0.0 or higher)
-
-## Running the Application
-
-### Development Environment
-The development environment includes hot-reloading for both frontend and backend, and is configured for debugging.
-
-#### Using dev.sh script (Recommended)
-
-The project has been simplified to use only two modes:
-
-```bash
-# Start the development environment with local backend
-./dev.sh --local
-
-# Start the development environment with remote backend
-./dev.sh --remote
-
-# Seed the database with initial data
-./dev.sh --local --seed-db
-```
-
-#### Docker Compose Files
-We now use two specific docker-compose files based on the deployment mode:
-
-1. `docker-compose.dev-local.yml`: For local development with all services running locally
-2. `docker-compose.dev-remote.yml`: For development using a remote backend API
-
-The simplified `dev.sh` script automatically uses the appropriate file based on your selected mode.
-
-### Command Line Options
-
-```
-Usage: ./dev.sh [OPTIONS]
-Options:
-  --local              Run with local backend (default)
-  --remote             Run with remote backend
-  --seed-db            Seed the database with initial data
-  --jwt-secret VALUE   Set JWT secret for authentication
-  --openai-key VALUE   Set OpenAI API key
-  --help               Show this help message
-```
-
-### Production Environment
-The production environment is optimized for performance and security.
-
-```bash
-# Start the production environment
-./prod.sh
-# or
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-This will:
-- Start the PostgreSQL database (not exposed to host)
-- Start the backend API server (not exposed to host)
-- Start the frontend server on port 80 with Nginx
-
-## Deployment Options
-
-### Local Deployment
-You can deploy the application locally using the provided scripts:
-- `./dev.sh` for development
-- `./prod.sh` for production
-
-Simple usage: ./dev.sh --local or ./dev.sh --remote
-No .env file editing required to switch modes
-Custom remote URL support: ./dev.sh --remote https://custom-api.example.com
-Help documentation built in: ./dev.sh --help
-Clean state management: Creates/removes override files automatically
-Explicit feedback showing which mode is active
-Default behavior (local mode) when run without parameters
-You can run it with:
-./dev.sh (defaults to local)
-./dev.sh --local (explicitly local)
-./dev.sh --remote (uses default remote URL)
-./dev.sh --remote https://custom-url.com (uses custom remote URL)
-This eliminates any manual configuration steps while providing total flexibility.
-
-
 ## Environment Variables
-The application uses environment variables for configuration. For production, create a `.env` file in the project root with the following variables:
 
-```env
-DB_USERNAME=postgres
-DB_PASSWORD=your_secure_password
-DB_DATABASE=sanad_db
-JWT_SECRET=your_secure_jwt_secret
-JWT_EXPIRES_IN=1d
-LOG_LEVEL=info
-```
+See `.env.example` for a list of all required environment variables.
 
-## Project Structure
-- `/frontend`: React frontend application
-- `/backend`: Node.js Express backend API
-- `/docs`: Project documentation
-- `docker-compose.yml`: Development environment configuration
-- `docker-compose.prod.yml`: Production environment configuration
-- `dev.sh`: Script to start the development environment
-- `prod.sh`: Script to start the production environment
+## Architecture
 
-## CI/CD Integration
-The Docker setup is compatible with various CI/CD platforms:
-
-### GitHub Actions
-Create a `.github/workflows/deploy.yml` file with:
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build and push Docker images
-      run: |
-        docker-compose -f docker-compose.prod.yml build
-        # Add steps to push to your container registry and deploy
-```
-
-## Troubleshooting
-- **Database connection issues**: Ensure the PostgreSQL service is running with `docker-compose ps`
-- **Container startup failures**: Check logs with `docker-compose logs -f [service_name]`
-- **Performance issues**: For production, ensure you're using `docker-compose.prod.yml` not the development configuration
-- **Data persistence**: All data is stored in Docker volumes; back them up regularly
+The application follows a Vertical Slice Architecture:
+- Frontend: React + TypeScript + Vite
+- Backend: NestJS + Prisma ORM
+- Database: PostgreSQL
 
 ## Best Practices
 - Keep environment variables secure and never commit them to version control
