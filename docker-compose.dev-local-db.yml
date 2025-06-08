@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5435:5432"  # Only expose to localhost for security
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=EaAdw0kJR9aAk9A2
+      - POSTGRES_DB=saned_db  # Change this to your database name 
+    volumes:
+      - saned_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+   
+volumes:
+  saned_postgres_data: 
