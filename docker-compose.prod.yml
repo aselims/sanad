@@ -1,84 +1,109 @@
 version: '3.8'
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-      - "443:443"
+  # PostgreSQL Database
+  database:
+    image: postgres:16-alpine
+    container_name: sanad-db
     restart: unless-stopped
-    depends_on:
-      - backend
+    environment:
+      POSTGRES_DB: ${DB_NAME:-sanad}
+      POSTGRES_USER: ${DB_USER:-sanad_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:5434:5432"  # Only bind to localhost
+    networks:
+      - sanad-network
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-sanad_user} -d ${DB_NAME:-sanad}"]
       interval: 30s
       timeout: 10s
-      retries: 3
-    networks:
-      - sanad_network
-    environment:
-      - VIRTUAL_HOST=usaned.local
-      - CORS_ORIGIN=https://usaned.local
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`usaned.local`)"
-      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    cpus: '0.5'
 
+  # Backend Service
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    expose:
-      - "3000"
+    container_name: sanad-backend
+    restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - DATABASE_URL=postgresql://${DB_USERNAME:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_DATABASE:-sanad}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1d}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - CORS_ORIGIN=${CORS_ORIGIN:-https://usaned.local}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - FRONTEND_URL=https://usaned.local
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USER:-sanad_user}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_NAME:-sanad}
+      DB_SYNC: ${DB_SYNC:-false}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://collopi.com}
     volumes:
       - backend_uploads:/app/uploads
-    restart: unless-stopped
+      - ./backend/logs:/app/logs
+    ports:
+      - "127.0.0.1:8081:3000"  # Only bind to localhost
+    networks:
+      - sanad-network
     depends_on:
-      postgres:
+      database:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-    networks:
-      - sanad_network
+      start_period: 40s
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    cpus: '1.0'
 
-  postgres:
-    image: postgres:14-alpine
-    expose:
-      - "5432"
-    environment:
-      - POSTGRES_USER=${DB_USERNAME:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_DATABASE:-sanad}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sanad-frontend
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    environment:
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:8082:80"  # Only bind to localhost
     networks:
-      - sanad_network
+      - sanad-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    mem_limit: 256m
+    cpus: '0.5'
+
+networks:
+  sanad-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
 
 volumes:
   postgres_data:
+    driver: local
   backend_uploads:
-
-networks:
-  sanad_network:
-    driver: bridge 
+    driver: local

@@ -10,15 +10,18 @@
     "build": "npm run build:frontend && npm run build:backend",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "cd backend && npm run build",
-    "install:all": "npm install && npm run install:frontend && npm run install:backend",
+    "build:blog-module": "cd packages/react-blog-module && npm run build",
+    "install:all": "npm install && npm run install:frontend && npm run install:backend && npm run install:blog-module",
     "install:frontend": "cd frontend && npm install",
     "install:backend": "cd backend && npm install",
+    "install:blog-module": "cd packages/react-blog-module && npm install",
     "test": "npm run test:frontend && npm run test:backend",
     "test:frontend": "cd frontend && npm test",
     "test:backend": "cd backend && npm test",
     "debug": "concurrently \"npm run debug:frontend\" \"npm run debug:backend\"",
     "debug:frontend": "cd frontend && npm run dev -- --debug",
-    "debug:backend": "cd backend && npm run dev:debug"
+    "debug:backend": "cd backend && npm run dev:debug",
+    "publish:blog-module": "cd packages/react-blog-module && npm run build && npm publish"
   },
   "devDependencies": {
     "@types/multer": "^1.4.12",

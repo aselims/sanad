@@ -1,0 +1,39 @@
+{
+  "name": "@sanad/react-blog-module",
+  "version": "1.0.0",
+  "description": "A pluggable React blog module for any React application",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublish": "npm run build"
+  },
+  "keywords": [
+    "react",
+    "blog",
+    "markdown",
+    "module",
+    "plugin"
+  ],
+  "author": "Sanad Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0 || ^7.0.0"
+  },
+  "dependencies": {
+    "react-markdown": "^10.1.0",
+    "lucide-react": "^0.344.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.3"
+  }
+}
