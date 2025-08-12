@@ -18,7 +18,7 @@ Rather than one-off partnerships, organizations are building innovation ecosyste
 
 ### 3. Digital Platforms
 
-Platforms like Saned are making it easier to find partners, manage collaborations, and scale successful innovations across different contexts.
+Platforms like Collopi are making it easier to find partners, manage collaborations, and scale successful innovations across different contexts.
 
 ### 4. Focus on Impact
 
@@ -46,4 +46,4 @@ New technologies are enabling more effective collaboration:
 
 The future of innovation is collaborative, cross-sectoral, and impact-focused. Organizations that embrace open innovation will be better positioned to address complex challenges and create sustainable value.
 
-Saned is committed to supporting this future by providing the tools, connections, and resources needed for successful collaboration. 
+Collopi is committed to supporting this future by providing the tools, connections, and resources needed for successful collaboration. 

@@ -24,7 +24,7 @@ export function HowItWorks({ onBack }: HowItWorksProps) {
             <div className="prose prose-indigo max-w-none">
               <h2>Connecting Innovators with Opportunities</h2>
               <p>
-                Saned is a platform designed to bridge the gap between innovators, challenges, 
+                Collopi is a platform designed to bridge the gap between innovators, challenges, 
                 and partnerships. Our mission is to facilitate collaboration and drive innovation 
                 across sectors.
               </p>
@@ -71,7 +71,7 @@ export function HowItWorks({ onBack }: HowItWorksProps) {
               
               <h3>Support Throughout the Journey</h3>
               <p>
-                From initial connection to project completion, Saned provides tools and 
+                From initial connection to project completion, Collopi provides tools and 
                 resources to support successful collaborations. Our team is available to 
                 help with any questions or challenges along the way.
               </p>

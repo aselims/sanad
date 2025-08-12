@@ -15,16 +15,16 @@ export function FAQ({ onBack }: FAQProps) {
   
   const faqItems: FAQItem[] = [
     {
-      question: "What is Saned?",
-      answer: "Saned is a platform that connects innovators with challenges and partnership opportunities. We facilitate collaboration between individuals, startups, research institutions, corporations, and government entities to solve complex problems and drive innovation."
+      question: "What is Collopi?",
+      answer: "Collopi is a platform that connects innovators with challenges and partnership opportunities. We facilitate collaboration between individuals, startups, research institutions, corporations, and government entities to solve complex problems and drive innovation."
     },
     {
       question: "How do I create an account?",
       answer: "To create an account, click on the 'Login / Register' button in the top right corner of the homepage. Follow the registration process by providing your email, creating a password, and completing your profile information."
     },
     {
-      question: "Is Saned free to use?",
-      answer: "Saned offers both free and premium tiers. The basic account is free and allows you to browse opportunities and create a profile. Premium accounts offer additional features such as advanced search, priority matching, and analytics tools."
+      question: "Is Collopi free to use?",
+      answer: "Collopi offers both free and premium tiers. The basic account is free and allows you to browse opportunities and create a profile. Premium accounts offer additional features such as advanced search, priority matching, and analytics tools."
     },
     {
       question: "How are matches determined?",
@@ -44,7 +44,7 @@ export function FAQ({ onBack }: FAQProps) {
     },
     {
       question: "How are intellectual property rights handled?",
-      answer: "Saned provides templates for collaboration agreements that address intellectual property rights. However, we recommend that all parties consult with legal professionals to establish formal agreements before beginning substantive work together."
+      answer: "Collopi provides templates for collaboration agreements that address intellectual property rights. However, we recommend that all parties consult with legal professionals to establish formal agreements before beginning substantive work together."
     },
     {
       question: "Can I update my profile after creating it?",
@@ -52,7 +52,7 @@ export function FAQ({ onBack }: FAQProps) {
     },
     {
       question: "How can I get help if I have a problem?",
-      answer: "For technical issues or questions about using the platform, visit our Support page or contact us at support@Saned.com. Our team is available to help you navigate the platform and resolve any issues you encounter."
+      answer: "For technical issues or questions about using the platform, visit our Support page or contact us at support@collopi.com. Our team is available to help you navigate the platform and resolve any issues you encounter."
     }
   ];
   
@@ -105,8 +105,8 @@ export function FAQ({ onBack }: FAQProps) {
             <div className="mt-8 p-4 bg-indigo-50 rounded-lg">
               <p className="text-indigo-800">
                 Still have questions? Contact our support team at{' '}
-                <a href="mailto:support@Saned.com" className="font-medium underline">
-                  support@Saned.com
+                <a href="mailto:support@collopi.com" className="font-medium underline">
+                  support@collopi.com
                 </a>
               </p>
             </div>

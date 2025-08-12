@@ -94,7 +94,7 @@ export function HomePage({
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How Saned Works</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">How Collopi Works</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               A simple process to connect innovators, organizations, and resources to create impactful solutions together.
             </p>
@@ -158,7 +158,7 @@ export function HomePage({
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Who Can Collaborate on Saned</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Who Can Collaborate on Collopi</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our platform brings together diverse stakeholders to create powerful innovation ecosystems.
             </p>
@@ -330,19 +330,19 @@ export function HomePage({
         </div>
       </section>
       
-      {/* Why Saned Section */}
+      {/* Why Collopi Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-600 to-blue-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-10 shadow-xl">
             <div className="max-w-4xl mx-auto text-center">
-              <h2 className="text-3xl font-bold text-white mb-6">Why Saned?</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Why Collopi?</h2>
               
               <div className="mb-8">
                 <p className="text-2xl font-semibold text-white mb-4">
                   95% of startups fail; Not because they lack good ideas, but because they lack the right connections.
                 </p>
                 <p className="text-xl text-indigo-100 mb-6">
-                  Saned helps startups, researchers, and businesses join forces, share resources, and discover synergies before wasting time and effort reinventing the wheel.
+                  Collopi helps startups, researchers, and businesses join forces, share resources, and discover synergies before wasting time and effort reinventing the wheel.
                 </p>
                 <p className="text-2xl font-bold text-white mt-8">
                   🚀 Why compete alone when you can build together?

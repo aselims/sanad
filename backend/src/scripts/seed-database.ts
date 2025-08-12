@@ -15,9 +15,9 @@ const innovatorSeedData = [
     email: 'admin@sanad.sa',
     password: 'Admin123!',
     role: UserRole.ADMIN,
-    organization: 'Sanad Platform',
+    organization: 'Collopi Platform',
     position: 'System Administrator',
-    bio: 'Managing the Sanad platform and its users.',
+    bio: 'Managing the Collopi platform and its users.',
     location: 'Riyadh',
     interests: ['System Administration', 'Platform Management', 'User Support'],
     tags: ['technology', 'administration', 'support', 'management']

@@ -9,7 +9,7 @@ interface BlogModularProps {
 applyPluginPreset('standard');
 
 const blogConfig: BlogConfig = {
-  title: 'Saned Blog',
+  title: 'Collopi Blog',
   basePath: '/blog',
   postsPath: '/blog',
   enableSearch: true,
@@ -43,7 +43,7 @@ export function BlogModular({ onNavigateBack }: BlogModularProps) {
   // Custom footer content
   const footerContent = (
     <div className="flex flex-col md:flex-row justify-between items-center">
-      <p className="text-gray-500">© 2023 Saned. All rights reserved.</p>
+      <p className="text-gray-500">© 2023 Collopi. All rights reserved.</p>
       <div className="flex space-x-4 mt-4 md:mt-0">
         <button 
           onClick={onNavigateBack} 

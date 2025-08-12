@@ -129,7 +129,7 @@ export function ContactUs({ onBack }: ContactUsProps) {
                     <div>
                       <h3 className="font-medium text-gray-900">Our Office</h3>
                       <p className="text-gray-600 mt-1">
-                        Saned Headquarters<br />
+                        Collopi Headquarters<br />
                         Dubai Digital Park<br />
                         Dubai Silicon Oasis<br />
                         Dubai, United Arab Emirates
@@ -158,9 +158,9 @@ export function ContactUs({ onBack }: ContactUsProps) {
                     <div>
                       <h3 className="font-medium text-gray-900">Email</h3>
                       <p className="text-gray-600 mt-1">
-                        General Inquiries: info@Saned.com<br />
-                        Support: support@Saned.com<br />
-                        Partnerships: partnerships@Saned.com
+                        General Inquiries: info@collopi.com<br />
+                        Support: support@collopi.com<br />
+                        Partnerships: partnerships@collopi.com
                       </p>
                     </div>
                   </div>

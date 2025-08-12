@@ -1,10 +1,10 @@
-# Getting Started with Saned
+# Getting Started with Collopi
 
 *Published on October 15, 2023*
 
-## Welcome to Saned!
+## Welcome to Collopi!
 
-Saned is a platform designed to connect innovators, organizations, and resources to create impactful solutions together. This guide will help you get started with the platform and make the most of its features.
+Collopi is a platform designed to connect innovators, organizations, and resources to create impactful solutions together. This guide will help you get started with the platform and make the most of its features.
 
 ## Creating Your Profile
 
@@ -17,7 +17,7 @@ The first step to successful collaboration is creating a comprehensive profile:
 
 ## Finding Opportunities
 
-Saned offers various ways to find collaboration opportunities:
+Collopi offers various ways to find collaboration opportunities:
 
 - Browse the **Challenges** section for problems seeking solutions
 - Explore **Partnerships** to find organizations looking for specific expertise
@@ -36,6 +36,6 @@ Ready to collaborate? Here's how:
 
 ## Need Help?
 
-If you have any questions or need assistance, don't hesitate to contact our support team at support@Saned.com.
+If you have any questions or need assistance, don't hesitate to contact our support team at support@collopi.com.
 
 Happy collaborating! 

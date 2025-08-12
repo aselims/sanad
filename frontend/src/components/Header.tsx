@@ -271,7 +271,7 @@ export function Header({
                 className="text-2xl font-bold text-indigo-600 focus:outline-none cursor-pointer"
                 onClick={navHandlers.home}
               >
-                Saned
+                Collopi
               </Link>
             </div>
             

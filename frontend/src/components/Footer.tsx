@@ -23,9 +23,9 @@ export function Footer({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-semibold mb-4">About Saned</h3>
+            <h3 className="text-lg font-semibold mb-4">About Collopi</h3>
             <p className="text-gray-400 text-sm">
-              Saned is a platform connecting innovators, startups, researchers, and investors to foster collaboration and drive sustainable development in the MENA region.
+              Collopi is a platform connecting innovators, startups, researchers, and investors to foster collaboration and drive sustainable development in the MENA region.
             </p>
             <div className="mt-4 flex space-x-4">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white">
@@ -121,7 +121,7 @@ export function Footer({
         
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} Saned Platform. All rights reserved.
+            &copy; {new Date().getFullYear()} Collopi Platform. All rights reserved.
           </p>
           <p className="text-gray-400 text-sm mt-4 md:mt-0 flex items-center">
             Made with <Heart size={16} className="mx-1 text-red-500" /> For the MENA region and the world

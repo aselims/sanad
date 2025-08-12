@@ -179,7 +179,7 @@ export function InnovatorsList({ innovators, onViewProfile }: InnovatorsListProp
           <h2 className="text-2xl font-bold text-gray-900">Innovators Directory</h2>
           <p className="text-gray-600 max-w-3xl mt-2">
             Connect with innovators from various sectors including startups, corporations, research institutions, 
-            and individual experts who are part of the Saned innovation ecosystem.
+            and individual experts who are part of the Collopi innovation ecosystem.
           </p>
         </div>
         

@@ -33,16 +33,16 @@ export function SuccessStories({ onBack }: SuccessStoriesProps) {
                 <p className="text-gray-600 mb-6">
                   A collaboration between the Ministry of Transport and three local tech startups 
                   resulted in an AI-driven traffic management system that reduced congestion by 30% 
-                  in major urban areas. The project, which began as a challenge posted on Saned, 
+                  in major urban areas. The project, which began as a challenge posted on Collopi, 
                   is now being implemented in five cities nationwide.
                 </p>
                 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="italic text-gray-700">
-                    "Saned helped us find the perfect partners for our smart city initiative. 
+                    "Collopi helped us find the perfect partners for our smart city initiative. 
                     The platform's matching algorithm connected us with startups that had exactly 
                     the expertise we needed. What would have taken months through traditional 
-                    procurement processes took just weeks with Saned."
+                    procurement processes took just weeks with Collopi."
                   </p>
                   <p className="mt-2 font-medium text-gray-900">
                     — Ahmed Al-Farsi, Director of Innovation, Ministry of Transport
@@ -61,14 +61,14 @@ export function SuccessStories({ onBack }: SuccessStoriesProps) {
                 <p className="text-gray-600 mb-6">
                   A research institution partnered with a healthcare provider and an AI startup 
                   to develop algorithms for early disease detection. Their collaboration, facilitated 
-                  through Saned, led to a breakthrough diagnostic tool that is now in clinical trials 
+                  through Collopi, led to a breakthrough diagnostic tool that is now in clinical trials 
                   and has received $5 million in additional funding.
                 </p>
                 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="italic text-gray-700">
                     "As a small AI startup, we struggled to get the attention of major healthcare 
-                    institutions. Saned changed that by giving us visibility and credibility. 
+                    institutions. Collopi changed that by giving us visibility and credibility. 
                     Our partnership has not only advanced medical science but also helped our 
                     company grow from 5 to 30 employees in just 18 months."
                   </p>
@@ -90,12 +90,12 @@ export function SuccessStories({ onBack }: SuccessStoriesProps) {
                   A partnership between agricultural researchers, technology developers, and local 
                   farming communities led to the creation of a water-efficient irrigation system 
                   that has been adopted by over 200 farms. The project, which began as a challenge 
-                  on Saned, has reduced water usage by 40% while increasing crop yields by 15%.
+                  on Collopi, has reduced water usage by 40% while increasing crop yields by 15%.
                 </p>
                 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="italic text-gray-700">
-                    "Saned brought together partners we would never have found on our own. 
+                    "Collopi brought together partners we would never have found on our own. 
                     The diverse perspectives and expertise in our collaboration were key to 
                     developing a solution that works in real-world conditions and addresses 
                     the needs of actual farmers."

@@ -147,7 +147,7 @@ export function Support({ onBack }: SupportProps) {
                       <div>
                         <h3 className="font-medium text-gray-900">FAQ</h3>
                         <p className="text-sm text-gray-600 mt-1">
-                          Find answers to commonly asked questions about using Saned.
+                          Find answers to commonly asked questions about using Collopi.
                         </p>
                         <a href="#" className="text-sm text-indigo-600 font-medium mt-2 inline-block">
                           View FAQ
@@ -177,7 +177,7 @@ export function Support({ onBack }: SupportProps) {
                 <div className="mt-6 bg-indigo-50 rounded-lg p-4">
                   <h3 className="font-medium text-indigo-800 mb-2">Contact Information</h3>
                   <p className="text-sm text-indigo-700">
-                    Email: support@Saned.com<br />
+                    Email: support@collopi.com<br />
                     Phone: +971 4 123 4567<br />
                     Hours: Sunday-Thursday, 9am-6pm GST
                   </p>
