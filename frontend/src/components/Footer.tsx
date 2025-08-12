@@ -109,7 +109,7 @@ export function Footer({
               </li>
               <li className="flex items-center">
                 <Phone size={16} className="mr-2" />
-                <span>+94 17676796292</span>
+                <span>+49 211 16370419</span>
               </li>
               <li className="flex items-center">
                 <Mail size={16} className="mr-2" />
