@@ -137,9 +137,11 @@ router.get('/users/:id/collaborations', asyncHandler(async (req: Request, res: R
   const userId = req.params.id;
   
   try {
-    // Get partnerships created by the user
+    // Get partnerships created by the user (using backward compatible approach)
     const partnerships = await AppDataSource.getRepository(Partnership)
-      .find({ where: { createdById: userId } });
+      .createQueryBuilder('partnership')
+      .where('partnership.initiatorId = :userId', { userId })
+      .getMany();
     
     // Get challenges created by the user
     const challenges = await AppDataSource.getRepository(Challenge)
@@ -150,7 +152,7 @@ router.get('/users/:id/collaborations', asyncHandler(async (req: Request, res: R
       .find({ where: { createdById: userId } });
     
     // Format partnerships to match Collaboration type
-    const formattedPartnerships = partnerships.map(partnership => ({
+    const formattedPartnerships = partnerships.map((partnership: any) => ({
       id: partnership.id,
       title: partnership.title,
       description: partnership.description,
@@ -162,7 +164,7 @@ router.get('/users/:id/collaborations', asyncHandler(async (req: Request, res: R
         resources: partnership.resources,
         expectedOutcomes: partnership.expectedOutcomes
       },
-      createdById: partnership.createdById,
+      createdById: partnership.createdById, // Use the getter which maps to initiatorId
       createdAt: partnership.createdAt,
       updatedAt: partnership.updatedAt
     }));

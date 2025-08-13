@@ -5,9 +5,10 @@ import { Challenge } from '../entities/Challenge';
 import { Partnership } from '../entities/Partnership';
 import logger from '../utils/logger';
 
-// Initialize OpenAI client
+// Initialize OpenAI client with Groq API
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1"
 });
 
 interface SearchResult {
@@ -22,14 +23,14 @@ interface SearchResult {
 }
 
 /**
- * Process a search query using GPT-4o Mini to extract intent and key entities
+ * Process a search query using Llama 3.1 8B to extract intent and key entities
  * @param query The user's search query
  * @returns Processed search information with extracted entities and intent
  */
 async function processQueryWithAI(query: string) {
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'llama-3.1-8b-instant',
       messages: [
         {
           role: 'system',
@@ -91,10 +92,25 @@ export async function aiSearch(query: string): Promise<SearchResult[]> {
     // Process the query with AI to extract intent and entities
     const processedQuery = await processQueryWithAI(query);
     
-    // Get data from database
-    const users = await AppDataSource.getRepository(User).find();
-    const challenges = await AppDataSource.getRepository(Challenge).find();
-    const partnerships = await AppDataSource.getRepository(Partnership).find();
+    // Get data from database - select only needed columns to avoid mapping issues
+    const users = await AppDataSource.getRepository(User)
+      .createQueryBuilder('user')
+      .select(['user.id', 'user.firstName', 'user.lastName', 'user.email', 'user.organization', 'user.bio', 'user.role'])
+      .getMany();
+    
+    const challenges = await AppDataSource.getRepository(Challenge)
+      .createQueryBuilder('challenge')
+      .select(['challenge.id', 'challenge.title', 'challenge.description', 'challenge.organization', 'challenge.status'])
+      .getMany();
+      
+    const partnerships = await AppDataSource.getRepository(Partnership)
+      .createQueryBuilder('partnership')
+      .select([
+        'partnership.id', 'partnership.title', 'partnership.description', 
+        'partnership.participants', 'partnership.status', 'partnership.duration', 
+        'partnership.resources', 'partnership.expectedOutcomes', 'partnership.initiatorId'
+      ])
+      .getMany();
     
     // Prepare search terms from processed query
     const searchTerms = [
@@ -250,8 +266,8 @@ export async function aiSearch(query: string): Promise<SearchResult[]> {
     });
     
     // Score partnerships
-    partnerships.forEach(partnership => {
-      const partnershipText = `${partnership.title} ${partnership.description} ${partnership.participants.join(' ')}`.toLowerCase();
+    partnerships.forEach((partnership: any) => {
+      const partnershipText = `${partnership.title} ${partnership.description} ${partnership.participants?.join(' ') || ''}`.toLowerCase();
       const matchedFields: string[] = [];
       const highlights: { [key: string]: string[] } = {};
       
@@ -280,16 +296,18 @@ export async function aiSearch(query: string): Promise<SearchResult[]> {
         }
         
         // Check if any participant matches
-        partnership.participants.forEach(participant => {
-          if (participant.toLowerCase().includes(termLower)) {
-            score += 3;
-            matchedFields.push('participants');
-            if (!highlights.participants) {
-              highlights.participants = [];
+        if (partnership.participants) {
+          partnership.participants.forEach((participant: any) => {
+            if (participant.toLowerCase().includes(termLower)) {
+              score += 3;
+              matchedFields.push('participants');
+              if (!highlights.participants) {
+                highlights.participants = [];
+              }
+              highlights.participants.push(participant);
             }
-            highlights.participants.push(participant);
-          }
-        });
+          });
+        }
       });
       
       // Add intent-based scoring

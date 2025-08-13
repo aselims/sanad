@@ -105,7 +105,7 @@ The project includes automated development scripts:
 - **File Handling**: Multer for uploads
 - **Logging**: Winston
 - **Environment**: dotenv for configuration
-- **AI Integration**: OpenAI API for AI-powered features
+- **AI Integration**: Groq API (llama-3.1-8b-instant) for AI-powered features
 
 ### Key Entities
 - **User**: Core user model with role-based profiles (startup, research, corporate, government, investor, etc.)
@@ -152,3 +152,66 @@ The project includes automated development scripts:
 - Production deployment via `./prod.sh` script
 - Nginx reverse proxy configuration for production
 - Environment variables managed through `.env` files
+
+## Troubleshooting
+
+### Database Schema Issues
+
+**Problem**: TypeORM entity column names don't match database column names, causing "column does not exist" errors.
+
+**Root Cause**: Database migrations create snake_case columns (e.g., `created_by_id`) but TypeORM entities expect camelCase (e.g., `createdById`) without proper column name mapping.
+
+**Solutions**:
+1. **Quick Fix**: Use selective column queries in services to avoid problematic columns:
+   ```typescript
+   // Instead of .find() which loads all columns
+   const entities = await repository.find();
+   
+   // Use selective queries
+   const entities = await repository
+     .createQueryBuilder('entity')
+     .select(['entity.id', 'entity.title', 'entity.description'])
+     .getMany();
+   ```
+
+2. **Proper Fix**: Add explicit column name mapping in entities:
+   ```typescript
+   @Column({ nullable: true, name: 'created_by_id' })
+   createdById: string;
+   
+   @JoinColumn({ name: 'created_by_id' })
+   createdBy: User;
+   ```
+
+3. **Production Migration Fix**: Run migrations in production environment:
+   ```bash
+   # Inside Docker container
+   docker exec sanad-backend npx typeorm migration:run -d dist/config/data-source.js
+   
+   # Check database schema
+   docker exec sanad-db psql -U sanad_user -d sanad -c "\d table_name"
+   ```
+
+**Prevention**: Always verify entity column mappings match the actual database schema after running migrations.
+
+### Groq API Migration
+
+**Migration Process**:
+1. Update OpenAI client configuration to use Groq baseURL:
+   ```typescript
+   const openai = new OpenAI({
+     apiKey: process.env.OPENAI_API_KEY, // Use Groq API key
+     baseURL: "https://api.groq.com/openai/v1"
+   });
+   ```
+
+2. Change model from `gpt-4o-mini` to `llama-3.1-8b-instant`
+
+3. Test with sample queries to verify JSON response format compatibility
+
+4. Rebuild Docker containers to apply changes:
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d --build
+   ```
+
+**API Key**: Use Groq API key (starting with `gsk_`) in OPENAI_API_KEY environment variable.

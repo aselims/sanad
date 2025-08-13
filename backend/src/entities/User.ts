@@ -71,9 +71,9 @@ export class User {
   @Column({ default: true })
   allowConnections: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'createdAt' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updatedAt' })
   updatedAt: Date;
 } 

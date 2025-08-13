@@ -37,16 +37,33 @@ export class Partnership {
   @Column({ nullable: true, type: 'text' })
   expectedOutcomes: string;
 
-  @Column({ nullable: true })
-  createdById: string;
+  // Keep backward compatibility - use one of the existing columns as primary creator
+  @Column({ nullable: true, name: 'initiator_id' })
+  initiatorId: string;
+
+  @Column({ nullable: true, name: 'partner_id' })
+  partnerId: string;
+
+  // For backward compatibility, map createdById to initiator_id
+  get createdById(): string {
+    return this.initiatorId;
+  }
+
+  set createdById(value: string) {
+    this.initiatorId = value;
+  }
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'createdById' })
-  createdBy: User;
+  @JoinColumn({ name: 'initiator_id' })
+  initiator: User;
 
-  @CreateDateColumn()
+  @ManyToOne(() => User, { nullable: true })
+  @JoinColumn({ name: 'partner_id' })
+  partner: User;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 } 

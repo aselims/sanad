@@ -24,7 +24,7 @@ export class Match {
   @Column({ type: 'enum', enum: ['like', 'dislike', 'pending'], default: 'pending' })
   preference: 'like' | 'dislike' | 'pending';
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @ManyToOne(() => User)

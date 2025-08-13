@@ -50,16 +50,16 @@ export class Challenge {
   @Column({ nullable: true, type: 'text' })
   eligibilityCriteria: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, name: 'created_by_id' })
   createdById: string;
 
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'createdById' })
+  @JoinColumn({ name: 'created_by_id' })
   createdBy: User;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 } 

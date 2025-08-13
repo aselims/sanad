@@ -33,6 +33,6 @@ export class CollaborationFile {
   @Column()
   collaborationId: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'uploaded_at' })
   uploadedAt: Date;
 } 
