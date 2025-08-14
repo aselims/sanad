@@ -12,7 +12,7 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm migration:generate -- -d src/config/data-source.ts",
     "migration:run": "npm run typeorm migration:run -- -d src/config/data-source.ts",
-    "seed:users": "ts-node src/scripts/seed-users.ts",
+    "seed:db": "ts-node src/scripts/seed-database.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

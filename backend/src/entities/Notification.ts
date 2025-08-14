@@ -20,25 +20,25 @@ export class Notification {
   })
   type: NotificationType;
 
-  @Column()
-  title: string;
-
   @Column({ type: 'text' })
-  message: string;
+  content: string;
 
-  @Column({ default: false, name: 'is_read' })
+  @Column({ default: false })
   isRead: boolean;
 
-  @Column({ name: 'user_id' })
+  @Column()
   userId: string;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column({ type: 'json', nullable: true })
-  data: any;
+  @Column({ type: 'uuid', nullable: true })
+  referenceId: string;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn()
   createdAt: Date;
+
+  @CreateDateColumn()
+  updatedAt: Date;
 } 

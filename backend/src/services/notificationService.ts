@@ -78,18 +78,16 @@ export class NotificationService {
   async createNotification(data: {
     userId: string;
     type: NotificationType;
-    title: string;
-    message: string;
-    data?: any;
+    content: string;
+    referenceId?: string;
   }): Promise<Notification> {
     const notification = this.notificationRepository.create({
       id: uuidv4(),
       userId: data.userId,
       type: data.type,
-      title: data.title,
-      message: data.message,
+      content: data.content,
       isRead: false,
-      data: data.data || null
+      referenceId: data.referenceId || null
     });
 
     return this.notificationRepository.save(notification);
@@ -112,12 +110,8 @@ export class NotificationService {
     return this.createNotification({
       userId,
       type: NotificationType.MESSAGE,
-      title: `New message from ${senderName}`,
-      message: messagePreview,
-      data: {
-        senderId,
-        senderName
-      }
+      content: `New message from ${senderName}: ${messagePreview}`,
+      referenceId: senderId
     });
   }
 
@@ -138,14 +132,8 @@ export class NotificationService {
     return this.createNotification({
       userId,
       type: NotificationType.CONNECTION,
-      title: `Connection request from ${senderName}`,
-      message: `${senderName} would like to connect with you.`,
-      data: {
-        senderId,
-        senderName,
-        entityId: requestId,
-        entityType: 'request'
-      }
+      content: `Connection request from ${senderName} - ${senderName} would like to connect with you.`,
+      referenceId: requestId
     });
   }
 
@@ -166,14 +154,8 @@ export class NotificationService {
     return this.createNotification({
       userId,
       type: NotificationType.CONNECTION,
-      title: `${acceptorName} accepted your connection request`,
-      message: `You are now connected with ${acceptorName}.`,
-      data: {
-        senderId: acceptorId,
-        senderName: acceptorName,
-        entityId: connectionId,
-        entityType: 'connection'
-      }
+      content: `${acceptorName} accepted your connection request - You are now connected with ${acceptorName}.`,
+      referenceId: connectionId
     });
   }
 
@@ -192,21 +174,13 @@ export class NotificationService {
     interestedPartyName: string,
     entityId: string,
     entityType: string,
-    entityTitle: string,
-    senderId: string
+    entityTitle: string
   ): Promise<Notification> {
     return this.createNotification({
       userId,
       type: NotificationType.INTEREST,
-      title: `${interestedPartyName} expressed interest in your ${entityType}`,
-      message: `${interestedPartyName} is interested in "${entityTitle}".`,
-      data: {
-        senderId,
-        senderName: interestedPartyName,
-        entityId,
-        entityType,
-        entityTitle
-      }
+      content: `${interestedPartyName} expressed interest in your ${entityType} - ${interestedPartyName} is interested in "${entityTitle}".`,
+      referenceId: entityId
     });
   }
 

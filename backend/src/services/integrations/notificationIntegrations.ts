@@ -144,8 +144,7 @@ export async function sendInterestNotification(
       interestedPartyName,
       entityId,
       entityType,
-      entityTitle,
-      interestedPartyId
+      entityTitle
     );
   } catch (error) {
     console.error('Error sending interest notification:', error);
