@@ -39,6 +39,7 @@ export function App() {
   const [activeFilter, setActiveFilter] = useState<'all' | 'challenges' | 'partnerships' | 'ideas'>('all');
   const [activePage, setActivePage] = useState<'collaborations' | 'innovators' | 'profile' | 'blog'>('collaborations');
   const [selectedInnovator, setSelectedInnovator] = useState<string | null>(null);
+  const [searchTrigger, setSearchTrigger] = useState<{query?: string; timestamp: number} | null>(null);
   
   // State for API data
   const [collaborations, setCollaborations] = useState<Collaboration[]>([]);
@@ -298,6 +299,10 @@ export function App() {
     setViewMode(mode);
   };
 
+  const handleOpenSearch = (query?: string) => {
+    setSearchTrigger({ query, timestamp: Date.now() });
+  };
+
   return (
     <NotificationProvider>
       <div className="min-h-screen flex flex-col">
@@ -314,6 +319,7 @@ export function App() {
               onNavigateToAuth={handleNavigateToAuth}
               onNavigateToHowItWorks={handleNavigateToHowItWorks}
               onNavigateToSuccessStories={handleNavigateToSuccessStories}
+              searchTrigger={searchTrigger}
               onNavigateToFAQ={handleNavigateToFAQ}
               onNavigateToSupport={handleNavigateToSupport}
               onNavigateToContactUs={handleNavigateToContactUs}
@@ -337,6 +343,7 @@ export function App() {
                 onNavigateToIdeas={handleNavigateToIdeas}
                 onNavigateToInnovators={handleNavigateToInnovators}
                 onNavigateToProfileById={(id) => navigate(`/profile/${id}`)}
+                onOpenSearch={handleOpenSearch}
               />
             } />
             <Route path="/auth" element={<AuthPage />} />

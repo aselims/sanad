@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Innovator, Collaboration } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { AISearchShowcase } from './AISearchShowcase';
 
 interface HomePageProps {
   onNavigateToWorkspace: () => void;
@@ -33,6 +34,7 @@ interface HomePageProps {
   onNavigateToTerms?: () => void;
   onNavigateToPrivacy?: () => void;
   onNavigateToCookies?: () => void;
+  onOpenSearch?: (query?: string) => void;
 }
 
 export function HomePage({ 
@@ -52,6 +54,7 @@ export function HomePage({
   onNavigateToTerms = onNavigateToWorkspace,
   onNavigateToPrivacy = onNavigateToWorkspace,
   onNavigateToCookies = onNavigateToWorkspace,
+  onOpenSearch,
 }: HomePageProps) {
   const { isAuthenticated } = useAuth();
 
@@ -89,6 +92,11 @@ export function HomePage({
           </div>
         </div>
       </section>
+      
+      {/* AI Search Showcase Section */}
+      {onOpenSearch && (
+        <AISearchShowcase onTrySearch={onOpenSearch} />
+      )}
       
       {/* How It Works Section */}
       <section className="py-16 bg-gray-50">

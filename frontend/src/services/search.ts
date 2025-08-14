@@ -20,6 +20,17 @@ export interface SearchResults {
   aiResults?: SearchResult[];
 }
 
+export interface RateLimitError {
+  isRateLimit: true;
+  message: string;
+  retryAfter?: number;
+  resetTime?: string;
+}
+
+export function isRateLimitError(error: any): error is RateLimitError {
+  return error && error.isRateLimit === true;
+}
+
 /**
  * Perform a normal search using existing search functions
  * @param query Search query
@@ -144,10 +155,21 @@ export const performAISearch = async (query: string): Promise<SearchResults> => 
       collaborations: Array.from(collaborationsMap.values()),
       aiResults
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error during AI search:', error);
     
-    // Fallback to normal search if AI search fails
+    // Check if it's a rate limiting error (429 status)
+    if (error.response && error.response.status === 429) {
+      const rateLimitError: RateLimitError = {
+        isRateLimit: true,
+        message: error.response.data?.message || 'AI search rate limit exceeded',
+        retryAfter: error.response.data?.retryAfter,
+        resetTime: error.response.data?.resetTime
+      };
+      throw rateLimitError;
+    }
+    
+    // Fallback to normal search for other errors
     return performNormalSearch(query);
   }
 }; 

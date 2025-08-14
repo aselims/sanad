@@ -150,6 +150,8 @@ The project includes automated development scripts:
 ### Deployment
 - Docker-based deployment with separate containers for frontend, backend, and database
 - Production deployment via `./prod.sh` script
+- Production builds use `docker-compose.prod.yml` configuration
+- Application is hosted at collopi.com
 - Nginx reverse proxy configuration for production
 - Environment variables managed through `.env` files
 
@@ -215,3 +217,4 @@ The project includes automated development scripts:
    ```
 
 **API Key**: Use Groq API key (starting with `gsk_`) in OPENAI_API_KEY environment variable.
+- we run all in docker

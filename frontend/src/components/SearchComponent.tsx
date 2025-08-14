@@ -5,7 +5,7 @@ import {
   Building, Microscope, Landmark, DollarSign, Users, 
   Rocket, Target, Zap, BookOpen
 } from 'lucide-react';
-import { performNormalSearch, performAISearch, SearchResults } from '../services/search';
+import { performNormalSearch, performAISearch, SearchResults, isRateLimitError, RateLimitError } from '../services/search';
 import { Link } from 'react-router-dom';
 import { INNOVATOR_TYPES } from '../constants/roles';
 import type { InnovatorType } from '../constants/roles';
@@ -70,6 +70,7 @@ export function SearchComponent({
   const [isAISearch, setIsAISearch] = useState(false);
   const [results, setResults] = useState<SearchResults | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [rateLimitError, setRateLimitError] = useState<RateLimitError | null>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -85,6 +86,7 @@ export function SearchComponent({
     if (!isOpen) {
       setShowResults(false);
       setResults(null);
+      setRateLimitError(null);
     }
   }, [isOpen]);
 
@@ -140,6 +142,7 @@ export function SearchComponent({
     if (!searchQuery.trim()) return;
     
     setIsSearching(true);
+    setRateLimitError(null); // Clear any previous rate limit errors
     
     try {
       const searchResults = isAISearch
@@ -155,6 +158,12 @@ export function SearchComponent({
       }
     } catch (error) {
       console.error('Error during search:', error);
+      
+      // Handle rate limiting errors specially
+      if (isRateLimitError(error)) {
+        setRateLimitError(error);
+        setShowResults(true); // Still show the "results" view but with error message
+      }
     } finally {
       setIsSearching(false);
     }
@@ -347,8 +356,36 @@ export function SearchComponent({
                 </div>
               )}
 
+              {/* Rate limit error message */}
+              {rateLimitError && (
+                <div className="p-8 text-center">
+                  <Bot className="h-10 w-10 text-red-500 mx-auto mb-4" />
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">AI Search Limit Reached</h4>
+                  <p className="text-gray-600 mb-4">
+                    {rateLimitError.message}
+                  </p>
+                  {rateLimitError.resetTime && (
+                    <p className="text-sm text-gray-500 mb-4">
+                      Resets at: {new Date(rateLimitError.resetTime).toLocaleString()}
+                    </p>
+                  )}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-blue-800 text-sm font-medium mb-2">💡 Want unlimited AI search?</p>
+                    <p className="text-blue-700 text-sm mb-3">
+                      Register for a free account to get unlimited access to our AI-powered search and collaboration tools.
+                    </p>
+                    <button
+                      onClick={() => window.location.href = '/auth'}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
+                    >
+                      Create Free Account
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* No results message */}
-              {results && results.innovators.length === 0 && results.collaborations.length === 0 && (
+              {!rateLimitError && results && results.innovators.length === 0 && results.collaborations.length === 0 && (
                 <div className="p-8 text-center">
                   <AlertCircle className="h-10 w-10 text-amber-500 mx-auto mb-4" />
                   <h4 className="text-lg font-medium text-gray-900 mb-2">No results found</h4>

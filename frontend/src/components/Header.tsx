@@ -25,6 +25,7 @@ interface HeaderProps {
   onNavigateToCollaborations?: () => void;
   onNavigateToMessages?: () => void;
   isAuthenticated?: boolean;
+  searchTrigger?: {query?: string; timestamp: number} | null;
 }
 
 interface MenuItemProps {
@@ -72,7 +73,8 @@ export function Header({
   onNavigateToConnections,
   onNavigateToCollaborations,
   onNavigateToMessages,
-  isAuthenticated: propIsAuthenticated
+  isAuthenticated: propIsAuthenticated,
+  searchTrigger
 }: HeaderProps) {
   const { isAuthenticated: authIsAuthenticated, user, logout } = useAuth();
   const isAuthenticated = propIsAuthenticated !== undefined ? propIsAuthenticated : authIsAuthenticated;
@@ -80,6 +82,7 @@ export function Header({
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [initialSearchQuery, setInitialSearchQuery] = useState('');
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
@@ -135,6 +138,14 @@ export function Header({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Handle external search triggers
+  useEffect(() => {
+    if (searchTrigger) {
+      setInitialSearchQuery(searchTrigger.query || '');
+      setIsSearchOpen(true);
+    }
+  }, [searchTrigger]);
 
   // Menu items configuration
   const menuItems = [
@@ -384,6 +395,7 @@ export function Header({
       <SearchComponent 
         isOpen={isSearchOpen}
         onClose={navHandlers.closeSearch}
+        initialQuery={initialSearchQuery}
       />
     </>
   );

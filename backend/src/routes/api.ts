@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/data-source';
 import authRoutes from './auth.routes';
 import { User } from '../entities/User';
 import { authenticateJWT } from '../middlewares/auth';
+import { aiSearchRateLimit } from '../middlewares/rateLimit';
 import { sendConnectionRequest, getConnectionRequests, getUserConnections, respondToConnectionRequest } from '../controllers/connectionController';
 import { sendMessage, getConversation, getConversations } from '../controllers/messageController';
 import { Partnership } from '../entities/Partnership';
@@ -314,8 +315,8 @@ router.post('/messages', authenticateJWT, asyncHandler(sendMessage));
 router.get('/messages/conversations', authenticateJWT, asyncHandler(getConversations));
 router.get('/messages/conversations/:userId', authenticateJWT, asyncHandler(getConversation));
 
-// AI-powered search endpoint
-router.get('/ai-search', asyncHandler(async (req: Request, res: Response) => {
+// AI-powered search endpoint with rate limiting
+router.get('/ai-search', aiSearchRateLimit, asyncHandler(async (req: Request, res: Response) => {
   const query = req.query.q as string;
   
   if (!query) {
