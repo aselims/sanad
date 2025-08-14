@@ -3,7 +3,8 @@ import { AppDataSource } from '../config/data-source';
 import authRoutes from './auth.routes';
 import { User } from '../entities/User';
 import { authenticateJWT } from '../middlewares/auth';
-import { aiSearchRateLimit } from '../middlewares/rateLimit';
+import { aiSearchRateLimit, smartAISearchRateLimit } from '../middlewares/rateLimit';
+import { optionalAuthentication } from '../middlewares/auth';
 import { sendConnectionRequest, getConnectionRequests, getUserConnections, respondToConnectionRequest } from '../controllers/connectionController';
 import { sendMessage, getConversation, getConversations } from '../controllers/messageController';
 import { Partnership } from '../entities/Partnership';
@@ -315,8 +316,8 @@ router.post('/messages', authenticateJWT, asyncHandler(sendMessage));
 router.get('/messages/conversations', authenticateJWT, asyncHandler(getConversations));
 router.get('/messages/conversations/:userId', authenticateJWT, asyncHandler(getConversation));
 
-// AI-powered search endpoint with rate limiting
-router.get('/ai-search', aiSearchRateLimit, asyncHandler(async (req: Request, res: Response) => {
+// AI-powered search endpoint with smart rate limiting and optional authentication
+router.get('/ai-search', optionalAuthentication, smartAISearchRateLimit, asyncHandler(async (req: Request, res: Response) => {
   const query = req.query.q as string;
   
   if (!query) {
@@ -332,13 +333,25 @@ router.get('/ai-search', aiSearchRateLimit, asyncHandler(async (req: Request, re
   // Perform AI-enhanced search
   const results = await aiSearch(query);
   
-  // Return the results
+  // Check authentication status for response metadata
+  const user = (req as any).user;
+  const isAuthenticated = user && user.id;
+
+  // Return the results with enhanced metadata
   res.status(200).json({
     status: 'success',
     data: results,
     meta: {
       count: results.length,
-      query
+      query,
+      authenticated: isAuthenticated,
+      rateLimitType: isAuthenticated ? 'user' : 'ip',
+      searchEnhancements: {
+        fuzzyMatching: true,
+        intentDetection: true,
+        synonymExpansion: true,
+        entityCoverage: ['users', 'challenges', 'partnerships', 'ideas']
+      }
     }
   });
 }));

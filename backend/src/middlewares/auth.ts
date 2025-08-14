@@ -78,4 +78,40 @@ export const authorizeOwner = (paramIdField: string = 'id') => {
 
     return next();
   };
+};
+
+/**
+ * Optional authentication middleware - sets user if token is valid, but doesn't require authentication
+ * This is useful for endpoints that provide different functionality based on authentication status
+ */
+export const optionalAuthentication = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  
+  // If no auth header is present, continue without setting user
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  // Add timeout to prevent hanging
+  const authTimeout = setTimeout(() => {
+    return next(); // Continue without authentication if timeout
+  }, 5000); // 5 second timeout
+
+  passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
+    clearTimeout(authTimeout); // Clear the timeout
+
+    if (err) {
+      // Log the error but continue without authentication
+      console.warn(`Optional authentication error: ${err.message}`);
+      return next();
+    }
+
+    if (user) {
+      // Set user if authentication successful
+      req.user = user;
+    }
+    
+    // Always continue, whether authentication succeeded or not
+    return next();
+  })(req, res, next);
 }; 
