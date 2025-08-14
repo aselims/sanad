@@ -13,20 +13,16 @@ export const getAllCollaborations = async (): Promise<Collaboration[]> => {
   try {
     // Get challenges and convert them to collaboration format
     const challenges = await getAllChallenges();
-    console.log('Fetched challenges:', challenges.length);
     const challengeCollaborations = challenges.map(challengeToCollaboration);
     
     // Get partnerships (already in collaboration format)
     const partnerships = await getAllPartnerships();
-    console.log('Fetched partnerships:', partnerships.length);
     
     // Get ideas from the ideas service
     const ideas = await getAllIdeas();
-    console.log('Fetched ideas:', ideas.length);
     
     // Combine all types of collaborations
     const allCollaborations = [...challengeCollaborations, ...partnerships, ...ideas];
-    console.log('Total collaborations:', allCollaborations.length);
     
     return allCollaborations;
   } catch (error) {
@@ -44,7 +40,6 @@ export const getCollaborationsByType = async (type: 'challenge' | 'partnership')
   try {
     const allCollaborations = await getAllCollaborations();
     const filtered = allCollaborations.filter(collab => collab.type === type);
-    console.log(`Filtered collaborations by type '${type}':`, filtered.length);
     return filtered;
   } catch (error) {
     console.error(`Error fetching collaborations by type '${type}':`, error);
@@ -61,7 +56,6 @@ export const getCollaborationsByStatus = async (status: 'proposed' | 'active' | 
   try {
     const allCollaborations = await getAllCollaborations();
     const filtered = allCollaborations.filter(collab => collab.status === status);
-    console.log(`Filtered collaborations by status '${status}':`, filtered.length);
     return filtered;
   } catch (error) {
     console.error(`Error fetching collaborations by status '${status}':`, error);
@@ -76,10 +70,8 @@ export const getCollaborationsByStatus = async (status: 'proposed' | 'active' | 
  */
 export const searchCollaborations = async (query: string): Promise<Collaboration[]> => {
   try {
-    console.log(`Searching collaborations for: ${query}`);
     const response = await api.get(`/collaborations/search?q=${encodeURIComponent(query)}`);
     
-    console.log('Search API response:', response.data);
     
     // Map the response data to ensure it matches the Collaboration interface
     const collaborations = response.data.data.map((item: any) => ({
@@ -96,7 +88,6 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
       ...(item.type === 'partnership' && item.partnershipDetails ? { partnershipDetails: item.partnershipDetails } : {})
     }));
     
-    console.log(`Found ${collaborations.length} collaborations matching "${query}"`, collaborations);
     return collaborations;
   } catch (error: any) {
     console.error(`Error searching collaborations for '${query}':`, error);
@@ -118,7 +109,6 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
     
     // Fallback to client-side search if the API endpoint fails
     try {
-      console.log('Falling back to client-side search...');
       const allCollaborations = await getAllCollaborations();
       const lowerQuery = query.toLowerCase();
       
@@ -128,7 +118,6 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
         collab.participants.some(p => p.toLowerCase().includes(lowerQuery))
       );
       
-      console.log(`Fallback search found ${filtered.length} results for '${query}'`);
       return filtered;
     } catch (fallbackError) {
       console.error(`Fallback search also failed for '${query}':`, fallbackError);
@@ -145,11 +134,9 @@ export const searchCollaborations = async (query: string): Promise<Collaboration
  */
 export const saveVote = async (collaborationId: string, voteType: 'up' | 'down'): Promise<any> => {
   try {
-    console.log(`Saving ${voteType} vote for collaboration ${collaborationId}`);
     // Make sure the URL and request body match the backend expectations
     const response = await api.post(`/collaborations/${collaborationId}/vote`, { voteType });
     
-    console.log('Vote response:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('Error saving vote:', error);
@@ -165,16 +152,13 @@ export const saveVote = async (collaborationId: string, voteType: 'up' | 'down')
  */
 export const getUserCollaborations = async (userId: string): Promise<Collaboration[]> => {
   try {
-    console.log(`Fetching collaborations for user ${userId}`);
     const response = await api.get(`/users/${userId}/collaborations`);
-    console.log('User collaborations API response:', response.data);
     return response.data.data;
   } catch (error) {
     console.error('Error fetching user collaborations:', error);
     
     // Fallback to client-side filtering if the API endpoint fails
     try {
-      console.log('Falling back to client-side filtering for user collaborations...');
       const allCollaborations = await getAllCollaborations();
       
       // Filter collaborations where the user is a participant OR the creator
@@ -185,7 +169,6 @@ export const getUserCollaborations = async (userId: string): Promise<Collaborati
         (collab.createdById === userId)
       );
       
-      console.log(`Found ${userCollaborations.length} collaborations for user ${userId} via fallback`);
       return userCollaborations;
     } catch (fallbackError) {
       console.error('Fallback filtering also failed:', fallbackError);
@@ -215,11 +198,9 @@ export const updateCollaborationProgress = async (
   }
 ): Promise<Collaboration> => {
   try {
-    console.log(`Updating progress for collaboration ${collaborationId}:`, progressData);
     
     const response = await api.put(`/collaborations/${collaborationId}/progress`, progressData);
     
-    console.log('Progress update response:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('Error updating collaboration progress:', error);

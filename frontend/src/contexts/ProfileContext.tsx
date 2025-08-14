@@ -63,7 +63,6 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     
     // If not found in innovators list, convert current user to Innovator format
     if (currentUser) {
-      console.log('Creating innovator from current user', currentUser);
       // Convert User to Innovator format
       return {
         id: currentUser.id,

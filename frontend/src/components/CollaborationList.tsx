@@ -27,7 +27,6 @@ export function CollaborationList({
   const currentViewMode = viewMode || contextViewMode;
   
   // Add console log for debugging
-  console.log('CollaborationList rendering with:', displayCollaborations, 'viewMode:', currentViewMode);
   
   // Show a message when no collaborations are available
   if (!displayCollaborations || displayCollaborations.length === 0) {

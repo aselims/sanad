@@ -63,13 +63,11 @@ export function ExpressInterestModal({
 
   // Update form data when collaborator type changes
   useEffect(() => {
-    console.log('Collaborator type changed:', collaboratorType);
     setFormData(prev => ({ ...prev, collaboratorType }));
   }, [collaboratorType]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting form data:', formData);
     onSubmit(formData);
     onClose();
   };
@@ -363,7 +361,6 @@ export function ExpressInterestModal({
     if (!onCollaboratorTypeChange) return null;
     
     const handleRoleChange = (type: CollaboratorType) => {
-      console.log('Role button clicked:', type);
       onCollaboratorTypeChange(type);
       setFormData(prev => ({ ...prev, collaboratorType: type }));
     };

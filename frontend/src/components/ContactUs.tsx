@@ -15,7 +15,6 @@ export function ContactUs({ onBack }: ContactUsProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real application, this would send the contact form to a backend
-    console.log('Contact form submitted:', { name, email, subject, message });
     setSubmitted(true);
     // Reset form
     setName('');

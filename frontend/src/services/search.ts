@@ -27,7 +27,6 @@ export interface SearchResults {
  */
 export const performNormalSearch = async (query: string): Promise<SearchResults> => {
   try {
-    console.log(`Performing normal search for: "${query}"`);
     
     // Search for both innovators and collaborations in parallel
     const results = await Promise.allSettled([
@@ -73,7 +72,6 @@ export const performNormalSearch = async (query: string): Promise<SearchResults>
  */
 export const performAISearch = async (query: string): Promise<SearchResults> => {
   try {
-    console.log(`Performing AI search for: "${query}"`);
     
     // First get AI-specific results
     const aiResponse = await api.get(`/ai-search?q=${encodeURIComponent(query)}`);
@@ -150,7 +148,6 @@ export const performAISearch = async (query: string): Promise<SearchResults> => 
     console.error('Error during AI search:', error);
     
     // Fallback to normal search if AI search fails
-    console.log('Falling back to normal search...');
     return performNormalSearch(query);
   }
 }; 

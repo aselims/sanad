@@ -15,7 +15,6 @@ export function Support({ onBack }: SupportProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real application, this would send the support request to a backend
-    console.log('Support request submitted:', { name, email, subject, message });
     setSubmitted(true);
     // Reset form
     setName('');

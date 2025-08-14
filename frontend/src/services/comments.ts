@@ -20,11 +20,9 @@ export const getComments = async (collaborationId: string): Promise<Comment[]> =
     
     // Fallback to local storage in case API fails
     try {
-      console.log('Falling back to local storage for comments...');
       const storedComments = localStorage.getItem(`comments_${collaborationId}`);
       if (storedComments) {
         const parsedComments = JSON.parse(storedComments);
-        console.log('Fetched comments from local storage:', parsedComments.length);
         return parsedComments;
       }
     } catch (localStorageError) {

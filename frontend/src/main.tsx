@@ -14,7 +14,6 @@ window.WebSocket = function(url: string, protocols?: string | string[]) {
   if (url.includes('localhost:undefined') || 
       url === 'wss://sanad.selimsalman.de/' ||
       !url.match(/^wss?:\/\/[^/]+/)) {
-    console.log('Prevented WebSocket connection to invalid URL:', url);
     // Return a dummy WebSocket object that does nothing
     return {
       send: () => {},

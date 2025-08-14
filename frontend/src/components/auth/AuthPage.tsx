@@ -17,13 +17,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
   // If user is already authenticated, redirect to home
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      console.log('User is authenticated, redirecting to home');
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
   const handleLoginSuccess = () => {
-    console.log('Login successful, navigating to home');
     navigate('/', { replace: true });
   };
 

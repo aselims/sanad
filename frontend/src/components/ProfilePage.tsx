@@ -279,7 +279,6 @@ export function ProfilePage({
     
     try {
       await connectWithUser(profileData.id);
-      console.log('Successfully sent connection request to', profileData.name);
       
       // Update connection status
       setUserConnectionStatus('pending');
@@ -398,7 +397,6 @@ export function ProfilePage({
           ...updatedUser
         }));
         
-        console.log('Profile updated successfully');
       } else {
         setError('Failed to update profile. Please try again.');
       }
@@ -781,7 +779,6 @@ export function ProfilePage({
 
     // Calculate matches using the new matching logic
     const matchResults = findPotentialMatches(user, matches);
-    console.log('Match results in ProfilePage:', matchResults);
 
     // Filter out invalid matches (with undefined or NaN scores)
     const validMatches = matchResults.filter(match => 

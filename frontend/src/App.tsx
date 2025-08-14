@@ -211,13 +211,11 @@ export function App() {
 
   // Add a function to handle workspace search
   const handleWorkspaceSearch = (query: string) => {
-    console.log('Workspace search for:', query);
     // Since all search handling is now in the SearchComponent, we don't need to do anything here
   };
 
   // Add a function to handle collaboration creation
   const handleCreateCollaboration = async (newCollaboration: Partial<Collaboration>) => {
-    console.log('Creating new collaboration:', newCollaboration);
     
     try {
       let createdCollaboration: Collaboration | null = null;
@@ -266,7 +264,6 @@ export function App() {
       if (createdCollaboration) {
         // Add the new collaboration to the state
         setCollaborations(prevCollaborations => [createdCollaboration!, ...prevCollaborations]);
-        console.log('Successfully created and added collaboration to state');
       } else {
         console.error('Failed to create collaboration: no collaboration was returned');
       }
@@ -294,7 +291,6 @@ export function App() {
       
       // Add the fallback collaboration to the state
       setCollaborations(prevCollaborations => [fallbackCollaboration, ...prevCollaborations]);
-      console.log('Added fallback collaboration to state due to API error');
     }
   };
 

@@ -48,11 +48,8 @@ function generateMatchHighlight(currentUser: Innovator, matchedUser: Innovator, 
 
 // Main function to find potential matches
 export function findPotentialMatches(currentUser: Innovator, allUsers: Innovator[]): MatchResult[] {
-  console.log('Finding matches - current user tags:', currentUser.tags);
-  console.log('Finding matches - other users count:', allUsers.length);
   
   if (!currentUser.tags || currentUser.tags.length === 0) {
-    console.warn('Current user has no tags for matching');
     return [];
   }
   
@@ -62,7 +59,6 @@ export function findPotentialMatches(currentUser: Innovator, allUsers: Innovator
     .map(user => {
       // Ensure the user has tags
       const userTags = user.tags || [];
-      console.log(`User ${user.name} has ${userTags.length} tags:`, userTags);
       
       // Calculate shared tags
       const sharedTags = userTags.filter(tag => 
@@ -71,7 +67,6 @@ export function findPotentialMatches(currentUser: Innovator, allUsers: Innovator
         )
       );
       
-      console.log(`User ${user.name} has ${sharedTags.length} shared tags:`, sharedTags);
       
       // Calculate tag similarity score (50% weight)
       // Avoid division by zero
@@ -91,7 +86,6 @@ export function findPotentialMatches(currentUser: Innovator, allUsers: Innovator
         (tagSimilarity * 0.5 + typeScore * 0.3 + locationScore * 0.2) * 100
       );
       
-      console.log(`User ${user.name} match score: ${matchScore}`);
       
       // Generate highlight
       const highlight = generateMatchHighlight(currentUser, user, sharedTags);
@@ -106,7 +100,6 @@ export function findPotentialMatches(currentUser: Innovator, allUsers: Innovator
     .filter(match => match.matchScore > 0) // Only include non-zero scores
     .sort((a, b) => b.matchScore - a.matchScore);
   
-  console.log(`Found ${matches.length} matches with scores > 0`);
   
   return matches.slice(0, 10); // Return top 10 matches
 } 

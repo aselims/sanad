@@ -18,7 +18,6 @@ export function ProfilePageWrapper({ onBack }: ProfilePageWrapperProps) {
   const { getProfileById, isCurrentUserProfile } = useProfiles();
   
   // Add debugging to see what data is available
-  console.log('ProfilePageWrapper debug:', { 
     id, 
     currentUser, 
     pathname: location.pathname
@@ -35,7 +34,6 @@ export function ProfilePageWrapper({ onBack }: ProfilePageWrapperProps) {
     (currentUser && (!id || isCurrentUserProfile(id)) ? 
       currentUser as unknown as Innovator : undefined);
   
-  console.log('Profile data:', { 
     innovator, 
     currentUser, 
     userToDisplay

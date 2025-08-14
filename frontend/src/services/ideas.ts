@@ -34,7 +34,6 @@ export const getAllIdeas = async (): Promise<Collaboration[]> => {
     
     // Check if response.data exists and is an array before mapping
     if (response.data && Array.isArray(response.data)) {
-      console.log('Fetched ideas from API:', response.data.length);
       
       // Convert the API response to Collaboration format
       const ideas = response.data.map((idea: any) => ({
@@ -59,7 +58,6 @@ export const getAllIdeas = async (): Promise<Collaboration[]> => {
       
       return ideas;
     } else {
-      console.warn('API response for ideas is not in the expected format:', response.data);
       // If response.data is not an array, fall back to local storage
       throw new Error('API response is not in the expected format');
     }
@@ -68,11 +66,9 @@ export const getAllIdeas = async (): Promise<Collaboration[]> => {
     
     // Fallback to local storage if API fails
     try {
-      console.log('Falling back to local storage for ideas...');
       const storedIdeas = localStorage.getItem('ideas');
       if (storedIdeas) {
         const parsedIdeas = JSON.parse(storedIdeas);
-        console.log('Fetched ideas from local storage:', parsedIdeas.length);
         return parsedIdeas;
       }
     } catch (localStorageError) {
@@ -120,7 +116,6 @@ export const getIdeaById = async (id: string): Promise<Collaboration | null> => 
     
     // Fallback to local storage if API fails
     try {
-      console.log(`Falling back to local storage for idea ${id}...`);
       const storedIdeas = localStorage.getItem('ideas');
       if (storedIdeas) {
         const parsedIdeas = JSON.parse(storedIdeas);
@@ -209,7 +204,6 @@ export const getLocalIdeas = (): Collaboration[] => {
     if (!ideasJson) return [];
     
     const ideas = JSON.parse(ideasJson) as Collaboration[];
-    console.log('Fetched ideas from local storage:', ideas.length);
     return ideas;
   } catch (error) {
     console.error('Error fetching ideas from local storage:', error);
@@ -229,7 +223,6 @@ export const saveIdea = async (idea: Collaboration): Promise<Collaboration> => {
     const savedIdea = formatIdea(response.data.data);
     
     // If backend save is successful, we don't need to save to local storage
-    console.log('Saved idea to backend:', savedIdea.title);
     return savedIdea;
   } catch (error) {
     console.error('Error saving idea to backend:', error);
@@ -239,7 +232,6 @@ export const saveIdea = async (idea: Collaboration): Promise<Collaboration> => {
       const existingIdeas = getLocalIdeas();
       const updatedIdeas = [...existingIdeas, idea];
       localStorage.setItem('ideas', JSON.stringify(updatedIdeas));
-      console.log('Saved idea to local storage as fallback:', idea.title);
       return idea;
     } catch (localError) {
       console.error('Error saving idea to local storage:', localError);
@@ -261,7 +253,6 @@ export const updateIdea = async (id: string, data: Partial<Collaboration>): Prom
     const updatedIdea = formatIdea(response.data.data);
     
     // If backend update is successful, we don't need to update local storage
-    console.log('Updated idea in backend:', updatedIdea.title);
     return updatedIdea;
   } catch (error) {
     console.error(`Error updating idea ${id} in backend:`, error);
@@ -279,7 +270,6 @@ export const updateIdea = async (id: string, data: Partial<Collaboration>): Prom
       localIdeas[ideaIndex] = updatedIdea;
       
       localStorage.setItem('ideas', JSON.stringify(localIdeas));
-      console.log('Updated idea in local storage as fallback:', updatedIdea.title);
       return updatedIdea;
     } catch (localError) {
       console.error(`Error updating idea ${id} in local storage:`, localError);
@@ -297,7 +287,6 @@ export const deleteIdea = async (id: string): Promise<any> => {
   try {
     // First try to delete from the backend
     const response = await api.delete(`/ideas/${id}`);
-    console.log(`Deleted idea ${id} from backend`);
     
     // Also remove from local storage if it exists there
     try {
@@ -317,7 +306,6 @@ export const deleteIdea = async (id: string): Promise<any> => {
       const localIdeas = getLocalIdeas();
       const filteredIdeas = localIdeas.filter(i => i.id !== id);
       localStorage.setItem('ideas', JSON.stringify(filteredIdeas));
-      console.log(`Removed idea ${id} from local storage as fallback`);
       return { success: true, message: 'Idea removed from local storage' };
     } catch (localError) {
       console.error(`Error removing idea ${id} from local storage:`, localError);

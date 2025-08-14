@@ -14,7 +14,6 @@ export const getPotentialMatches = async (userId: string): Promise<Innovator[]> 
     const currentUser = currentUserResponse.data.data;
     
     // Log to see what data we're getting
-    console.log('Current user:', currentUser);
 
     // Then, get all other users
     const allUsersResponse = await api.get('/users');
@@ -22,7 +21,6 @@ export const getPotentialMatches = async (userId: string): Promise<Innovator[]> 
     
     // Log a sample user
     if (allUsers.length > 0) {
-      console.log('Sample user:', allUsers[0]);
     }
 
     // Convert users to innovators format
@@ -32,12 +30,10 @@ export const getPotentialMatches = async (userId: string): Promise<Innovator[]> 
       .map((user: User) => userToInnovator(user));
     
     // Log to verify conversion
-    console.log('Current innovator:', currentInnovator);
     
     // Ensure current user has tags for matching to work
     if (!currentInnovator.tags || currentInnovator.tags.length === 0) {
       // If current user has no tags, we can't match effectively
-      console.warn('Current user has no tags defined, adding placeholder tags');
       // Add some default tags based on user role and bio to enable matching
       currentInnovator.tags = generateDefaultTags(currentInnovator);
     }
@@ -51,7 +47,6 @@ export const getPotentialMatches = async (userId: string): Promise<Innovator[]> 
 
     // Use our matching algorithm to find potential matches
     const matches = findPotentialMatches(currentInnovator, otherInnovators);
-    console.log('Matches found:', matches.length);
     
     return matches.map(match => match.innovator);
   } catch (error) {

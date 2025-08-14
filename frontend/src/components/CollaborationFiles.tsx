@@ -72,7 +72,6 @@ const CollaborationFiles: React.FC<CollaborationFilesProps> = ({
     setUploadError(null);
     
     try {
-      console.log(`Uploading file to collaboration ${collaborationId} as user ${user?.id}`);
       await uploadFile(collaborationId, selectedFile);
       await loadFiles();
       setSelectedFile(null);

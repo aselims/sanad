@@ -28,10 +28,8 @@ export const getInnovatorById = async (id: string): Promise<Innovator> => {
  */
 export const searchInnovators = async (query: string): Promise<Innovator[]> => {
   try {
-    console.log(`Searching innovators for: ${query}`);
     const response = await api.get(`/users/search?q=${encodeURIComponent(query)}`);
     const innovators = response.data.data.map(userToInnovator);
-    console.log(`Found ${innovators.length} innovators matching "${query}"`);
     return innovators;
   } catch (error) {
     console.error(`Error searching innovators for '${query}':`, error);
@@ -48,7 +46,6 @@ export const searchInnovators = async (query: string): Promise<Innovator[]> => {
     
     // Fallback to client-side search if the API endpoint fails
     try {
-      console.log('Falling back to client-side search for innovators...');
       const allInnovators = await getAllInnovators();
       const lowerQuery = query.toLowerCase();
       
@@ -60,7 +57,6 @@ export const searchInnovators = async (query: string): Promise<Innovator[]> => {
         innovator.expertise.some(exp => exp.toLowerCase().includes(lowerQuery))
       );
       
-      console.log(`Fallback search found ${filtered.length} innovators for '${query}'`);
       return filtered;
     } catch (fallbackError) {
       console.error(`Fallback search for innovators also failed for '${query}':`, fallbackError);

@@ -34,7 +34,6 @@ export const getAllPartnerships = async (): Promise<Collaboration[]> => {
       // Convert each partnership to the Collaboration format
       return response.data.data.map(formatPartnership);
     } else {
-      console.warn('API response for partnerships is not in the expected format:', response.data);
       return [];
     }
   } catch (error) {

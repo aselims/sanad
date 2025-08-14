@@ -65,13 +65,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
     setIsLoading(true);
     try {
-      console.log('Attempting login with:', { email });
       const response = await authService.login({ email, password });
-      console.log('Login successful, received data:', { 
-        user: response.data.user,
-        hasToken: !!response.data.token,
-        tokenLength: response.data.token?.length
-      });
       setUser(response.data.user);
       setIsAuthenticated(true);
       return response;

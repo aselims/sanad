@@ -17,7 +17,6 @@ export const getAllChallenges = async (): Promise<Challenge[]> => {
         updatedAt: new Date(challenge.updatedAt)
       }));
     } else {
-      console.warn('API response for challenges is not in the expected format:', response.data);
       return [];
     }
   } catch (error) {
