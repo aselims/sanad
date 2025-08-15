@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { MatchService } from '../services/matchService';
-import { User } from '../entities/User';
 
 export class MatchController {
   private matchService = new MatchService();

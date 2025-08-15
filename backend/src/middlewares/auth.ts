@@ -18,7 +18,7 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     return next(new AppError('Authentication timeout', 500));
   }, 5000); // 5 second timeout
 
-  passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
+  passport.authenticate('jwt', { session: false }, (err: any, user: any, _info: any) => {
     clearTimeout(authTimeout); // Clear the timeout
 
     if (err) {
@@ -97,7 +97,7 @@ export const optionalAuthentication = (req: Request, res: Response, next: NextFu
     return next(); // Continue without authentication if timeout
   }, 5000); // 5 second timeout
 
-  passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
+  passport.authenticate('jwt', { session: false }, (err: any, user: any, _info: any) => {
     clearTimeout(authTimeout); // Clear the timeout
 
     if (err) {

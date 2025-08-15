@@ -14,10 +14,10 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'sender_id' })
   senderId: string;
 
-  @Column()
+  @Column({ name: 'receiver_id' })
   receiverId: string;
 
   @Column('text')
@@ -27,16 +27,16 @@ export class Message {
   isRead: boolean;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'senderId' })
+  @JoinColumn({ name: 'sender_id' })
   sender: User;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'receiverId' })
+  @JoinColumn({ name: 'receiver_id' })
   receiver: User;
 
-  @CreateDateColumn({ name: 'createdAt' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updatedAt' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

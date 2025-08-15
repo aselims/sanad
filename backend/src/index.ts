@@ -15,7 +15,7 @@ import challengeRoutes from './routes/challengeRoutes';
 import collaborationRoutes from './routes/collaborationRoutes';
 import fileRoutes from './routes/fileRoutes';
 import authRoutes from './routes/auth.routes';
-import path from 'path';
+import _path from 'path';
 
 // Load environment variables
 dotenv.config();

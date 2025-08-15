@@ -157,13 +157,29 @@ router.get(
   })
 );
 
+// Helper function to validate UUID format
+const isValidUUID = (uuid: string): boolean => {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+};
+
 // Get user by ID - Place this AFTER specific routes
 router.get(
   '/users/:id',
   asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.params.id;
+
+    // Validate UUID format
+    if (!isValidUUID(userId)) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found',
+      });
+    }
+
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({
-      where: { id: req.params.id },
+      where: { id: userId },
       select: [
         'id',
         'firstName',
@@ -200,6 +216,14 @@ router.get(
   '/users/:id/collaborations',
   asyncHandler(async (req: Request, res: Response) => {
     const userId = req.params.id;
+
+    // Validate UUID format
+    if (!isValidUUID(userId)) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found',
+      });
+    }
 
     try {
       // Get partnerships created by the user (using backward compatible approach)

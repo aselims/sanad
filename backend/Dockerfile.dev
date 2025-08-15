@@ -1,0 +1,22 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install build dependencies for any native modules
+RUN apk add --no-cache --update build-base python3
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+ENV NODE_ENV=development
+RUN npm install && npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Expose the port
+EXPOSE 3000
+
+# Start the development server with hot reloading
+CMD ["npm", "run", "dev"]

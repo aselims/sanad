@@ -1,0 +1,63 @@
+version: '3.8'
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8081:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+    environment:
+      - VITE_API_URL=http://localhost:3022
+      - VITE_APP_DOMAIN=localhost
+    networks:
+      - saned_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3022:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_SYNC=true
+      - DATABASE_URL=postgresql://postgres:EaAdw0kJR9aAk9A2@db:5432/saned_db
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CORS_ORIGIN=http://localhost:8081
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - saned_network
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5435:5432"  # Only expose to localhost for security
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=EaAdw0kJR9aAk9A2
+      - POSTGRES_DB=saned_db  # Change this to your database name 
+    volumes:
+      - saned_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - saned_network
+
+networks:
+  saned_network:
+    driver: bridge
+
+volumes:
+  saned_postgres_data: 

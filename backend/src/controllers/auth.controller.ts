@@ -55,7 +55,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     await userRepository.save(newUser);
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = newUser;
+    const { password: _password, ...userWithoutPassword } = newUser;
 
     // Generate JWT token
     const token = generateToken(newUser);
