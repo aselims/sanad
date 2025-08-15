@@ -6,7 +6,6 @@ module.exports = [
   js.configs.recommended,
   {
     files: ['**/*.{ts,tsx}'],
-    ignores: ['**/*.test.ts', 'src/__tests__/**'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -60,7 +59,37 @@ module.exports = [
       'no-implied-eval': 'error',
     },
   },
+  // Test file configuration
   {
-    ignores: ['dist/', 'node_modules/', '**/*.js'],
+    files: ['**/*.test.ts', 'src/__tests__/**/*.ts'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'module',
+      },
+      globals: {
+        jest: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
+    },
+  },
+  {
+    ignores: ['dist/', 'node_modules/', '**/*.js', 'src/__tests__/**/*.ts', '**/*.test.ts'],
   },
 ];

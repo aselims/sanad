@@ -1,11 +1,5 @@
-import { User } from '../entities/User';
-
 declare global {
   namespace Express {
-    interface Request {
-      user?: User;
-    }
-
     interface User {
       id: string;
       firstName: string;
@@ -13,6 +7,10 @@ declare global {
       email: string;
       role: string;
       // Add other properties as needed
+    }
+
+    interface Request {
+      user?: User;
     }
   }
 }

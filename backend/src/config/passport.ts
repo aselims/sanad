@@ -2,12 +2,13 @@ import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { AppDataSource } from './data-source';
+import { config } from './config';
 import { User } from '../entities/User';
 import { verifyPassword } from '../utils/password';
 import logger from '../utils/logger';
 
-// Get JWT secret from environment variables
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
+// Get JWT secret from centralized config
+const JWT_SECRET = config.jwt.secret;
 
 // Configure JWT strategy options
 const jwtOptions = {

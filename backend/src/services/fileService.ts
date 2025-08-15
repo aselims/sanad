@@ -1,12 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import * as multerTypes from 'multer';
 import { AppDataSource } from '../config/data-source';
 import { CollaborationFile } from '../entities/CollaborationFile';
 import { Collaboration } from '../entities/Collaboration';
-import { User } from '../entities/User';
-import { Equal } from 'typeorm';
 
 // Define a type for file
 type FileInfo = {
@@ -174,61 +171,53 @@ export const getCollaborationFiles = async (
   collaborationId: string,
   fileId?: string
 ): Promise<CollaborationFile[]> => {
-  try {
-    const fileRepo = AppDataSource.getRepository(CollaborationFile);
+  const fileRepo = AppDataSource.getRepository(CollaborationFile);
 
-    if (fileId) {
-      const file = await fileRepo.find({
-        where: { id: fileId },
-        relations: ['uploadedBy'],
-      });
-      return file;
-    }
-
-    const files = await fileRepo.find({
-      where: { collaborationId },
+  if (fileId) {
+    const file = await fileRepo.find({
+      where: { id: fileId },
       relations: ['uploadedBy'],
-      order: { uploadedAt: 'DESC' },
     });
-    return files;
-  } catch (error) {
-    throw error;
+    return file;
   }
+
+  const files = await fileRepo.find({
+    where: { collaborationId },
+    relations: ['uploadedBy'],
+    order: { uploadedAt: 'DESC' },
+  });
+  return files;
 };
 
 export const deleteFile = async (fileId: string, userId: string): Promise<boolean> => {
-  try {
-    const fileRepo = AppDataSource.getRepository(CollaborationFile);
-    const file = await fileRepo.findOne({
-      where: { id: fileId },
-      relations: ['collaboration', 'collaboration.owner'],
-    });
+  const fileRepo = AppDataSource.getRepository(CollaborationFile);
+  const file = await fileRepo.findOne({
+    where: { id: fileId },
+    relations: ['collaboration', 'collaboration.owner'],
+  });
 
-    if (!file) {
-      throw new Error('File not found');
-    }
-
-    // Check if user is authorized to delete (owner, uploader, or team member)
-    if (
-      file.uploadedById !== userId &&
-      file.collaboration.ownerId !== userId &&
-      !file.collaboration.teamMembers?.includes(userId)
-    ) {
-      throw new Error('Not authorized to delete this file');
-    }
-
-    // Delete file from disk
-    const filePath = path.join(UPLOAD_DIR, file.path);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    // Delete file record from database
-    await fileRepo.remove(file);
-    return true;
-  } catch (error) {
-    throw error;
+  if (!file) {
+    throw new Error('File not found');
   }
+
+  // Check if user is authorized to delete (owner, uploader, or team member)
+  if (
+    file.uploadedById !== userId &&
+    file.collaboration.ownerId !== userId &&
+    !file.collaboration.teamMembers?.includes(userId)
+  ) {
+    throw new Error('Not authorized to delete this file');
+  }
+
+  // Delete file from disk
+  const filePath = path.join(UPLOAD_DIR, file.path);
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+
+  // Delete file record from database
+  await fileRepo.remove(file);
+  return true;
 };
 
 export const canDownloadFile = async (fileId: string, userId: string): Promise<boolean> => {
@@ -260,7 +249,7 @@ export const canDownloadFile = async (fileId: string, userId: string): Promise<b
     // This would be implemented based on your access control system
 
     return false;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 };

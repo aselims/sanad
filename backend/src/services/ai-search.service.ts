@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { AppDataSource } from '../config/data-source';
+import { config } from '../config/config';
 import { User } from '../entities/User';
 import { Challenge } from '../entities/Challenge';
 import { Partnership } from '../entities/Partnership';
@@ -100,7 +101,7 @@ function deduplicateAndFilterResults(
 
 // Initialize OpenAI client with Groq API
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: config.apiKeys.openai,
   baseURL: 'https://api.groq.com/openai/v1',
 });
 
@@ -263,8 +264,6 @@ export async function aiSearch(query: string): Promise<SearchResult[]> {
 
     // Score users
     users.forEach(user => {
-      const userText =
-        `${user.firstName} ${user.lastName} ${user.email} ${user.organization || ''} ${user.bio || ''} ${user.role}`.toLowerCase();
       const matchedFields: string[] = [];
       const highlights: { [key: string]: string[] } = {};
 
@@ -364,8 +363,6 @@ export async function aiSearch(query: string): Promise<SearchResult[]> {
 
     // Score challenges
     challenges.forEach(challenge => {
-      const challengeText =
-        `${challenge.title} ${challenge.description} ${challenge.organization}`.toLowerCase();
       const matchedFields: string[] = [];
       const highlights: { [key: string]: string[] } = {};
 
@@ -431,8 +428,6 @@ export async function aiSearch(query: string): Promise<SearchResult[]> {
 
     // Score partnerships
     partnerships.forEach((partnership: any) => {
-      const partnershipText =
-        `${partnership.title} ${partnership.description} ${partnership.participants?.join(' ') || ''}`.toLowerCase();
       const matchedFields: string[] = [];
       const highlights: { [key: string]: string[] } = {};
 
@@ -506,8 +501,6 @@ export async function aiSearch(query: string): Promise<SearchResult[]> {
 
     // Score ideas
     ideas.forEach(idea => {
-      const ideaText =
-        `${idea.title} ${idea.description} ${idea.category} ${idea.targetAudience} ${idea.potentialImpact} ${idea.resourcesNeeded || ''}`.toLowerCase();
       const matchedFields: string[] = [];
       const highlights: { [key: string]: string[] } = {};
 

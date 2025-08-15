@@ -1,6 +1,7 @@
 import winston from 'winston';
 import path from 'path';
 import fs from 'fs';
+import { isDevelopment } from '../config/config';
 
 // Create logs directory if it doesn't exist
 const logDir = 'logs';
@@ -17,9 +18,7 @@ const levels = {
 };
 
 const level = () => {
-  const env = process.env.NODE_ENV || 'development';
-  const isDevelopment = env === 'development';
-  return isDevelopment ? 'debug' : 'warn';
+  return isDevelopment() ? 'debug' : 'warn';
 };
 
 const colors = {

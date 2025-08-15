@@ -1,9 +1,9 @@
 import * as bcryptjs from 'bcryptjs';
-import logger from './logger';
+import { isDevelopment } from '../config/config';
 import crypto from 'crypto';
 
 // In development mode, we'll use a simpler hash function
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = isDevelopment();
 
 // Number of salt rounds for bcrypt
 const SALT_ROUNDS = 10;

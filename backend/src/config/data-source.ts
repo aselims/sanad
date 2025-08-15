@@ -1,28 +1,18 @@
 import { DataSource } from 'typeorm';
-import dotenv from 'dotenv';
 import path from 'path';
 import logger from '../utils/logger';
+import { config, isDevelopment } from './config';
 import { Collaboration } from '../entities/Collaboration';
 import { Milestone } from '../entities/Milestone';
 
-// Load environment variables
-dotenv.config();
-
-const { DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE, DATABASE_URL, NODE_ENV } =
-  process.env;
-
-// Determine if synchronize should be enabled based on environment variables
-// This allows more control over when schema synchronization happens
-const shouldSynchronize = NODE_ENV === 'development' && process.env.DB_SYNC === 'true';
-
 // Use DATABASE_URL if provided, otherwise use individual connection parameters
 export const AppDataSource = new DataSource(
-  DATABASE_URL
+  config.database.url
     ? {
         type: 'postgres',
-        url: DATABASE_URL,
-        synchronize: shouldSynchronize,
-        logging: NODE_ENV === 'development' ? ['error', 'warn'] : false,
+        url: config.database.url,
+        synchronize: config.database.syncEnabled,
+        logging: isDevelopment() ? ['error', 'warn'] : false,
         entities: [path.join(__dirname, '../entities/**/*.{ts,js}'), Collaboration, Milestone],
         migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
         subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
@@ -33,13 +23,13 @@ export const AppDataSource = new DataSource(
       }
     : {
         type: 'postgres',
-        host: DB_HOST || 'localhost',
-        port: parseInt(DB_PORT || '5432', 10),
-        username: DB_USERNAME || 'postgres',
-        password: DB_PASSWORD || 'postgres',
-        database: DB_DATABASE || 'sanad_db',
-        synchronize: shouldSynchronize,
-        logging: NODE_ENV === 'development' ? ['error', 'warn'] : false,
+        host: config.database.host,
+        port: config.database.port,
+        username: config.database.username,
+        password: config.database.password,
+        database: config.database.database,
+        synchronize: config.database.syncEnabled,
+        logging: isDevelopment() ? ['error', 'warn'] : false,
         entities: [path.join(__dirname, '../entities/**/*.{ts,js}'), Collaboration, Milestone],
         migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
         subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
@@ -56,7 +46,7 @@ export const initializeDatabase = async () => {
     await AppDataSource.initialize();
     logger.info('Database connection established');
 
-    if (shouldSynchronize) {
+    if (config.database.syncEnabled) {
       logger.warn(
         'Database schema synchronization is enabled. This should be disabled in production.'
       );

@@ -1,10 +1,11 @@
 import jwt, { Secret } from 'jsonwebtoken';
 import { User } from '../entities/User';
+import { config } from '../config/config';
 import logger from './logger';
 
-// Get JWT secret from environment variables
-const JWT_SECRET: Secret = process.env.JWT_SECRET || 'your_jwt_secret_key_change_in_production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
+// Get JWT configuration from centralized config
+const JWT_SECRET: Secret = config.jwt.secret;
+const JWT_EXPIRES_IN = config.jwt.expiresIn;
 
 /**
  * Generate a JWT token for a user

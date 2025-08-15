@@ -1,10 +1,10 @@
 import 'reflect-metadata';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import passport from 'passport';
 import { initializeDatabase } from './config/data-source';
 import { initializePassport } from './config/passport';
+import { config } from './config/config';
 import logger from './utils/logger';
 import apiRoutes from './routes/api';
 import { errorHandler, AppError } from './middlewares/errorHandler';
@@ -17,17 +17,13 @@ import fileRoutes from './routes/fileRoutes';
 import authRoutes from './routes/auth.routes';
 import _path from 'path';
 
-// Load environment variables
-dotenv.config();
-
 // Create Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN
-    ? [process.env.CORS_ORIGIN]
+  origin: config.app.corsOrigin
+    ? [config.app.corsOrigin]
     : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8081'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -77,8 +73,8 @@ const startServer = async () => {
     await initializeDatabase();
 
     // Start Express server
-    app.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+    app.listen(config.port, () => {
+      logger.info(`Server running on port ${config.port} in ${config.nodeEnv} mode`);
     });
   } catch (error) {
     logger.error(`Failed to start server: ${error}`);

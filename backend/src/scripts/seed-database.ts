@@ -8,7 +8,6 @@ import { Match } from '../entities/Match';
 import { Connection, ConnectionStatus } from '../entities/Connection';
 import { Message } from '../entities/Message';
 import { Notification, NotificationType } from '../entities/Notification';
-import * as bcrypt from 'bcryptjs';
 import logger from '../utils/logger';
 
 // ========== USER SEED DATA ==========
@@ -1414,8 +1413,8 @@ const seedPartnerships = async (adminUser: User): Promise<void> => {
         : [];
 
       // Use raw query to insert partnership with proper array handling
-      const insertResult = await partnershipRepository.query(
-        'INSERT INTO partnerships (id, title, description, participants, status, duration, resources, \"expectedOutcomes\", initiator_id, partner_id) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+      await partnershipRepository.query(
+        'INSERT INTO partnerships (id, title, description, participants, status, duration, resources, "expectedOutcomes", initiator_id, partner_id) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
         [
           partnershipData.title,
           partnershipData.description,
@@ -1499,7 +1498,7 @@ const seedIdeas = async (): Promise<void> => {
 /**
  * Seed collaborations
  */
-const seedCollaborations = async (): Promise<void> => {
+const _seedCollaborations = async (): Promise<void> => {
   try {
     logger.info('Seeding collaborations...');
 
@@ -1550,7 +1549,7 @@ const seedCollaborations = async (): Promise<void> => {
 /**
  * Seed matches
  */
-const seedMatches = async (): Promise<void> => {
+const _seedMatches = async (): Promise<void> => {
   try {
     logger.info('Seeding matches...');
 
@@ -1605,7 +1604,7 @@ const seedMatches = async (): Promise<void> => {
 /**
  * Seed connections
  */
-const seedConnections = async (): Promise<void> => {
+const _seedConnections = async (): Promise<void> => {
   try {
     logger.info('Seeding connections...');
 

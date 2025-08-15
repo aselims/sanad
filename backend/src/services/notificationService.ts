@@ -127,7 +127,7 @@ export class NotificationService {
     userId: string,
     senderName: string,
     requestId: string,
-    senderId: string
+    _senderId: string
   ): Promise<Notification> {
     return this.createNotification({
       userId,
@@ -149,7 +149,7 @@ export class NotificationService {
     userId: string,
     acceptorName: string,
     connectionId: string,
-    acceptorId: string
+    _acceptorId: string
   ): Promise<Notification> {
     return this.createNotification({
       userId,

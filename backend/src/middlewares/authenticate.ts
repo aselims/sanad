@@ -6,7 +6,7 @@ import { AppError } from './errorHandler';
  * Simplified middleware to authenticate JWT token
  */
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  passport.authenticate('jwt', { session: false }, (err: any, user: any, info: any) => {
+  passport.authenticate('jwt', { session: false }, (err: any, user: any, _info: any) => {
     if (err) {
       return next(new AppError(`Authentication error: ${err.message}`, 500));
     }

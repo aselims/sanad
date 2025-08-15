@@ -1,10 +1,10 @@
-import express, { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { AppDataSource } from '../config/data-source';
+import { config } from '../config/config';
 import authRoutes from './auth.routes';
 import { User } from '../entities/User';
-import { authenticateJWT } from '../middlewares/auth';
-import { aiSearchRateLimit, smartAISearchRateLimit } from '../middlewares/rateLimit';
-import { optionalAuthentication } from '../middlewares/auth';
+import { authenticateJWT, optionalAuthentication } from '../middlewares/auth';
+import { smartAISearchRateLimit } from '../middlewares/rateLimit';
 import {
   sendConnectionRequest,
   getConnectionRequests,
@@ -33,7 +33,7 @@ router.get('/health', (req: Request, res: Response) => {
     status: 'success',
     message: 'API is running',
     timestamp: new Date(),
-    environment: process.env.NODE_ENV,
+    environment: config.nodeEnv,
     database: dbStatus,
     version: process.env.npm_package_version || '1.0.0',
   });

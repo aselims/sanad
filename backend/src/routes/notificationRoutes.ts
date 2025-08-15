@@ -1,7 +1,6 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { NotificationController } from '../controllers/notificationController';
 import { authenticateJWT } from '../middlewares/auth';
-import { Request, Response, NextFunction } from 'express';
 
 const router = express.Router();
 const notificationController = new NotificationController();
