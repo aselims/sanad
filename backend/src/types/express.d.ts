@@ -15,4 +15,4 @@ declare global {
       // Add other properties as needed
     }
   }
-} 
+}

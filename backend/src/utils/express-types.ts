@@ -18,4 +18,4 @@ export const routeHandler = (handler: ExpressHandler): RequestHandler => {
       next(error);
     }
   };
-}; 
+};

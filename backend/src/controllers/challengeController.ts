@@ -9,17 +9,17 @@ export const getAllChallenges = async (req: Request, res: Response) => {
   try {
     const challengeRepository = AppDataSource.getRepository(Challenge);
     const challenges = await challengeRepository.find();
-    
+
     return res.status(200).json({
       status: 'success',
-      data: challenges
+      data: challenges,
     });
   } catch (error: any) {
     logger.error('Error fetching challenges:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       status: 'error',
-      message: 'Failed to fetch challenges', 
-      error: error.message 
+      message: 'Failed to fetch challenges',
+      error: error.message,
     });
   }
 };
@@ -29,28 +29,28 @@ export const getChallengeById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const challengeRepository = AppDataSource.getRepository(Challenge);
-    
+
     const challenge = await challengeRepository.findOne({
-      where: { id }
+      where: { id },
     });
 
     if (!challenge) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         status: 'error',
-        message: 'Challenge not found' 
+        message: 'Challenge not found',
       });
     }
 
     return res.status(200).json({
       status: 'success',
-      data: challenge
+      data: challenge,
     });
   } catch (error: any) {
     logger.error(`Error fetching challenge with ID ${req.params.id}:`, error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       status: 'error',
-      message: 'Failed to fetch challenge', 
-      error: error.message 
+      message: 'Failed to fetch challenge',
+      error: error.message,
     });
   }
 };
@@ -58,15 +58,8 @@ export const getChallengeById = async (req: Request, res: Response) => {
 // Create a new challenge
 export const createChallenge = async (req: Request, res: Response) => {
   try {
-    const {
-      title,
-      description,
-      organization,
-      status,
-      deadline,
-      reward,
-      eligibilityCriteria
-    } = req.body;
+    const { title, description, organization, status, deadline, reward, eligibilityCriteria } =
+      req.body;
 
     // Get the current user
     const userId = (req.user as any).id;
@@ -74,15 +67,15 @@ export const createChallenge = async (req: Request, res: Response) => {
     const user = await userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         status: 'error',
-        message: 'User not found' 
+        message: 'User not found',
       });
     }
 
     const challengeRepository = AppDataSource.getRepository(Challenge);
     const challenge = new Challenge();
-    
+
     challenge.title = title;
     challenge.description = description;
     challenge.organization = organization || user.organization || '';
@@ -97,14 +90,14 @@ export const createChallenge = async (req: Request, res: Response) => {
     return res.status(201).json({
       status: 'success',
       message: 'Challenge created successfully',
-      data: challenge
+      data: challenge,
     });
   } catch (error: any) {
     logger.error('Error creating challenge:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       status: 'error',
-      message: 'Failed to create challenge', 
-      error: error.message 
+      message: 'Failed to create challenge',
+      error: error.message,
     });
   }
 };
@@ -113,34 +106,27 @@ export const createChallenge = async (req: Request, res: Response) => {
 export const updateChallenge = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const {
-      title,
-      description,
-      organization,
-      status,
-      deadline,
-      reward,
-      eligibilityCriteria
-    } = req.body;
+    const { title, description, organization, status, deadline, reward, eligibilityCriteria } =
+      req.body;
 
     const challengeRepository = AppDataSource.getRepository(Challenge);
     const challenge = await challengeRepository.findOne({
-      where: { id }
+      where: { id },
     });
 
     if (!challenge) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         status: 'error',
-        message: 'Challenge not found' 
+        message: 'Challenge not found',
       });
     }
 
     // Check if the current user is the creator of the challenge
     const userId = (req.user as any).id;
     if (challenge.createdById !== userId) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         status: 'error',
-        message: 'You are not authorized to update this challenge' 
+        message: 'You are not authorized to update this challenge',
       });
     }
 
@@ -158,14 +144,14 @@ export const updateChallenge = async (req: Request, res: Response) => {
     return res.status(200).json({
       status: 'success',
       message: 'Challenge updated successfully',
-      data: challenge
+      data: challenge,
     });
   } catch (error: any) {
     logger.error(`Error updating challenge with ID ${req.params.id}:`, error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       status: 'error',
-      message: 'Failed to update challenge', 
-      error: error.message 
+      message: 'Failed to update challenge',
+      error: error.message,
     });
   }
 };
@@ -175,39 +161,39 @@ export const deleteChallenge = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const challengeRepository = AppDataSource.getRepository(Challenge);
-    
+
     const challenge = await challengeRepository.findOne({
-      where: { id }
+      where: { id },
     });
 
     if (!challenge) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         status: 'error',
-        message: 'Challenge not found' 
+        message: 'Challenge not found',
       });
     }
 
     // Check if the current user is the creator of the challenge
     const userId = (req.user as any).id;
     if (challenge.createdById !== userId) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         status: 'error',
-        message: 'You are not authorized to delete this challenge' 
+        message: 'You are not authorized to delete this challenge',
       });
     }
 
     await challengeRepository.remove(challenge);
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       status: 'success',
-      message: 'Challenge deleted successfully' 
+      message: 'Challenge deleted successfully',
     });
   } catch (error: any) {
     logger.error(`Error deleting challenge with ID ${req.params.id}:`, error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       status: 'error',
-      message: 'Failed to delete challenge', 
-      error: error.message 
+      message: 'Failed to delete challenge',
+      error: error.message,
     });
   }
-}; 
+};

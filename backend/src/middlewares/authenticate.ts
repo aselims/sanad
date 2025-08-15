@@ -18,4 +18,4 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     req.user = user;
     return next();
   })(req, res, next);
-}; 
+};

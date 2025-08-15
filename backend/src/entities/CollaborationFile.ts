@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Collaboration } from './Collaboration';
 import { User } from './User';
 
@@ -35,4 +42,4 @@ export class CollaborationFile {
 
   @CreateDateColumn({ name: 'uploaded_at' })
   uploadedAt: Date;
-} 
+}

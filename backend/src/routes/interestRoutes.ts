@@ -12,4 +12,4 @@ const router = express.Router();
  */
 router.post('/submit', authenticateJWT, routeHandler(submitInterest));
 
-export default router; 
+export default router;

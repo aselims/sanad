@@ -15,23 +15,27 @@ const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextF
 router.use(authenticateJWT);
 
 // Get all notifications for the authenticated user
-router.get('/', asyncHandler((req: Request, res: Response) => 
-  notificationController.getNotifications(req, res)
-));
+router.get(
+  '/',
+  asyncHandler((req: Request, res: Response) => notificationController.getNotifications(req, res))
+);
 
 // Get unread notification count
-router.get('/unread-count', asyncHandler((req: Request, res: Response) => 
-  notificationController.getUnreadCount(req, res)
-));
+router.get(
+  '/unread-count',
+  asyncHandler((req: Request, res: Response) => notificationController.getUnreadCount(req, res))
+);
 
 // Mark a notification as read
-router.patch('/:id/read', asyncHandler((req: Request, res: Response) => 
-  notificationController.markAsRead(req, res)
-));
+router.patch(
+  '/:id/read',
+  asyncHandler((req: Request, res: Response) => notificationController.markAsRead(req, res))
+);
 
 // Mark all notifications as read
-router.patch('/read-all', asyncHandler((req: Request, res: Response) => 
-  notificationController.markAllAsRead(req, res)
-));
+router.patch(
+  '/read-all',
+  asyncHandler((req: Request, res: Response) => notificationController.markAllAsRead(req, res))
+);
 
-export default router; 
+export default router;

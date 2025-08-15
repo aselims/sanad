@@ -1,11 +1,11 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class ConsolidatedSchema1000000000000 implements MigrationInterface {
-    name = 'ConsolidatedSchema1000000000000';
+  name = 'ConsolidatedSchema1000000000000';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        // Create enum types first
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Create enum types first
+    await queryRunner.query(`
             CREATE TYPE "users_role_enum" AS ENUM(
                 'admin', 
                 'startup', 
@@ -20,7 +20,7 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE TYPE "connections_status_enum" AS ENUM(
                 'pending',
                 'accepted',
@@ -28,7 +28,7 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE TYPE "ideas_status_enum" AS ENUM(
                 'proposed',
                 'active',
@@ -36,7 +36,7 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE TYPE "ideas_stage_enum" AS ENUM(
                 'concept',
                 'prototype',
@@ -45,8 +45,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create users table
-        await queryRunner.query(`
+    // Create users table
+    await queryRunner.query(`
             CREATE TABLE "users" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "firstName" character varying(100) NOT NULL,
@@ -72,8 +72,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create connections table
-        await queryRunner.query(`
+    // Create connections table
+    await queryRunner.query(`
             CREATE TABLE "connections" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "requesterId" uuid NOT NULL,
@@ -85,8 +85,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create messages table
-        await queryRunner.query(`
+    // Create messages table
+    await queryRunner.query(`
             CREATE TABLE "messages" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "senderId" uuid NOT NULL,
@@ -99,8 +99,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create ideas table
-        await queryRunner.query(`
+    // Create ideas table
+    await queryRunner.query(`
             CREATE TABLE "ideas" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "title" character varying NOT NULL,
@@ -119,8 +119,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create notifications table
-        await queryRunner.query(`
+    // Create notifications table
+    await queryRunner.query(`
             CREATE TABLE "notifications" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "userId" uuid NOT NULL,
@@ -134,8 +134,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create challenges table
-        await queryRunner.query(`
+    // Create challenges table
+    await queryRunner.query(`
             CREATE TABLE "challenges" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "title" character varying NOT NULL,
@@ -150,8 +150,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create partnerships table
-        await queryRunner.query(`
+    // Create partnerships table
+    await queryRunner.query(`
             CREATE TABLE "partnerships" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "title" character varying NOT NULL,
@@ -165,8 +165,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create matches table
-        await queryRunner.query(`
+    // Create matches table
+    await queryRunner.query(`
             CREATE TABLE "matches" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "user1Id" uuid NOT NULL,
@@ -179,8 +179,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create collaborations table
-        await queryRunner.query(`
+    // Create collaborations table
+    await queryRunner.query(`
             CREATE TABLE "collaborations" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "title" character varying NOT NULL,
@@ -194,8 +194,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create collaboration_files table
-        await queryRunner.query(`
+    // Create collaboration_files table
+    await queryRunner.query(`
             CREATE TABLE "collaboration_files" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "fileName" character varying NOT NULL,
@@ -209,8 +209,8 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Create milestones table
-        await queryRunner.query(`
+    // Create milestones table
+    await queryRunner.query(`
             CREATE TABLE "milestones" (
                 "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
                 "title" character varying NOT NULL,
@@ -224,191 +224,201 @@ export class ConsolidatedSchema1000000000000 implements MigrationInterface {
             )
         `);
 
-        // Add foreign key constraints
-        await queryRunner.query(`
+    // Add foreign key constraints
+    await queryRunner.query(`
             ALTER TABLE "connections" 
             ADD CONSTRAINT "FK_connections_requester" 
             FOREIGN KEY ("requesterId") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "connections" 
             ADD CONSTRAINT "FK_connections_receiver" 
             FOREIGN KEY ("receiverId") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "messages" 
             ADD CONSTRAINT "FK_messages_sender" 
             FOREIGN KEY ("senderId") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "messages" 
             ADD CONSTRAINT "FK_messages_receiver" 
             FOREIGN KEY ("receiverId") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "ideas" 
             ADD CONSTRAINT "FK_ideas_created_by" 
             FOREIGN KEY ("created_by_id") REFERENCES "users"("id") ON DELETE SET NULL
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "notifications" 
             ADD CONSTRAINT "FK_notifications_user" 
             FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "challenges" 
             ADD CONSTRAINT "FK_challenges_created_by" 
             FOREIGN KEY ("created_by_id") REFERENCES "users"("id") ON DELETE SET NULL
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "partnerships" 
             ADD CONSTRAINT "FK_partnerships_initiator" 
             FOREIGN KEY ("initiator_id") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "partnerships" 
             ADD CONSTRAINT "FK_partnerships_partner" 
             FOREIGN KEY ("partner_id") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "matches" 
             ADD CONSTRAINT "FK_matches_user1" 
             FOREIGN KEY ("user1Id") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "matches" 
             ADD CONSTRAINT "FK_matches_user2" 
             FOREIGN KEY ("user2Id") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "collaborations" 
             ADD CONSTRAINT "FK_collaborations_owner" 
             FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "collaboration_files" 
             ADD CONSTRAINT "FK_collaboration_files_collaboration" 
             FOREIGN KEY ("collaborationId") REFERENCES "collaborations"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "collaboration_files" 
             ADD CONSTRAINT "FK_collaboration_files_uploaded_by" 
             FOREIGN KEY ("uploadedById") REFERENCES "users"("id") ON DELETE CASCADE
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             ALTER TABLE "milestones" 
             ADD CONSTRAINT "FK_milestones_collaboration" 
             FOREIGN KEY ("collaborationId") REFERENCES "collaborations"("id") ON DELETE CASCADE
         `);
 
-        // Add indexes for performance
-        await queryRunner.query(`
+    // Add indexes for performance
+    await queryRunner.query(`
             CREATE INDEX "IDX_users_email" ON "users" ("email")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_users_role" ON "users" ("role")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_connections_users" ON "connections" ("requesterId", "receiverId")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_messages_users" ON "messages" ("senderId", "receiverId")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_ideas_created_by" ON "ideas" ("created_by_id")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_notifications_user" ON "notifications" ("userId")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_partnerships_users" ON "partnerships" ("initiator_id", "partner_id")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_matches_users" ON "matches" ("user1Id", "user2Id")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_collaborations_owner" ON "collaborations" ("ownerId")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_collaboration_files_collaboration" ON "collaboration_files" ("collaborationId")
         `);
 
-        await queryRunner.query(`
+    await queryRunner.query(`
             CREATE INDEX "IDX_milestones_collaboration" ON "milestones" ("collaborationId")
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Drop all tables in reverse order (respecting foreign key constraints)
-        await queryRunner.query(`DROP INDEX "IDX_milestones_collaboration"`);
-        await queryRunner.query(`DROP INDEX "IDX_collaboration_files_collaboration"`);
-        await queryRunner.query(`DROP INDEX "IDX_collaborations_owner"`);
-        await queryRunner.query(`DROP INDEX "IDX_matches_users"`);
-        await queryRunner.query(`DROP INDEX "IDX_partnerships_users"`);
-        await queryRunner.query(`DROP INDEX "IDX_notifications_user"`);
-        await queryRunner.query(`DROP INDEX "IDX_ideas_created_by"`);
-        await queryRunner.query(`DROP INDEX "IDX_messages_users"`);
-        await queryRunner.query(`DROP INDEX "IDX_connections_users"`);
-        await queryRunner.query(`DROP INDEX "IDX_users_role"`);
-        await queryRunner.query(`DROP INDEX "IDX_users_email"`);
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Drop all tables in reverse order (respecting foreign key constraints)
+    await queryRunner.query(`DROP INDEX "IDX_milestones_collaboration"`);
+    await queryRunner.query(`DROP INDEX "IDX_collaboration_files_collaboration"`);
+    await queryRunner.query(`DROP INDEX "IDX_collaborations_owner"`);
+    await queryRunner.query(`DROP INDEX "IDX_matches_users"`);
+    await queryRunner.query(`DROP INDEX "IDX_partnerships_users"`);
+    await queryRunner.query(`DROP INDEX "IDX_notifications_user"`);
+    await queryRunner.query(`DROP INDEX "IDX_ideas_created_by"`);
+    await queryRunner.query(`DROP INDEX "IDX_messages_users"`);
+    await queryRunner.query(`DROP INDEX "IDX_connections_users"`);
+    await queryRunner.query(`DROP INDEX "IDX_users_role"`);
+    await queryRunner.query(`DROP INDEX "IDX_users_email"`);
 
-        // Drop foreign key constraints
-        await queryRunner.query(`ALTER TABLE "milestones" DROP CONSTRAINT "FK_milestones_collaboration"`);
-        await queryRunner.query(`ALTER TABLE "collaboration_files" DROP CONSTRAINT "FK_collaboration_files_uploaded_by"`);
-        await queryRunner.query(`ALTER TABLE "collaboration_files" DROP CONSTRAINT "FK_collaboration_files_collaboration"`);
-        await queryRunner.query(`ALTER TABLE "collaborations" DROP CONSTRAINT "FK_collaborations_owner"`);
-        await queryRunner.query(`ALTER TABLE "matches" DROP CONSTRAINT "FK_matches_user2"`);
-        await queryRunner.query(`ALTER TABLE "matches" DROP CONSTRAINT "FK_matches_user1"`);
-        await queryRunner.query(`ALTER TABLE "partnerships" DROP CONSTRAINT "FK_partnerships_partner"`);
-        await queryRunner.query(`ALTER TABLE "partnerships" DROP CONSTRAINT "FK_partnerships_initiator"`);
-        await queryRunner.query(`ALTER TABLE "challenges" DROP CONSTRAINT "FK_challenges_created_by"`);
-        await queryRunner.query(`ALTER TABLE "notifications" DROP CONSTRAINT "FK_notifications_user"`);
-        await queryRunner.query(`ALTER TABLE "ideas" DROP CONSTRAINT "FK_ideas_created_by"`);
-        await queryRunner.query(`ALTER TABLE "messages" DROP CONSTRAINT "FK_messages_receiver"`);
-        await queryRunner.query(`ALTER TABLE "messages" DROP CONSTRAINT "FK_messages_sender"`);
-        await queryRunner.query(`ALTER TABLE "connections" DROP CONSTRAINT "FK_connections_receiver"`);
-        await queryRunner.query(`ALTER TABLE "connections" DROP CONSTRAINT "FK_connections_requester"`);
+    // Drop foreign key constraints
+    await queryRunner.query(
+      `ALTER TABLE "milestones" DROP CONSTRAINT "FK_milestones_collaboration"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "collaboration_files" DROP CONSTRAINT "FK_collaboration_files_uploaded_by"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "collaboration_files" DROP CONSTRAINT "FK_collaboration_files_collaboration"`
+    );
+    await queryRunner.query(
+      `ALTER TABLE "collaborations" DROP CONSTRAINT "FK_collaborations_owner"`
+    );
+    await queryRunner.query(`ALTER TABLE "matches" DROP CONSTRAINT "FK_matches_user2"`);
+    await queryRunner.query(`ALTER TABLE "matches" DROP CONSTRAINT "FK_matches_user1"`);
+    await queryRunner.query(`ALTER TABLE "partnerships" DROP CONSTRAINT "FK_partnerships_partner"`);
+    await queryRunner.query(
+      `ALTER TABLE "partnerships" DROP CONSTRAINT "FK_partnerships_initiator"`
+    );
+    await queryRunner.query(`ALTER TABLE "challenges" DROP CONSTRAINT "FK_challenges_created_by"`);
+    await queryRunner.query(`ALTER TABLE "notifications" DROP CONSTRAINT "FK_notifications_user"`);
+    await queryRunner.query(`ALTER TABLE "ideas" DROP CONSTRAINT "FK_ideas_created_by"`);
+    await queryRunner.query(`ALTER TABLE "messages" DROP CONSTRAINT "FK_messages_receiver"`);
+    await queryRunner.query(`ALTER TABLE "messages" DROP CONSTRAINT "FK_messages_sender"`);
+    await queryRunner.query(`ALTER TABLE "connections" DROP CONSTRAINT "FK_connections_receiver"`);
+    await queryRunner.query(`ALTER TABLE "connections" DROP CONSTRAINT "FK_connections_requester"`);
 
-        // Drop tables
-        await queryRunner.query(`DROP TABLE "milestones"`);
-        await queryRunner.query(`DROP TABLE "collaboration_files"`);
-        await queryRunner.query(`DROP TABLE "collaborations"`);
-        await queryRunner.query(`DROP TABLE "matches"`);
-        await queryRunner.query(`DROP TABLE "partnerships"`);
-        await queryRunner.query(`DROP TABLE "challenges"`);
-        await queryRunner.query(`DROP TABLE "notifications"`);
-        await queryRunner.query(`DROP TABLE "ideas"`);
-        await queryRunner.query(`DROP TABLE "messages"`);
-        await queryRunner.query(`DROP TABLE "connections"`);
-        await queryRunner.query(`DROP TABLE "users"`);
+    // Drop tables
+    await queryRunner.query(`DROP TABLE "milestones"`);
+    await queryRunner.query(`DROP TABLE "collaboration_files"`);
+    await queryRunner.query(`DROP TABLE "collaborations"`);
+    await queryRunner.query(`DROP TABLE "matches"`);
+    await queryRunner.query(`DROP TABLE "partnerships"`);
+    await queryRunner.query(`DROP TABLE "challenges"`);
+    await queryRunner.query(`DROP TABLE "notifications"`);
+    await queryRunner.query(`DROP TABLE "ideas"`);
+    await queryRunner.query(`DROP TABLE "messages"`);
+    await queryRunner.query(`DROP TABLE "connections"`);
+    await queryRunner.query(`DROP TABLE "users"`);
 
-        // Drop enum types
-        await queryRunner.query(`DROP TYPE "ideas_stage_enum"`);
-        await queryRunner.query(`DROP TYPE "ideas_status_enum"`);
-        await queryRunner.query(`DROP TYPE "connections_status_enum"`);
-        await queryRunner.query(`DROP TYPE "users_role_enum"`);
-    }
-} 
+    // Drop enum types
+    await queryRunner.query(`DROP TYPE "ideas_stage_enum"`);
+    await queryRunner.query(`DROP TYPE "ideas_status_enum"`);
+    await queryRunner.query(`DROP TYPE "connections_status_enum"`);
+    await queryRunner.query(`DROP TYPE "users_role_enum"`);
+  }
+}

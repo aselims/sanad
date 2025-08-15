@@ -18,19 +18,19 @@ export async function sendMessageNotification(
 ): Promise<void> {
   try {
     const sender = await userRepository.findOne({
-      where: { id: senderId }
+      where: { id: senderId },
     });
 
     if (!sender) {
       throw new Error('Sender not found');
     }
 
-    const senderName = `${sender.firstName} ${sender.lastName}`.trim() || sender.email.split('@')[0];
-    
+    const senderName =
+      `${sender.firstName} ${sender.lastName}`.trim() || sender.email.split('@')[0];
+
     // Create message preview (truncate if too long)
-    const messagePreview = messageContent.length > 100 
-      ? `${messageContent.substring(0, 97)}...` 
-      : messageContent;
+    const messagePreview =
+      messageContent.length > 100 ? `${messageContent.substring(0, 97)}...` : messageContent;
 
     await notificationService.createMessageNotification(
       receiverId,
@@ -57,14 +57,15 @@ export async function sendConnectionRequestNotification(
 ): Promise<void> {
   try {
     const sender = await userRepository.findOne({
-      where: { id: senderId }
+      where: { id: senderId },
     });
 
     if (!sender) {
       throw new Error('Sender not found');
     }
 
-    const senderName = `${sender.firstName} ${sender.lastName}`.trim() || sender.email.split('@')[0];
+    const senderName =
+      `${sender.firstName} ${sender.lastName}`.trim() || sender.email.split('@')[0];
 
     await notificationService.createConnectionRequestNotification(
       receiverId,
@@ -91,14 +92,15 @@ export async function sendConnectionAcceptedNotification(
 ): Promise<void> {
   try {
     const acceptor = await userRepository.findOne({
-      where: { id: acceptorId }
+      where: { id: acceptorId },
     });
 
     if (!acceptor) {
       throw new Error('Acceptor not found');
     }
 
-    const acceptorName = `${acceptor.firstName} ${acceptor.lastName}`.trim() || acceptor.email.split('@')[0];
+    const acceptorName =
+      `${acceptor.firstName} ${acceptor.lastName}`.trim() || acceptor.email.split('@')[0];
 
     await notificationService.createConnectionAcceptedNotification(
       receiverId,
@@ -129,14 +131,15 @@ export async function sendInterestNotification(
 ): Promise<void> {
   try {
     const interestedParty = await userRepository.findOne({
-      where: { id: interestedPartyId }
+      where: { id: interestedPartyId },
     });
 
     if (!interestedParty) {
       throw new Error('Interested party not found');
     }
 
-    const interestedPartyName = `${interestedParty.firstName} ${interestedParty.lastName}`.trim() || 
+    const interestedPartyName =
+      `${interestedParty.firstName} ${interestedParty.lastName}`.trim() ||
       interestedParty.email.split('@')[0];
 
     await notificationService.createInterestNotification(
@@ -150,4 +153,4 @@ export async function sendInterestNotification(
     console.error('Error sending interest notification:', error);
     // Don't throw - notification failures shouldn't block the main functionality
   }
-} 
+}

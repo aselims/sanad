@@ -53,7 +53,16 @@ export const initializePassport = () => {
         const userRepository = AppDataSource.getRepository(User);
         const user = await userRepository.findOne({
           where: { email },
-          select: ['id', 'email', 'password', 'firstName', 'lastName', 'role', 'isActive', 'isVerified'],
+          select: [
+            'id',
+            'email',
+            'password',
+            'firstName',
+            'lastName',
+            'role',
+            'isActive',
+            'isVerified',
+          ],
         });
 
         if (!user) {
@@ -78,4 +87,4 @@ export const initializePassport = () => {
       }
     })
   );
-}; 
+};

@@ -19,12 +19,12 @@ export class MatchService {
 
     // Get all other users
     const allUsers = await this.userRepository.find({
-      where: { id: Not(userId) }
+      where: { id: Not(userId) },
     });
 
     // Get existing matches for this user
     const existingMatches = await this.matchRepository.find({
-      where: { userId }
+      where: { userId },
     });
 
     // Create a map of existing matches by targetUserId for quick lookup
@@ -57,7 +57,7 @@ export class MatchService {
           targetUserId: match.innovator.id,
           matchScore: match.matchScore,
           sharedTags: match.sharedTags,
-          highlight: match.highlight
+          highlight: match.highlight,
         });
 
         return this.matchRepository.save(newMatch);
@@ -67,9 +67,10 @@ export class MatchService {
     // Also include any previously saved matches that might not be in the current top matches
     // This ensures we don't lose liked/disliked preferences
     const additionalMatches = existingMatches.filter(
-      existingMatch => !savedMatches.some(
-        (savedMatch: Match) => savedMatch.targetUserId === existingMatch.targetUserId
-      )
+      existingMatch =>
+        !savedMatches.some(
+          (savedMatch: Match) => savedMatch.targetUserId === existingMatch.targetUserId
+        )
     );
 
     return [...savedMatches, ...additionalMatches];
@@ -83,24 +84,24 @@ export class MatchService {
     let match = await this.matchRepository.findOne({
       where: {
         userId,
-        targetUserId
-      }
+        targetUserId,
+      },
     });
 
     if (!match) {
       // Create a new match if it doesn't exist
-      const currentUser = await this.userRepository.findOne({ 
-        where: { id: userId } 
+      const currentUser = await this.userRepository.findOne({
+        where: { id: userId },
       });
-      
-      const targetUser = await this.userRepository.findOne({ 
-        where: { id: targetUserId } 
+
+      const targetUser = await this.userRepository.findOne({
+        where: { id: targetUserId },
       });
-      
+
       if (!currentUser || !targetUser) {
         throw new Error('User not found');
       }
-      
+
       // Create a basic match with default values and explicit ID
       match = this.matchRepository.create({
         id: uuidv4(), // Explicitly generate UUID
@@ -108,7 +109,7 @@ export class MatchService {
         targetUserId,
         matchScore: 50, // Default score
         sharedTags: [],
-        highlight: "You showed interest in this profile"
+        highlight: 'You showed interest in this profile',
       });
     }
 
@@ -120,7 +121,7 @@ export class MatchService {
     return this.matchRepository.find({
       where: { userId },
       relations: ['targetUser'],
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
   }
-} 
+}

@@ -166,4 +166,4 @@ export const changePassword = async (req: Request, res: Response, next: NextFunc
     logger.error(`Error in changePassword controller: ${error}`);
     return next(new AppError('Error changing password', 500));
   }
-}; 
+};

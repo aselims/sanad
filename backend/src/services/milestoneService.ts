@@ -10,10 +10,12 @@ const collaborationRepository = AppDataSource.getRepository(Collaboration);
  * @param collaborationId ID of the collaboration
  * @returns Promise with milestones
  */
-export const getMilestonesByCollaborationId = async (collaborationId: string): Promise<Milestone[]> => {
+export const getMilestonesByCollaborationId = async (
+  collaborationId: string
+): Promise<Milestone[]> => {
   return await milestoneRepository.find({
     where: { collaborationId },
-    order: { dueDate: 'ASC' }
+    order: { dueDate: 'ASC' },
   });
 };
 
@@ -33,7 +35,7 @@ export const createMilestone = async (
 ): Promise<Milestone> => {
   // First check if the collaboration exists
   const collaboration = await collaborationRepository.findOne({
-    where: { id: collaborationId }
+    where: { id: collaborationId },
   });
 
   if (!collaboration) {
@@ -66,7 +68,7 @@ export const updateMilestone = async (
 ): Promise<Milestone> => {
   // Find the milestone
   const milestone = await milestoneRepository.findOne({
-    where: { id }
+    where: { id },
   });
 
   if (!milestone) {
@@ -128,7 +130,7 @@ export const updateCollaborationProgress = async (
     // Get the collaboration with owner info
     const collaboration = await collaborationRepository.findOne({
       where: { id: collaborationId },
-      relations: ['milestones']
+      relations: ['milestones'],
     });
 
     if (!collaboration) {
@@ -161,13 +163,13 @@ export const updateCollaborationProgress = async (
     if (progressData.milestones && progressData.milestones.length > 0) {
       // Get current milestones
       const currentMilestones = await milestoneRepository.find({
-        where: { collaborationId }
+        where: { collaborationId },
       });
-      
+
       // Create a map of current milestone IDs
       const currentMilestoneMap = new Map<string, Milestone>();
       currentMilestones.forEach(m => currentMilestoneMap.set(m.id, m));
-      
+
       // Process each milestone
       for (const milestoneData of progressData.milestones) {
         if (milestoneData.id) {
@@ -191,7 +193,7 @@ export const updateCollaborationProgress = async (
           await milestoneRepository.save(newMilestone);
         }
       }
-      
+
       // Delete any milestones that weren't in the update list
       const milestoneIdsToDelete = Array.from(currentMilestoneMap.keys());
       if (milestoneIdsToDelete.length > 0) {
@@ -201,17 +203,17 @@ export const updateCollaborationProgress = async (
 
     // Commit the transaction
     await queryRunner.commitTransaction();
-    
+
     // Get the updated collaboration with milestones
     const updatedCollaboration = await collaborationRepository.findOne({
       where: { id: collaborationId },
-      relations: ['milestones']
+      relations: ['milestones'],
     });
-    
+
     if (!updatedCollaboration) {
       throw new Error('Failed to retrieve updated collaboration');
     }
-    
+
     return updatedCollaboration;
   } catch (error) {
     // Rollback in case of error
@@ -221,4 +223,4 @@ export const updateCollaborationProgress = async (
     // Release the query runner
     await queryRunner.release();
   }
-}; 
+};

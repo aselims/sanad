@@ -11,27 +11,27 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: 'error',
-        message: 'Unauthorized: User not authenticated'
+        message: 'Unauthorized: User not authenticated',
       });
     }
 
     const { targetUserId } = req.body;
-    
+
     if (!targetUserId) {
       return res.status(400).json({
         status: 'error',
-        message: 'Target user ID is required'
+        message: 'Target user ID is required',
       });
     }
 
     // Check if target user exists
     const userRepository = AppDataSource.getRepository(User);
     const targetUser = await userRepository.findOne({ where: { id: targetUserId } });
-    
+
     if (!targetUser) {
       return res.status(404).json({
         status: 'error',
-        message: 'Target user not found'
+        message: 'Target user not found',
       });
     }
 
@@ -39,7 +39,7 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
     if (!targetUser.allowConnections) {
       return res.status(403).json({
         status: 'error',
-        message: 'This user does not allow connection requests'
+        message: 'This user does not allow connection requests',
       });
     }
 
@@ -48,15 +48,15 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
     const existingConnection = await connectionRepository.findOne({
       where: [
         { requesterId: req.user.id, receiverId: targetUserId },
-        { requesterId: targetUserId, receiverId: req.user.id }
-      ]
+        { requesterId: targetUserId, receiverId: req.user.id },
+      ],
     });
 
     if (existingConnection) {
       return res.status(400).json({
         status: 'error',
         message: 'A connection already exists between these users',
-        data: existingConnection
+        data: existingConnection,
       });
     }
 
@@ -64,7 +64,7 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
     const newConnection = connectionRepository.create({
       requesterId: req.user.id,
       receiverId: targetUserId,
-      status: ConnectionStatus.PENDING
+      status: ConnectionStatus.PENDING,
     });
 
     await connectionRepository.save(newConnection);
@@ -72,13 +72,13 @@ export const sendConnectionRequest = async (req: Request, res: Response) => {
     return res.status(201).json({
       status: 'success',
       message: 'Connection request sent successfully',
-      data: newConnection
+      data: newConnection,
     });
   } catch (error) {
     console.error('Error sending connection request:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 };
@@ -91,27 +91,25 @@ export const getConnectionRequests = async (req: Request, res: Response) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: 'error',
-        message: 'Unauthorized: User not authenticated'
+        message: 'Unauthorized: User not authenticated',
       });
     }
 
     const connectionRepository = AppDataSource.getRepository(Connection);
     const connections = await connectionRepository.find({
-      where: [
-        { receiverId: req.user.id, status: ConnectionStatus.PENDING }
-      ],
-      relations: ['requester']
+      where: [{ receiverId: req.user.id, status: ConnectionStatus.PENDING }],
+      relations: ['requester'],
     });
 
     return res.status(200).json({
       status: 'success',
-      data: connections
+      data: connections,
     });
   } catch (error) {
     console.error('Error getting connection requests:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 };
@@ -124,7 +122,7 @@ export const getUserConnections = async (req: Request, res: Response) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: 'error',
-        message: 'Unauthorized: User not authenticated'
+        message: 'Unauthorized: User not authenticated',
       });
     }
 
@@ -132,34 +130,33 @@ export const getUserConnections = async (req: Request, res: Response) => {
     const connections = await connectionRepository.find({
       where: [
         { requesterId: req.user.id, status: ConnectionStatus.ACCEPTED },
-        { receiverId: req.user.id, status: ConnectionStatus.ACCEPTED }
+        { receiverId: req.user.id, status: ConnectionStatus.ACCEPTED },
       ],
-      relations: ['requester', 'receiver']
+      relations: ['requester', 'receiver'],
     });
 
     // Format the connections to include the connected user (not the current user)
     const formattedConnections = connections.map(connection => {
-      const connectedUser = connection.requesterId === req.user!.id 
-        ? connection.receiver 
-        : connection.requester;
-      
+      const connectedUser =
+        connection.requesterId === req.user!.id ? connection.receiver : connection.requester;
+
       return {
         id: connection.id,
         user: connectedUser,
         status: connection.status,
-        createdAt: connection.createdAt
+        createdAt: connection.createdAt,
       };
     });
 
     return res.status(200).json({
       status: 'success',
-      data: formattedConnections
+      data: formattedConnections,
     });
   } catch (error) {
     console.error('Error getting user connections:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 };
@@ -172,35 +169,35 @@ export const respondToConnectionRequest = async (req: Request, res: Response) =>
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: 'error',
-        message: 'Unauthorized: User not authenticated'
+        message: 'Unauthorized: User not authenticated',
       });
     }
 
     const { connectionId, action } = req.body;
-    
+
     if (!connectionId || !action) {
       return res.status(400).json({
         status: 'error',
-        message: 'Connection ID and action are required'
+        message: 'Connection ID and action are required',
       });
     }
 
     if (action !== 'accept' && action !== 'reject') {
       return res.status(400).json({
         status: 'error',
-        message: 'Action must be either "accept" or "reject"'
+        message: 'Action must be either "accept" or "reject"',
       });
     }
 
     const connectionRepository = AppDataSource.getRepository(Connection);
     const connection = await connectionRepository.findOne({
-      where: { id: connectionId, receiverId: req.user.id, status: ConnectionStatus.PENDING }
+      where: { id: connectionId, receiverId: req.user.id, status: ConnectionStatus.PENDING },
     });
 
     if (!connection) {
       return res.status(404).json({
         status: 'error',
-        message: 'Connection request not found or you are not authorized to respond to it'
+        message: 'Connection request not found or you are not authorized to respond to it',
       });
     }
 
@@ -211,13 +208,13 @@ export const respondToConnectionRequest = async (req: Request, res: Response) =>
     return res.status(200).json({
       status: 'success',
       message: `Connection request ${action === 'accept' ? 'accepted' : 'rejected'} successfully`,
-      data: connection
+      data: connection,
     });
   } catch (error) {
     console.error('Error responding to connection request:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
-}; 
+};

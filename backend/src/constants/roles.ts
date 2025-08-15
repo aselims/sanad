@@ -20,16 +20,16 @@ export const INNOVATOR_TYPES = {
 } as const;
 
 // Create a type from the object values
-export type InnovatorType = typeof INNOVATOR_TYPES[keyof typeof INNOVATOR_TYPES];
+export type InnovatorType = (typeof INNOVATOR_TYPES)[keyof typeof INNOVATOR_TYPES];
 
 // All roles including admin
 export const ALL_ROLES = {
   ADMIN: ROLE_ADMIN,
-  ...INNOVATOR_TYPES
+  ...INNOVATOR_TYPES,
 } as const;
 
 // Create a type from the object values
-export type UserRoleType = typeof ALL_ROLES[keyof typeof ALL_ROLES];
+export type UserRoleType = (typeof ALL_ROLES)[keyof typeof ALL_ROLES];
 
 // Array of innovator types for iteration (excluding admin)
 export const INNOVATOR_TYPES_ARRAY = Object.values(INNOVATOR_TYPES);
@@ -54,4 +54,4 @@ export const ROLE_DISPLAY_NAMES: Record<UserRoleType, string> = {
   [INNOVATOR_TYPES.ORGANIZATION]: 'Organization',
   [INNOVATOR_TYPES.ACCELERATOR]: 'Accelerator',
   [INNOVATOR_TYPES.INCUBATOR]: 'Incubator',
-}; 
+};

@@ -20,10 +20,10 @@ export const generateToken = (user: User): string => {
     };
 
     // Create a simple object for the JWT options with the correct type
-    const options: jwt.SignOptions = { 
-      expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn']
+    const options: jwt.SignOptions = {
+      expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
     };
-    
+
     // Sign with properly typed parameters
     return jwt.sign(payload, JWT_SECRET, options);
   } catch (error) {
@@ -54,4 +54,4 @@ export const verifyToken = (token: string): any => {
 export const getUserIdFromToken = (token: string): string => {
   const decoded = verifyToken(token);
   return decoded.id;
-}; 
+};

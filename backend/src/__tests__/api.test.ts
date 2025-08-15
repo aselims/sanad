@@ -30,7 +30,7 @@ describe('API Routes', () => {
   describe('GET /api/health', () => {
     it('should return health status', async () => {
       const response = await request(app).get('/api/health');
-      
+
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status', 'ok');
       expect(response.body).toHaveProperty('database');
@@ -60,18 +60,18 @@ describe('API Routes', () => {
           bio: 'Investment in health sector',
         },
       ];
-      
+
       // Mock the User repository
       const mockUserRepo = {
         find: jest.fn().mockResolvedValue(mockUsers),
       };
-      
+
       // Set up the mock repository
       (AppDataSource.getRepository as jest.Mock).mockReturnValue(mockUserRepo);
-      
+
       // Make the request
       const response = await request(app).get('/api/users/search?q=health');
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status', 'success');
@@ -80,27 +80,27 @@ describe('API Routes', () => {
       expect(AppDataSource.getRepository).toHaveBeenCalledWith(User);
       expect(mockUserRepo.find).toHaveBeenCalled();
     });
-    
+
     it('should return 400 if query is missing', async () => {
       const response = await request(app).get('/api/users/search');
-      
+
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('status', 'error');
       expect(response.body).toHaveProperty('message', 'Search query is required');
     });
-    
+
     it('should handle errors', async () => {
       // Mock the User repository to throw an error
       const mockUserRepo = {
         find: jest.fn().mockRejectedValue(new Error('Database error')),
       };
-      
+
       // Set up the mock repository
       (AppDataSource.getRepository as jest.Mock).mockReturnValue(mockUserRepo);
-      
+
       // Make the request
       const response = await request(app).get('/api/users/search?q=health');
-      
+
       // Assertions
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('status', 'error');
@@ -123,7 +123,7 @@ describe('API Routes', () => {
           updatedAt: new Date(),
         },
       ];
-      
+
       // Mock partnership data
       const mockPartnerships = [
         {
@@ -136,24 +136,24 @@ describe('API Routes', () => {
           updatedAt: new Date(),
         },
       ];
-      
+
       // Mock the repositories
       const mockChallengeRepo = {
         find: jest.fn().mockResolvedValue(mockChallenges),
       };
-      
+
       const mockPartnershipRepo = {
         find: jest.fn().mockResolvedValue(mockPartnerships),
       };
-      
+
       // Set up the mock repositories
       (AppDataSource.getRepository as jest.Mock)
         .mockReturnValueOnce(mockChallengeRepo)
         .mockReturnValueOnce(mockPartnershipRepo);
-      
+
       // Make the request
       const response = await request(app).get('/api/collaborations/search?q=health');
-      
+
       // Assertions
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status', 'success');
@@ -164,27 +164,27 @@ describe('API Routes', () => {
       expect(mockChallengeRepo.find).toHaveBeenCalled();
       expect(mockPartnershipRepo.find).toHaveBeenCalled();
     });
-    
+
     it('should return 400 if query is missing', async () => {
       const response = await request(app).get('/api/collaborations/search');
-      
+
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('status', 'error');
       expect(response.body).toHaveProperty('message', 'Search query is required');
     });
-    
+
     it('should handle errors', async () => {
       // Mock the Challenge repository to throw an error
       const mockChallengeRepo = {
         find: jest.fn().mockRejectedValue(new Error('Database error')),
       };
-      
+
       // Set up the mock repository
       (AppDataSource.getRepository as jest.Mock).mockReturnValue(mockChallengeRepo);
-      
+
       // Make the request
       const response = await request(app).get('/api/collaborations/search?q=health');
-      
+
       // Assertions
       expect(response.status).toBe(500);
       expect(response.body).toHaveProperty('status', 'error');
@@ -199,10 +199,10 @@ describe('API Routes', () => {
         .post('/api/connections/request')
         .set('Authorization', 'Bearer mock-token')
         .send({ targetUserId: '123' });
-      
+
       // Since we're not actually testing the authentication middleware,
       // this will likely fail, but we can still test the route structure
       expect(response.status).toBe(401);
     });
   });
-}); 
+});

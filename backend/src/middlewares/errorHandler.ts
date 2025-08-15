@@ -52,4 +52,4 @@ export const errorHandler = (
     status: 'error',
     message: isOperational ? message : 'Something went wrong',
   });
-}; 
+};

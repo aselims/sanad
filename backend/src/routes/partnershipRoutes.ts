@@ -24,4 +24,4 @@ router.post('/', authenticateJWT, asyncHandler(partnershipController.createPartn
 router.put('/:id', authenticateJWT, asyncHandler(partnershipController.updatePartnership));
 router.delete('/:id', authenticateJWT, asyncHandler(partnershipController.deletePartnership));
 
-export default router; 
+export default router;

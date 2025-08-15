@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './User';
 
 @Entity('messages')
@@ -31,4 +39,4 @@ export class Message {
 
   @UpdateDateColumn({ name: 'updatedAt' })
   updatedAt: Date;
-} 
+}

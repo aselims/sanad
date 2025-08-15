@@ -14,10 +14,13 @@ export interface DatabaseSearchResult {
  * Perform database-optimized search using PostgreSQL full-text search
  * This serves as a fallback for the AI search or can be used directly
  */
-export async function databaseSearch(query: string, limit: number = 50): Promise<DatabaseSearchResult[]> {
+export async function databaseSearch(
+  query: string,
+  limit: number = 50
+): Promise<DatabaseSearchResult[]> {
   try {
     const searchQuery = query.trim().replace(/\s+/g, ' & '); // Convert to tsquery format
-    
+
     const rawQuery = `
       SELECT 
         entity_type,
@@ -31,21 +34,20 @@ export async function databaseSearch(query: string, limit: number = 50): Promise
       ORDER BY relevance_score DESC, created_at DESC
       LIMIT $2
     `;
-    
+
     const results = await AppDataSource.query(rawQuery, [searchQuery, limit]);
-    
+
     return results.map((row: any) => ({
       id: row.id,
       title: row.title,
       description: row.description,
       entity_type: row.entity_type,
       relevanceScore: parseFloat(row.relevance_score),
-      created_at: row.created_at
+      created_at: row.created_at,
     }));
-    
   } catch (error) {
     logger.error(`Database search error: ${error}`);
-    
+
     // Fallback to simpler search if full-text search fails
     return await fallbackSearch(query, limit);
   }
@@ -57,7 +59,7 @@ export async function databaseSearch(query: string, limit: number = 50): Promise
 async function fallbackSearch(query: string, limit: number): Promise<DatabaseSearchResult[]> {
   try {
     const searchTerm = `%${query.toLowerCase()}%`;
-    
+
     const rawQuery = `
       SELECT 
         entity_type,
@@ -73,18 +75,17 @@ async function fallbackSearch(query: string, limit: number): Promise<DatabaseSea
       ORDER BY created_at DESC
       LIMIT $2
     `;
-    
+
     const results = await AppDataSource.query(rawQuery, [searchTerm, limit]);
-    
+
     return results.map((row: any) => ({
       id: row.id,
       title: row.title,
       description: row.description,
       entity_type: row.entity_type,
       relevanceScore: 1.0,
-      created_at: row.created_at
+      created_at: row.created_at,
     }));
-    
   } catch (error) {
     logger.error(`Fallback search error: ${error}`);
     return [];
@@ -97,7 +98,7 @@ async function fallbackSearch(query: string, limit: number): Promise<DatabaseSea
 export async function searchWithFacets(query: string) {
   try {
     const searchQuery = query.trim().replace(/\s+/g, ' & ');
-    
+
     const facetQuery = `
       SELECT 
         entity_type,
@@ -108,19 +109,18 @@ export async function searchWithFacets(query: string) {
       GROUP BY entity_type
       ORDER BY avg_relevance DESC
     `;
-    
+
     const facets = await AppDataSource.query(facetQuery, [searchQuery]);
     const results = await databaseSearch(query);
-    
+
     return {
       results,
       facets: facets.map((f: any) => ({
         type: f.entity_type,
         count: parseInt(f.count),
-        avgRelevance: parseFloat(f.avg_relevance)
-      }))
+        avgRelevance: parseFloat(f.avg_relevance),
+      })),
     };
-    
   } catch (error) {
     logger.error(`Faceted search error: ${error}`);
     return { results: [], facets: [] };

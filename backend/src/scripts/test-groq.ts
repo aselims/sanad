@@ -4,13 +4,13 @@ import OpenAI from 'openai';
 // Initialize OpenAI client with Groq API
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  baseURL: "https://api.groq.com/openai/v1"
+  baseURL: 'https://api.groq.com/openai/v1',
 });
 
 async function testGroqIntegration() {
   try {
     console.log('🧪 Testing Groq API integration...');
-    
+
     const response = await openai.chat.completions.create({
       model: 'llama-3.1-8b-instant',
       messages: [
@@ -28,14 +28,14 @@ async function testGroqIntegration() {
             "entities": ["array of key entities extracted"],
             "filters": {"field": "value"} - any implied filters,
             "expandedQuery": "an expanded version of the query that might catch more relevant results"
-          }`
+          }`,
         },
         {
           role: 'user',
-          content: 'Looking for AI startup founders in fintech'
-        }
+          content: 'Looking for AI startup founders in fintech',
+        },
       ],
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
     });
 
     const content = response.choices[0].message.content;
@@ -43,7 +43,7 @@ async function testGroqIntegration() {
       const parsed = JSON.parse(content);
       console.log('✅ Groq API test successful!');
       console.log('📊 Response:', JSON.stringify(parsed, null, 2));
-      
+
       // Verify the expected structure
       if (parsed.intent && parsed.entities && parsed.filters && parsed.expandedQuery) {
         console.log('✅ JSON response structure is correct');

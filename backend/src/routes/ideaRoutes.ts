@@ -24,4 +24,4 @@ router.post('/', authenticateJWT, asyncHandler(ideaController.createIdea));
 router.put('/:id', authenticateJWT, asyncHandler(ideaController.updateIdea));
 router.delete('/:id', authenticateJWT, asyncHandler(ideaController.deleteIdea));
 
-export default router; 
+export default router;

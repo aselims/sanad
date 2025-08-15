@@ -9,10 +9,10 @@ export interface MatchResult {
 
 // Helper function to convert array to readable string
 function listToString(items: string[]): string {
-  if (items.length === 0) return "";
+  if (items.length === 0) return '';
   if (items.length === 1) return items[0];
   if (items.length === 2) return `${items[0]} and ${items[1]}`;
-  
+
   const lastItem = items[items.length - 1];
   const otherItems = items.slice(0, items.length - 1).join(', ');
   return `${otherItems}, and ${lastItem}`;
@@ -26,7 +26,11 @@ function getUserTags(user: User): string[] {
 }
 
 // Function to generate highlight text based on match data
-function generateMatchHighlight(currentUser: User, matchedUser: User, sharedTags: string[]): string {
+function generateMatchHighlight(
+  currentUser: User,
+  matchedUser: User,
+  sharedTags: string[]
+): string {
   // Different templates based on match type and shared attributes
   if (matchedUser.role === currentUser.role) {
     if (sharedTags.length > 0) {
@@ -61,35 +65,35 @@ export function findPotentialMatches(currentUser: User, allUsers: User[]): Match
       // Get tags for both users
       const currentUserTags = getUserTags(currentUser);
       const userTags = getUserTags(user);
-      
+
       // Calculate shared tags
       const sharedTags = userTags.filter(tag => currentUserTags.includes(tag));
-      
+
       // Calculate tag similarity score (50% weight)
-      const tagSimilarity = sharedTags.length / 
-        Math.max(currentUserTags.length, userTags.length) || 0.1;
-      
+      const tagSimilarity =
+        sharedTags.length / Math.max(currentUserTags.length, userTags.length) || 0.1;
+
       // Calculate type compatibility score (30% weight)
       const typeScore = user.role === currentUser.role ? 1 : 0.5;
-      
+
       // Calculate location proximity score (20% weight)
       const locationScore = user.location === currentUser.location ? 1 : 0.3;
-      
+
       // Calculate final match score (weighted)
       const matchScore = Math.round(
         (tagSimilarity * 0.5 + typeScore * 0.3 + locationScore * 0.2) * 100
       );
-      
+
       // Generate highlight
       const highlight = generateMatchHighlight(currentUser, user, sharedTags);
-      
+
       return {
         innovator: user,
         matchScore,
         sharedTags,
-        highlight
+        highlight,
       };
     })
     .sort((a, b) => b.matchScore - a.matchScore)
     .slice(0, 5); // Return top 5 matches
-} 
+}

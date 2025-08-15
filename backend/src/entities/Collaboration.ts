@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { User } from './User';
 import { Milestone } from './Milestone';
 import { CollaborationFile } from './CollaborationFile';
@@ -20,7 +29,7 @@ export enum CollaborationType {
   INCUBATION = 'incubation',
   ALLIANCE = 'alliance',
   INITIATIVE = 'initiative',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 export enum CollaborationStatus {
@@ -105,4 +114,4 @@ export class Collaboration {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-} 
+}

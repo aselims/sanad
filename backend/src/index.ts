@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN 
+  origin: process.env.CORS_ORIGIN
     ? [process.env.CORS_ORIGIN]
     : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8081'],
   credentials: true,
@@ -66,7 +66,7 @@ app.use((req: Request, res: Response) => {
 });
 
 // Error handling middleware
-app.use(function(err: Error | AppError, req: Request, res: Response, next: NextFunction) {
+app.use(function (err: Error | AppError, req: Request, res: Response, next: NextFunction) {
   errorHandler(err, req, res, next);
 });
 
@@ -94,4 +94,4 @@ process.on('unhandledRejection', (err: Error) => {
   process.exit(1);
 });
 
-startServer(); 
+startServer();

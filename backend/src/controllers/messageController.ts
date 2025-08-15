@@ -12,27 +12,27 @@ export const sendMessage = async (req: Request, res: Response) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: 'error',
-        message: 'Unauthorized: User not authenticated'
+        message: 'Unauthorized: User not authenticated',
       });
     }
 
     const { recipientId, content } = req.body;
-    
+
     if (!recipientId || !content) {
       return res.status(400).json({
         status: 'error',
-        message: 'Recipient ID and message content are required'
+        message: 'Recipient ID and message content are required',
       });
     }
 
     // Check if recipient exists
     const userRepository = AppDataSource.getRepository(User);
     const recipient = await userRepository.findOne({ where: { id: recipientId } });
-    
+
     if (!recipient) {
       return res.status(404).json({
         status: 'error',
-        message: 'Recipient not found'
+        message: 'Recipient not found',
       });
     }
 
@@ -40,7 +40,7 @@ export const sendMessage = async (req: Request, res: Response) => {
     if (!recipient.allowMessages) {
       return res.status(403).json({
         status: 'error',
-        message: 'This user does not allow messages'
+        message: 'This user does not allow messages',
       });
     }
 
@@ -49,8 +49,8 @@ export const sendMessage = async (req: Request, res: Response) => {
     const connection = await connectionRepository.findOne({
       where: [
         { requesterId: req.user.id, receiverId: recipientId, status: ConnectionStatus.ACCEPTED },
-        { requesterId: recipientId, receiverId: req.user.id, status: ConnectionStatus.ACCEPTED }
-      ]
+        { requesterId: recipientId, receiverId: req.user.id, status: ConnectionStatus.ACCEPTED },
+      ],
     });
 
     // Instead of requiring a connection, we'll make it optional
@@ -66,7 +66,7 @@ export const sendMessage = async (req: Request, res: Response) => {
       senderId: req.user.id,
       receiverId: recipientId,
       content,
-      isRead: false
+      isRead: false,
     });
 
     await messageRepository.save(newMessage);
@@ -74,13 +74,13 @@ export const sendMessage = async (req: Request, res: Response) => {
     return res.status(201).json({
       status: 'success',
       message: 'Message sent successfully',
-      data: newMessage
+      data: newMessage,
     });
   } catch (error) {
     console.error('Error sending message:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 };
@@ -93,16 +93,16 @@ export const getConversation = async (req: Request, res: Response) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: 'error',
-        message: 'Unauthorized: User not authenticated'
+        message: 'Unauthorized: User not authenticated',
       });
     }
 
     const { userId } = req.params;
-    
+
     if (!userId) {
       return res.status(400).json({
         status: 'error',
-        message: 'User ID is required'
+        message: 'User ID is required',
       });
     }
 
@@ -111,9 +111,9 @@ export const getConversation = async (req: Request, res: Response) => {
     const messages = await messageRepository.find({
       where: [
         { senderId: req.user.id, receiverId: userId },
-        { senderId: userId, receiverId: req.user.id }
+        { senderId: userId, receiverId: req.user.id },
       ],
-      order: { createdAt: 'ASC' }
+      order: { createdAt: 'ASC' },
     });
 
     // Mark messages as read if current user is the receiver
@@ -130,13 +130,13 @@ export const getConversation = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       status: 'success',
-      data: messages
+      data: messages,
     });
   } catch (error) {
     console.error('Error getting conversation:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 };
@@ -149,7 +149,7 @@ export const getConversations = async (req: Request, res: Response) => {
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: 'error',
-        message: 'Unauthorized: User not authenticated'
+        message: 'Unauthorized: User not authenticated',
       });
     }
 
@@ -177,7 +177,7 @@ export const getConversations = async (req: Request, res: Response) => {
     // Combine and deduplicate user IDs
     const userIds = [
       ...sentMessages.map(m => m.message_receiverId),
-      ...receivedMessages.map(m => m.message_senderId)
+      ...receivedMessages.map(m => m.message_senderId),
     ].filter((value, index, self) => self.indexOf(value) === index);
 
     // Get the latest message for each conversation
@@ -185,47 +185,51 @@ export const getConversations = async (req: Request, res: Response) => {
     for (const userId of userIds) {
       const latestMessage = await messageRepository
         .createQueryBuilder('message')
-        .where('(message.senderId = :userId1 AND message.receiverId = :userId2) OR (message.senderId = :userId2 AND message.receiverId = :userId1)', 
-          { userId1: req.user.id, userId2: userId })
+        .where(
+          '(message.senderId = :userId1 AND message.receiverId = :userId2) OR (message.senderId = :userId2 AND message.receiverId = :userId1)',
+          { userId1: req.user.id, userId2: userId }
+        )
         .orderBy('message.createdAt', 'DESC')
         .getOne();
 
       if (latestMessage) {
         // Get user details
         const otherUser = await userRepository.findOne({ where: { id: userId } });
-        
+
         // Count unread messages
         const unreadCount = await messageRepository.count({
           where: {
             senderId: userId,
             receiverId: req.user.id,
-            isRead: false
-          }
+            isRead: false,
+          },
         });
 
         conversations.push({
           userId,
           user: otherUser,
           latestMessage,
-          unreadCount
+          unreadCount,
         });
       }
     }
 
     // Sort conversations by latest message date
-    conversations.sort((a, b) => 
-      new Date(b.latestMessage.createdAt).getTime() - new Date(a.latestMessage.createdAt).getTime()
+    conversations.sort(
+      (a, b) =>
+        new Date(b.latestMessage.createdAt).getTime() -
+        new Date(a.latestMessage.createdAt).getTime()
     );
 
     return res.status(200).json({
       status: 'success',
-      data: conversations
+      data: conversations,
     });
   } catch (error) {
     console.error('Error getting conversations:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 };
@@ -237,22 +241,19 @@ export const createWelcomeMessage = async (userId: string) => {
   try {
     const messageRepository = AppDataSource.getRepository(Message);
     const userRepository = AppDataSource.getRepository(User);
-    
+
     // Check if user already has any messages
     const existingMessages = await messageRepository.find({
-      where: [
-        { senderId: userId },
-        { receiverId: userId }
-      ]
+      where: [{ senderId: userId }, { receiverId: userId }],
     });
-    
+
     // Only create welcome message if the user has no messages
     if (existingMessages.length === 0) {
       // Find or create a system admin user
-      let adminUser = await userRepository.findOne({ 
-        where: { email: 'system@t3awanu.com' }
+      let adminUser = await userRepository.findOne({
+        where: { email: 'system@t3awanu.com' },
       });
-      
+
       if (!adminUser) {
         // Create a system admin user if it doesn't exist
         adminUser = userRepository.create({
@@ -269,19 +270,19 @@ export const createWelcomeMessage = async (userId: string) => {
         });
         await userRepository.save(adminUser);
       }
-      
+
       // Create welcome message
       const welcomeMessage = messageRepository.create({
         senderId: adminUser.id,
         receiverId: userId,
         content: `Welcome to T3awanu! We're excited to have you join our community of innovators. Start connecting and collaborating with others to bring your ideas to life. If you need any assistance, don't hesitate to reach out to our support team.`,
-        isRead: false
+        isRead: false,
       });
-      
+
       await messageRepository.save(welcomeMessage);
       console.log(`Welcome message created for user ${userId}`);
     }
   } catch (error) {
     console.error('Error creating welcome message:', error);
   }
-}; 
+};

@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './User';
 
 @Entity('matches')
@@ -34,4 +41,4 @@ export class Match {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'targetUserId' })
   targetUser: User;
-} 
+}

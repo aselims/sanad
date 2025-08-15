@@ -10,11 +10,11 @@ const runMigrations = async () => {
     // Run migrations
     const migrations = await AppDataSource.runMigrations();
     logger.info(`Successfully ran ${migrations.length} migrations`);
-    
+
     // Close the connection
     await AppDataSource.destroy();
     logger.info('Database connection closed');
-    
+
     process.exit(0);
   } catch (error) {
     logger.error(`Error running migrations: ${error}`);
@@ -22,4 +22,4 @@ const runMigrations = async () => {
   }
 };
 
-runMigrations(); 
+runMigrations();

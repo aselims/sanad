@@ -16,7 +16,7 @@ export class NotificationService {
     return this.notificationRepository.find({
       where: { userId },
       order: { createdAt: 'DESC' },
-      take: 50 // Limit to the 50 most recent notifications
+      take: 50, // Limit to the 50 most recent notifications
     });
   }
 
@@ -27,7 +27,7 @@ export class NotificationService {
    */
   async getUnreadCount(userId: string): Promise<number> {
     return this.notificationRepository.count({
-      where: { userId, isRead: false }
+      where: { userId, isRead: false },
     });
   }
 
@@ -39,7 +39,7 @@ export class NotificationService {
    */
   async markAsRead(notificationId: string, userId: string): Promise<Notification> {
     const notification = await this.notificationRepository.findOne({
-      where: { id: notificationId }
+      where: { id: notificationId },
     });
 
     if (!notification) {
@@ -87,7 +87,7 @@ export class NotificationService {
       type: data.type,
       content: data.content,
       isRead: false,
-      referenceId: data.referenceId || null
+      referenceId: data.referenceId || null,
     });
 
     return this.notificationRepository.save(notification);
@@ -111,7 +111,7 @@ export class NotificationService {
       userId,
       type: NotificationType.MESSAGE,
       content: `New message from ${senderName}: ${messagePreview}`,
-      referenceId: senderId
+      referenceId: senderId,
     });
   }
 
@@ -133,7 +133,7 @@ export class NotificationService {
       userId,
       type: NotificationType.CONNECTION,
       content: `Connection request from ${senderName} - ${senderName} would like to connect with you.`,
-      referenceId: requestId
+      referenceId: requestId,
     });
   }
 
@@ -155,7 +155,7 @@ export class NotificationService {
       userId,
       type: NotificationType.CONNECTION,
       content: `${acceptorName} accepted your connection request - You are now connected with ${acceptorName}.`,
-      referenceId: connectionId
+      referenceId: connectionId,
     });
   }
 
@@ -180,7 +180,7 @@ export class NotificationService {
       userId,
       type: NotificationType.INTEREST,
       content: `${interestedPartyName} expressed interest in your ${entityType} - ${interestedPartyName} is interested in "${entityTitle}".`,
-      referenceId: entityId
+      referenceId: entityId,
     });
   }
 
@@ -202,4 +202,4 @@ export class NotificationService {
 
     return result.affected || 0;
   }
-} 
+}

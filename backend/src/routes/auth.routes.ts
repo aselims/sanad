@@ -33,4 +33,4 @@ router.get('/me', authenticateJWT, routeHandler(authController.getCurrentUser));
  */
 router.post('/change-password', authenticateJWT, routeHandler(authController.changePassword));
 
-export default router; 
+export default router;

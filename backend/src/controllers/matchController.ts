@@ -9,11 +9,11 @@ export class MatchController {
     try {
       // Get the user ID from the authenticated user
       const userId = (req.user as any)?.id;
-      
+
       if (!userId) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
-      
+
       const matches = await this.matchService.findPotentialMatches(userId);
       res.json({ data: matches });
     } catch (error) {
@@ -26,23 +26,19 @@ export class MatchController {
     try {
       // Get the user ID from the authenticated user
       const userId = (req.user as any)?.id;
-      
+
       if (!userId) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
-      
+
       const { targetUserId, preference } = req.body;
-      
+
       if (!targetUserId || !preference) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
-      
-      const match = await this.matchService.saveMatchPreference(
-        userId,
-        targetUserId,
-        preference
-      );
-      
+
+      const match = await this.matchService.saveMatchPreference(userId, targetUserId, preference);
+
       res.json({ data: match });
     } catch (error) {
       console.error('Error saving match preference:', error);
@@ -54,11 +50,11 @@ export class MatchController {
     try {
       // Get the user ID from the authenticated user
       const userId = (req.user as any)?.id;
-      
+
       if (!userId) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
-      
+
       const history = await this.matchService.getMatchHistory(userId);
       res.json({ data: history });
     } catch (error) {
@@ -66,4 +62,4 @@ export class MatchController {
       res.status(500).json({ error: 'Failed to fetch match history' });
     }
   }
-} 
+}

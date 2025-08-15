@@ -1,10 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './User';
 
 export enum ConnectionStatus {
   PENDING = 'pending',
   ACCEPTED = 'accepted',
-  REJECTED = 'rejected'
+  REJECTED = 'rejected',
 }
 
 @Entity('connections')
@@ -21,7 +29,7 @@ export class Connection {
   @Column({
     type: 'enum',
     enum: ConnectionStatus,
-    default: ConnectionStatus.PENDING
+    default: ConnectionStatus.PENDING,
   })
   status: ConnectionStatus;
 
@@ -38,4 +46,4 @@ export class Connection {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-} 
+}

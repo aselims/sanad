@@ -34,7 +34,7 @@ export const getIdeaById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const ideaRepository = AppDataSource.getRepository(Idea);
-    
+
     const idea = await ideaRepository.findOne({
       where: { id },
       relations: ['createdBy'],
@@ -84,7 +84,7 @@ export const createIdea = async (req: Request, res: Response) => {
 
     const ideaRepository = AppDataSource.getRepository(Idea);
     const idea = new Idea();
-    
+
     idea.title = title;
     idea.description = description;
     idea.category = category;
@@ -95,7 +95,7 @@ export const createIdea = async (req: Request, res: Response) => {
     idea.status = status;
     idea.createdBy = user;
     idea.createdById = user.id;
-    
+
     // Set the creator as the first participant
     idea.participants = [`${user.firstName} ${user.lastName}`];
 
@@ -107,7 +107,7 @@ export const createIdea = async (req: Request, res: Response) => {
         ...idea,
         creatorName: `${user.firstName} ${user.lastName}`,
         creatorEmail: user.email,
-      }
+      },
     });
   } catch (error: any) {
     logger.error('Error creating idea:', error);
@@ -164,9 +164,11 @@ export const updateIdea = async (req: Request, res: Response) => {
       message: 'Idea updated successfully',
       idea: {
         ...idea,
-        creatorName: idea.createdBy ? `${idea.createdBy.firstName} ${idea.createdBy.lastName}` : 'Unknown',
+        creatorName: idea.createdBy
+          ? `${idea.createdBy.firstName} ${idea.createdBy.lastName}`
+          : 'Unknown',
         creatorEmail: idea.createdBy ? idea.createdBy.email : '',
-      }
+      },
     });
   } catch (error: any) {
     logger.error(`Error updating idea with ID ${req.params.id}:`, error);
@@ -179,7 +181,7 @@ export const deleteIdea = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const ideaRepository = AppDataSource.getRepository(Idea);
-    
+
     const idea = await ideaRepository.findOne({
       where: { id },
       relations: ['createdBy'],
@@ -202,4 +204,4 @@ export const deleteIdea = async (req: Request, res: Response) => {
     logger.error(`Error deleting idea with ID ${req.params.id}:`, error);
     return res.status(500).json({ message: 'Failed to delete idea', error: error.message });
   }
-}; 
+};

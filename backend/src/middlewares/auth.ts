@@ -86,7 +86,7 @@ export const authorizeOwner = (paramIdField: string = 'id') => {
  */
 export const optionalAuthentication = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
-  
+
   // If no auth header is present, continue without setting user
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return next();
@@ -110,8 +110,8 @@ export const optionalAuthentication = (req: Request, res: Response, next: NextFu
       // Set user if authentication successful
       req.user = user;
     }
-    
+
     // Always continue, whether authentication succeeded or not
     return next();
   })(req, res, next);
-}; 
+};

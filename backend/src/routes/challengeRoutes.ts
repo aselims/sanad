@@ -24,4 +24,4 @@ router.post('/', authenticateJWT, asyncHandler(challengeController.createChallen
 router.put('/:id', authenticateJWT, asyncHandler(challengeController.updateChallenge));
 router.delete('/:id', authenticateJWT, asyncHandler(challengeController.deleteChallenge));
 
-export default router; 
+export default router;

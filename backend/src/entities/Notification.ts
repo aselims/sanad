@@ -1,11 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { User } from './User';
 
 export enum NotificationType {
   MESSAGE = 'message',
   CONNECTION = 'connection',
   INTEREST = 'interest',
-  SYSTEM = 'system'
+  SYSTEM = 'system',
 }
 
 @Entity('notifications')
@@ -16,7 +23,7 @@ export class Notification {
   @Column({
     type: 'enum',
     enum: NotificationType,
-    default: NotificationType.SYSTEM
+    default: NotificationType.SYSTEM,
   })
   type: NotificationType;
 
@@ -41,4 +48,4 @@ export class Notification {
 
   @CreateDateColumn()
   updatedAt: Date;
-} 
+}
