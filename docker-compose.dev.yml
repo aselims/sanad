@@ -27,13 +27,13 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
       - PORT=3000
       - DB_SYNC=true
       - DATABASE_URL=postgresql://postgres:EaAdw0kJR9aAk9A2@db:5432/saned_db
-      - JWT_SECRET=${JWT_SECRET}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - CORS_ORIGIN=http://localhost:8081
     depends_on:
       - db

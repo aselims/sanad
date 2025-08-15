@@ -122,6 +122,15 @@ The project includes automated development scripts:
 - Entities in `backend/src/entities/`
 - Database sync is controlled by `DB_SYNC=true` environment variable in development
 
+### Environment Variable Management
+- **Single .env file**: All environment variables are stored in `sanad/.env` (project root)
+- **Backend configuration**: Uses sophisticated config system in `backend/src/config/`
+  - Environment-specific defaults in `backend/src/config/environments/`
+  - Type-safe validation and fallbacks
+  - Explicit loading from root `.env` via `dotenv.config({ path: '../.env' })`
+- **Docker integration**: `docker-compose.dev.yml` references root `.env` file
+- **No duplicate files**: Previously had duplicate `.env` files, now centralized at root level
+
 ### Authentication Flow
 - JWT-based authentication with refresh tokens
 - Passport.js strategies for local and JWT authentication

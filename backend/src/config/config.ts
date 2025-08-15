@@ -4,7 +4,7 @@ import { productionConfig } from './environments/production';
 import { testConfig } from './environments/test';
 
 // Load environment variables from .env files
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 // Environment type for better type safety
 export type Environment = 'development' | 'production' | 'test';
