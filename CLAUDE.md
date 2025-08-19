@@ -6,14 +6,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Sanad is an innovation collaboration platform that connects innovators, researchers, startups, and investors. It features AI-powered matchmaking, role-based profiles, collaboration tools, real-time messaging, and challenge management.
 
-## Development Commands
+## Development Setup & Commands
 
-### Root Level Commands
+### Quick Start (Recommended)
+
+The project supports both Docker and native npm development. **Docker is the recommended approach** as it provides consistent environment setup.
+
+#### Using Docker (Recommended)
+```bash
+# Check if containers are already running
+docker ps
+
+# If containers exist and running:
+# - Frontend: http://localhost:8081
+# - Backend API: http://localhost:3022
+# - Database: localhost:5435
+
+# Start with docker-compose
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+#### Using npm (Local Development)
 ```bash
 # Install all dependencies (frontend + backend)
 npm run install:all
 
 # Start both frontend and backend in development mode
+# Note: Frontend proxy may need configuration for local backend
 npm start
 
 # Build both frontend and backend for production
@@ -25,6 +44,14 @@ npm test
 # Debug mode for both services
 npm run debug
 ```
+
+### Important: Development Environment Detection
+
+The application automatically detects whether you're running:
+1. **Docker environment**: Uses Docker service names for backend proxy
+2. **Local npm environment**: Requires localhost proxy configuration
+
+### Root Level Commands
 
 ### Frontend Commands (in /frontend directory)
 ```bash
@@ -123,13 +150,55 @@ The project includes automated development scripts:
 - Database sync is controlled by `DB_SYNC=true` environment variable in development
 
 ### Environment Variable Management
-- **Single .env file**: All environment variables are stored in `sanad/.env` (project root)
-- **Backend configuration**: Uses sophisticated config system in `backend/src/config/`
-  - Environment-specific defaults in `backend/src/config/environments/`
-  - Type-safe validation and fallbacks
-  - Explicit loading from root `.env` via `dotenv.config({ path: '../.env' })`
-- **Docker integration**: `docker-compose.dev.yml` references root `.env` file
-- **No duplicate files**: Previously had duplicate `.env` files, now centralized at root level
+
+**The project uses a centralized configuration system with environment-specific defaults:**
+
+#### Configuration Files
+- **Environment file**: `.env` or `.env.local` in project root
+- **Config system**: `backend/src/config/config.ts` - centralized configuration
+- **Environment defaults**: 
+  - `backend/src/config/environments/development.ts`
+  - `backend/src/config/environments/production.ts`
+  - `backend/src/config/environments/test.ts`
+
+#### How It Works
+1. **Loads environment file**: `dotenv.config({ path: '../.env' })` from project root
+2. **Applies environment defaults**: Based on `NODE_ENV` setting
+3. **Environment variables override**: Any env var overrides the defaults
+4. **Validates configuration**: Type-safe validation with helpful error messages
+5. **Production safety**: Enforces security requirements in production
+
+#### Key Environment Variables
+```bash
+# Required for production
+JWT_SECRET=your-secure-jwt-secret
+OPENAI_API_KEY=gsk_your_groq_api_key
+
+# Database (uses individual vars or DATABASE_URL)
+DATABASE_URL=postgresql://user:pass@host:port/database
+# OR
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=sanad_db
+
+# Application settings
+NODE_ENV=development|production|test
+PORT=3000
+CORS_ORIGIN=http://localhost:8081
+LOG_LEVEL=debug|info|warn|error
+```
+
+#### Environment-Specific Behavior
+- **Development**: DB sync enabled, debug logging, longer JWT expiry, allows placeholder API keys
+- **Production**: DB sync disabled, info logging, shorter JWT expiry, requires real API keys
+- **Test**: Separate database, minimal logging, short JWT expiry
+
+#### Docker Integration
+- `docker-compose.dev.yml` loads `.env` file via `env_file` directive
+- Environment variables in docker-compose override .env file values
+- Backend config system handles both Docker and local development seamlessly
 
 ### Authentication Flow
 - JWT-based authentication with refresh tokens
@@ -145,11 +214,41 @@ The project includes automated development scripts:
 - **Types**: TypeScript definitions in `frontend/src/types.ts` and `backend/src/types/`
 
 ### Development Workflow
-1. Use `./dev.sh` for local development setup
-2. Frontend runs on development server with hot reload
-3. Backend uses ts-node-dev for automatic TypeScript compilation and restart
-4. Database migrations should be run when schema changes
-5. ESLint is configured for both frontend and backend code quality
+
+#### Recommended Docker Workflow
+1. **Check running containers**: `docker ps` to see if sanad containers are already running
+2. **Access running application**: 
+   - Frontend: http://localhost:8081
+   - Backend API: http://localhost:3022
+   - Database: localhost:5435
+3. **Start containers if needed**: `docker-compose -f docker-compose.dev.yml up -d`
+4. **View logs**: `docker-compose -f docker-compose.dev.yml logs -f`
+5. **Stop containers**: `docker-compose -f docker-compose.dev.yml down`
+
+#### Local npm Workflow
+1. **Install dependencies**: `npm run install:all`
+2. **Set up environment**: Ensure `.env` or `.env.local` exists in project root
+3. **Configure frontend proxy**: Update `frontend/vite.config.ts` if needed:
+   ```typescript
+   proxy: {
+     '/api': {
+       target: 'http://localhost:3000', // For local backend
+       // target: 'http://backend:3000',  // For Docker backend
+       changeOrigin: true,
+       secure: false,
+     }
+   }
+   ```
+4. **Start development**: `npm start`
+   - Frontend: http://localhost:5173
+   - Backend: http://localhost:3000
+
+#### General Development
+1. Frontend runs with Vite hot reload
+2. Backend uses ts-node-dev for automatic TypeScript compilation and restart
+3. Database migrations should be run when schema changes
+4. ESLint and Prettier are configured for code quality
+5. Husky pre-commit hooks ensure code quality before commits
 
 ### Testing Approach
 - Frontend: Jest + React Testing Library with setup in `jest.setup.js`
@@ -163,6 +262,55 @@ The project includes automated development scripts:
 - Application is hosted at collopi.com
 - Nginx reverse proxy configuration for production
 - Environment variables managed through `.env` files
+
+## Environment Setup Troubleshooting
+
+### Development Environment Conflicts
+
+**Problem**: Frontend proxy errors like "getaddrinfo ENOTFOUND backend"
+
+**Root Cause**: Frontend is configured for Docker environment but running with npm locally.
+
+**Solution**: Update `frontend/vite.config.ts` proxy target:
+```typescript
+proxy: {
+  '/api': {
+    target: 'http://localhost:3000', // For npm start
+    // target: 'http://backend:3000', // For Docker
+    changeOrigin: true,
+    secure: false,
+  }
+}
+```
+
+### Docker vs npm Development
+
+**When to use Docker**:
+- ✅ Consistent environment across team members
+- ✅ No need to install Node.js/PostgreSQL locally
+- ✅ Production-like environment
+- ✅ Easy database management
+
+**When to use npm**:
+- ✅ Faster development cycles (no container rebuilds)
+- ✅ Direct debugging with IDE
+- ✅ More familiar to Node.js developers
+
+### Configuration Validation Errors
+
+**Problem**: "JWT_SECRET must be changed from default value in production"
+
+**Solution**: Set a custom JWT_SECRET in your environment file:
+```bash
+JWT_SECRET=your-super-secret-production-key-here
+```
+
+**Problem**: "OPENAI_API_KEY environment variable is required in production"
+
+**Solution**: Add your Groq API key:
+```bash
+OPENAI_API_KEY=gsk_your_groq_api_key_here
+```
 
 ## Troubleshooting
 
