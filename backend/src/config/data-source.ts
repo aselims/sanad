@@ -4,6 +4,8 @@ import logger from '../utils/logger';
 import { config, isDevelopment } from './config';
 import { Collaboration } from '../entities/Collaboration';
 import { Milestone } from '../entities/Milestone';
+import { UserSkill } from '../entities/UserSkill';
+import { TeamInvitation } from '../entities/TeamInvitation';
 
 // Use DATABASE_URL if provided, otherwise use individual connection parameters
 export const AppDataSource = new DataSource(
@@ -13,7 +15,13 @@ export const AppDataSource = new DataSource(
         url: config.database.url,
         synchronize: config.database.syncEnabled,
         logging: isDevelopment() ? ['error', 'warn'] : false,
-        entities: [path.join(__dirname, '../entities/**/*.{ts,js}'), Collaboration, Milestone],
+        entities: [
+          path.join(__dirname, '../entities/**/*.{ts,js}'),
+          Collaboration,
+          Milestone,
+          UserSkill,
+          TeamInvitation,
+        ],
         migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
         subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
         cache: true,
@@ -30,7 +38,13 @@ export const AppDataSource = new DataSource(
         database: config.database.database,
         synchronize: config.database.syncEnabled,
         logging: isDevelopment() ? ['error', 'warn'] : false,
-        entities: [path.join(__dirname, '../entities/**/*.{ts,js}'), Collaboration, Milestone],
+        entities: [
+          path.join(__dirname, '../entities/**/*.{ts,js}'),
+          Collaboration,
+          Milestone,
+          UserSkill,
+          TeamInvitation,
+        ],
         migrations: [path.join(__dirname, '../migrations/**/*.{ts,js}')],
         subscribers: [path.join(__dirname, '../subscribers/**/*.{ts,js}')],
         cache: true,
