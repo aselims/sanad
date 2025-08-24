@@ -24,6 +24,18 @@ import projectRoutes from './projectRoutes';
 import milestoneRoutes from './milestoneRoutes';
 import teamRoutes from './teamRoutes';
 import mentorRoutes from './mentorRoutes';
+import investorRoutes from './investorRoutes';
+import investmentRoutes from './investmentRoutes';
+import projectResourceRoutes from './projectResourceRoutes';
+import projectRiskRoutes from './projectRiskRoutes';
+import milestoneDependencyRoutes from './milestoneDependencyRoutes';
+import projectDocumentRoutes from './projectDocumentRoutes';
+import projectUpdateRoutes from './projectUpdateRoutes';
+import challengeRoutes from './challengeRoutes';
+import partnershipRoutes from './partnershipRoutes';
+import collaborationRoutes from './collaborationRoutes';
+import matchRoutes from './matchRoutes';
+import fileRoutes from './fileRoutes';
 
 const router = Router();
 
@@ -96,20 +108,38 @@ router.get(
       });
     }
 
-    // Get all users from the database
-    const users = await AppDataSource.getRepository(User).find();
-
-    // Filter users based on the search query
-    const lowerQuery = query.toLowerCase();
-    const filteredUsers = users.filter(
-      user =>
-        user.firstName.toLowerCase().includes(lowerQuery) ||
-        user.lastName.toLowerCase().includes(lowerQuery) ||
-        user.email.toLowerCase().includes(lowerQuery) ||
-        user.organization?.toLowerCase().includes(lowerQuery) ||
-        user.bio?.toLowerCase().includes(lowerQuery) ||
-        user.role.toLowerCase().includes(lowerQuery)
-    );
+    // Use PostgreSQL full-text search with existing GIN indexes for optimal performance
+    const userRepository = AppDataSource.getRepository(User);
+    const filteredUsers = await userRepository
+      .createQueryBuilder('user')
+      .where(
+        `to_tsvector('english', 
+          COALESCE(user.firstName, '') || ' ' || 
+          COALESCE(user.lastName, '') || ' ' || 
+          COALESCE(user.email, '') || ' ' || 
+          COALESCE(user.organization, '') || ' ' || 
+          COALESCE(user.bio, '') || ' ' || 
+          COALESCE(user.role, '')
+        ) @@ plainto_tsquery('english', :query)`,
+        { query }
+      )
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'user.email',
+        'user.role',
+        'user.organization',
+        'user.position',
+        'user.bio',
+        'user.profilePicture',
+        'user.isVerified',
+        'user.isActive',
+        'user.createdAt',
+        'user.updatedAt',
+      ])
+      .limit(50) // Limit results for performance
+      .getMany();
 
     res.status(200).json({
       status: 'success',
@@ -477,5 +507,17 @@ router.use('/projects', projectRoutes);
 router.use('/milestones', milestoneRoutes);
 router.use('/teams', teamRoutes);
 router.use('/mentors', mentorRoutes);
+router.use('/investors', investorRoutes);
+router.use('/investments', investmentRoutes);
+router.use('/project-resources', projectResourceRoutes);
+router.use('/project-risks', projectRiskRoutes);
+router.use('/milestone-dependencies', milestoneDependencyRoutes);
+router.use('/project-documents', projectDocumentRoutes);
+router.use('/project-updates', projectUpdateRoutes);
+router.use('/challenges', challengeRoutes);
+router.use('/partnerships', partnershipRoutes);
+router.use('/collaborations', collaborationRoutes);
+router.use('/matches', matchRoutes);
+router.use('/files', fileRoutes);
 
 export default router;

@@ -105,6 +105,12 @@ export const VentureStudioSidebar: React.FC = () => {
           path: '/projects/new',
           icon: <Target className="w-4 h-4" />,
           description: 'Convert idea to project'
+        },
+        {
+          title: 'Advanced Management',
+          path: '/projects',
+          icon: <Settings className="w-4 h-4" />,
+          description: 'Access from project details'
         }
       ]
     },
