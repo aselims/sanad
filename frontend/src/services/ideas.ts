@@ -1,5 +1,5 @@
 import api from './api';
-import { Collaboration } from '../types';
+import { Collaboration, Idea, IdeaStage, IdeaStatus, ApprovalStatus } from '../types';
 
 // Helper function to convert idea data from the API to the Collaboration format
 const formatIdea = (idea: any): Collaboration => {
@@ -333,5 +333,182 @@ export const deleteIdea = async (id: string): Promise<any> => {
       console.error(`Error removing idea ${id} from local storage:`, localError);
       throw new Error('Failed to delete idea');
     }
+  }
+};
+
+// ========== New Direct Idea API Methods ==========
+
+/**
+ * Convert API data to Idea format
+ */
+const apiToIdea = (apiData: any): Idea => {
+  return {
+    id: apiData.id,
+    title: apiData.title,
+    description: apiData.description,
+    category: apiData.category || '',
+    stage: (apiData.stage as IdeaStage) || IdeaStage.CONCEPT,
+    status: (apiData.status as IdeaStatus) || IdeaStatus.DRAFT,
+    approvalStatus: (apiData.approvalStatus as ApprovalStatus) || ApprovalStatus.PENDING,
+    
+    // Business details
+    businessModel: apiData.businessModel,
+    targetMarket: apiData.targetMarket,
+    targetAudience: apiData.targetAudience || '',
+    competitiveAdvantage: apiData.competitiveAdvantage,
+    potentialImpact: apiData.potentialImpact || '',
+    
+    // Resources & Timeline
+    resourcesNeeded: apiData.resourcesNeeded,
+    fundingNeeded: apiData.fundingNeeded,
+    timeline: apiData.timeline,
+    
+    // Analytics
+    riskFactors: apiData.riskFactors || [],
+    successMetrics: apiData.successMetrics || [],
+    
+    // Meta
+    createdBy: apiData.createdBy,
+    createdById: apiData.createdById || '',
+    participants: apiData.participants || [],
+    attachments: apiData.attachments || [],
+    
+    // Admin
+    adminFeedback: apiData.adminFeedback,
+    rejectionReason: apiData.rejectionReason,
+    approvedBy: apiData.approvedBy,
+    approvedById: apiData.approvedById,
+    
+    // Timestamps
+    createdAt: new Date(apiData.createdAt),
+    updatedAt: new Date(apiData.updatedAt),
+    submittedAt: apiData.submittedAt ? new Date(apiData.submittedAt) : undefined,
+    approvedAt: apiData.approvedAt ? new Date(apiData.approvedAt) : undefined,
+    
+    // Engagement
+    upvotes: apiData.upvotes || 0,
+    downvotes: apiData.downvotes || 0,
+    views: apiData.views || 0,
+    
+    // Additional fields
+    submissionCompleted: apiData.submissionCompleted || false
+  };
+};
+
+/**
+ * Get idea details directly as Idea type
+ * @param id Idea ID
+ * @returns Promise with Idea or null
+ */
+export const getIdeaDetails = async (id: string): Promise<Idea | null> => {
+  try {
+    const response = await api.get(`/ideas/${id}`);
+    return apiToIdea(response.data);
+  } catch (error) {
+    console.error(`Error fetching idea details for ${id}:`, error);
+    
+    // Fallback to collaboration format conversion
+    const collaboration = await getIdeaById(id);
+    if (collaboration) {
+      return {
+        id: collaboration.id,
+        title: collaboration.title,
+        description: collaboration.description,
+        category: collaboration.ideaDetails?.category || '',
+        stage: (collaboration.ideaDetails?.stage as IdeaStage) || IdeaStage.CONCEPT,
+        status: IdeaStatus.ACTIVE,
+        approvalStatus: ApprovalStatus.APPROVED,
+        targetAudience: collaboration.ideaDetails?.targetAudience || '',
+        potentialImpact: collaboration.ideaDetails?.potentialImpact || '',
+        resourcesNeeded: collaboration.ideaDetails?.resourcesNeeded,
+        createdById: collaboration.createdById || '',
+        participants: collaboration.participants || [],
+        createdAt: collaboration.createdAt,
+        updatedAt: collaboration.updatedAt,
+        upvotes: collaboration.upvotes || 0,
+        downvotes: collaboration.downvotes || 0,
+        submissionCompleted: true
+      } as Idea;
+    }
+    
+    return null;
+  }
+};
+
+/**
+ * Vote on an idea
+ * @param id Idea ID
+ * @param voteType 'up' or 'down'
+ * @returns Promise with updated vote counts
+ */
+export const voteOnIdea = async (id: string, voteType: 'up' | 'down') => {
+  try {
+    const response = await api.post(`/ideas/${id}/vote`, { voteType });
+    return response.data;
+  } catch (error) {
+    console.error(`Error voting on idea ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Express interest in an idea
+ * @param id Idea ID
+ * @param data Interest data
+ * @returns Promise with success response
+ */
+export const expressInterestInIdea = async (id: string, data: {
+  message: string;
+  expertise?: string[];
+  collaboratorType?: string;
+  email?: string;
+  name?: string;
+}) => {
+  try {
+    const response = await api.post(`/ideas/${id}/interest`, data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error expressing interest in idea ${id}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get all ideas as Idea type
+ * @returns Promise with array of Ideas
+ */
+export const getAllIdeasDirect = async (): Promise<Idea[]> => {
+  try {
+    const response = await api.get('/ideas');
+    if (response.data && Array.isArray(response.data)) {
+      return response.data.map(apiToIdea);
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching ideas directly:', error);
+    
+    // Fallback to existing method
+    const collaborations = await getAllIdeas();
+    return collaborations
+      .filter(c => c.type === 'idea')
+      .map(c => ({
+        id: c.id,
+        title: c.title,
+        description: c.description,
+        category: c.ideaDetails?.category || '',
+        stage: (c.ideaDetails?.stage as IdeaStage) || IdeaStage.CONCEPT,
+        status: IdeaStatus.ACTIVE,
+        approvalStatus: ApprovalStatus.APPROVED,
+        targetAudience: c.ideaDetails?.targetAudience || '',
+        potentialImpact: c.ideaDetails?.potentialImpact || '',
+        resourcesNeeded: c.ideaDetails?.resourcesNeeded,
+        createdById: c.createdById || '',
+        participants: c.participants || [],
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        upvotes: c.upvotes || 0,
+        downvotes: c.downvotes || 0,
+        submissionCompleted: true
+      } as Idea));
   }
 }; 

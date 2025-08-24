@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, UserCircle, LogOut, Settings, X, Users, MessageSquare, Briefcase, Search } from 'lucide-react';
+import { Menu, UserCircle, LogOut, Settings, X, Users, MessageSquare, Briefcase, Search, ChevronDown, Rocket } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { SearchComponent } from './SearchComponent';
@@ -81,10 +81,12 @@ export function Header({
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showVentureStudioMenu, setShowVentureStudioMenu] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [initialSearchQuery, setInitialSearchQuery] = useState('');
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const ventureStudioMenuRef = useRef<HTMLDivElement>(null);
   const [showNotificationsMenu, setShowNotificationsMenu] = useState(false);
 
   // Helper function for navigation
@@ -130,6 +132,9 @@ export function Header({
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && 
           !(event.target as Element).closest('.mobile-menu-button')) {
         setShowMobileMenu(false);
+      }
+      if (ventureStudioMenuRef.current && !ventureStudioMenuRef.current.contains(event.target as Node)) {
+        setShowVentureStudioMenu(false);
       }
     };
 
@@ -315,6 +320,77 @@ export function Header({
               >
                 Innovators
               </Link>
+              
+              {/* Venture Studio Dropdown */}
+              {isAuthenticated && (
+                <div className="relative" ref={ventureStudioMenuRef}>
+                  <button
+                    onClick={() => setShowVentureStudioMenu(!showVentureStudioMenu)}
+                    className="flex items-center text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium focus:outline-none cursor-pointer"
+                  >
+                    <Rocket className="w-4 h-4 mr-1" />
+                    Venture Studio
+                    <ChevronDown className="w-3 h-3 ml-1" />
+                  </button>
+                  
+                  {showVentureStudioMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+                      <div className="py-1">
+                        <Link
+                          to="/projects"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowVentureStudioMenu(false)}
+                        >
+                          <div className="flex items-center">
+                            <Briefcase className="w-4 h-4 mr-2" />
+                            Projects
+                          </div>
+                        </Link>
+                        <Link
+                          to="/teams"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowVentureStudioMenu(false)}
+                        >
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 mr-2" />
+                            Teams
+                          </div>
+                        </Link>
+                        <Link
+                          to="/mentors"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowVentureStudioMenu(false)}
+                        >
+                          <div className="flex items-center">
+                            <UserCircle className="w-4 h-4 mr-2" />
+                            Mentors
+                          </div>
+                        </Link>
+                        <Link
+                          to="/investors"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowVentureStudioMenu(false)}
+                        >
+                          <div className="flex items-center">
+                            <Settings className="w-4 h-4 mr-2" />
+                            Investors
+                          </div>
+                        </Link>
+                        <Link
+                          to="/investments"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setShowVentureStudioMenu(false)}
+                        >
+                          <div className="flex items-center">
+                            <MessageSquare className="w-4 h-4 mr-2" />
+                            Investments
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </nav>
 
             <div className="flex items-center h-16 space-x-4">

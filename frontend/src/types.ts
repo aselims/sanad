@@ -85,6 +85,82 @@ export interface IdeaDetails {
   creatorEmail?: string;
 }
 
+export enum IdeaStage {
+  CONCEPT = 'concept',
+  PROTOTYPE = 'prototype',
+  VALIDATED = 'validated',
+  SCALING = 'scaling',
+}
+
+export enum IdeaStatus {
+  DRAFT = 'draft',
+  SUBMITTED = 'submitted',
+  UNDER_REVIEW = 'under_review',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+}
+
+export enum ApprovalStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  NEEDS_REVISION = 'needs_revision',
+}
+
+export interface Idea {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  stage: IdeaStage;
+  status: IdeaStatus;
+  approvalStatus: ApprovalStatus;
+  
+  // Business details
+  businessModel?: string;
+  targetMarket?: string;
+  targetAudience: string;
+  competitiveAdvantage?: string;
+  potentialImpact: string;
+  
+  // Resources & Timeline
+  resourcesNeeded?: string;
+  fundingNeeded?: number;
+  timeline?: string;
+  
+  // Analytics
+  riskFactors?: string[];
+  successMetrics?: string[];
+  
+  // Meta
+  createdBy?: User;
+  createdById: string;
+  participants: string[];
+  attachments?: string[];
+  
+  // Admin
+  adminFeedback?: string;
+  rejectionReason?: string;
+  approvedBy?: User;
+  approvedById?: string;
+  
+  // Timestamps
+  createdAt: Date;
+  updatedAt: Date;
+  submittedAt?: Date;
+  approvedAt?: Date;
+  
+  // Engagement
+  upvotes: number;
+  downvotes: number;
+  views?: number;
+  
+  // Additional fields
+  submissionCompleted: boolean;
+}
+
 // New interface for Project collaboration type
 export interface ProjectDetails {
   timeline: string;

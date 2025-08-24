@@ -41,6 +41,9 @@ import InvestorDirectory from './components/InvestorDirectory';
 import InvestorOnboarding from './components/InvestorOnboarding';
 import InvestmentDashboard from './components/InvestmentDashboard';
 import AdvancedProjectManagement from './components/AdvancedProjectManagement';
+import { VentureStudioDashboard } from './components/VentureStudioDashboard';
+import IdeaDetails from './components/IdeaDetails';
+import IdeasGallery from './components/IdeasGallery';
 
 export function App() {
   const navigate = useNavigate();
@@ -438,6 +441,13 @@ export function App() {
               </div>
             } />
             
+            {/* Venture Studio Hub */}
+            <Route path="/venture-studio" element={
+              <ProtectedRoute>
+                <VentureStudioDashboard />
+              </ProtectedRoute>
+            } />
+            
             {/* New Venture Studio Routes */}
             <Route path="/submit-idea" element={
               <ProtectedRoute>
@@ -445,6 +455,16 @@ export function App() {
                   onClose={() => navigate(-1)} 
                   onSubmit={() => navigate('/workspace')}
                 />
+              </ProtectedRoute>
+            } />
+            <Route path="/idea/:id" element={
+              <ProtectedRoute>
+                <IdeaDetails />
+              </ProtectedRoute>
+            } />
+            <Route path="/ideas" element={
+              <ProtectedRoute>
+                <IdeasGallery />
               </ProtectedRoute>
             } />
             <Route path="/find-cofounders" element={

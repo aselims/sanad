@@ -264,6 +264,9 @@ const CollaborationFiles: React.FC<CollaborationFilesProps> = ({
           </div>
         )
       )}
+      
+      {/* Debug info in development */}
+      {permissionsDebug}
     </div>
   );
 };
