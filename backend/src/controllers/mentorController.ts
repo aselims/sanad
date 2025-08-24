@@ -14,7 +14,7 @@ export class MentorController {
   // Create mentor profile
   async createMentorProfile(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -106,7 +106,7 @@ export class MentorController {
   async updateMentorProfile(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -291,7 +291,7 @@ export class MentorController {
   async requestSession(req: Request, res: Response) {
     try {
       const { mentorId } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -390,7 +390,7 @@ export class MentorController {
     try {
       const { sessionId } = req.params;
       const { accept, rejectionReason } = req.body;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -466,7 +466,7 @@ export class MentorController {
   // Get user's mentoring sessions
   async getUserSessions(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -531,7 +531,7 @@ export class MentorController {
   async updateSession(req: Request, res: Response) {
     try {
       const { sessionId } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -600,7 +600,7 @@ export class MentorController {
     try {
       const { sessionId } = req.params;
       const { rating, feedback, role } = req.body;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });

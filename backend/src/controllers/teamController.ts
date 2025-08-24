@@ -16,7 +16,7 @@ export class TeamController {
   // Create team
   async createTeam(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -112,7 +112,7 @@ export class TeamController {
   // Get user's teams
   async getUserTeams(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -174,7 +174,7 @@ export class TeamController {
   async getTeam(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -220,7 +220,7 @@ export class TeamController {
     try {
       const { teamId } = req.params;
       const { userId: inviteUserId, role = TeamMemberRole.CONTRIBUTOR, message } = req.body;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -313,7 +313,7 @@ export class TeamController {
     try {
       const { teamId } = req.params;
       const { accept } = req.body;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -366,7 +366,7 @@ export class TeamController {
   async updateTeamMember(req: Request, res: Response) {
     try {
       const { teamId, memberId } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -419,7 +419,7 @@ export class TeamController {
   async removeTeamMember(req: Request, res: Response) {
     try {
       const { teamId, memberId } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -493,7 +493,7 @@ export class TeamController {
     try {
       const { teamId } = req.params;
       const { skills, location, availability, experienceLevel, page = 1, limit = 20 } = req.query;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -582,7 +582,7 @@ export class TeamController {
   async getTeamStats(req: Request, res: Response) {
     try {
       const { teamId } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });

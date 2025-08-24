@@ -15,7 +15,7 @@ export class ProjectController {
   // Create new project
   async createProject(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -129,7 +129,7 @@ export class ProjectController {
   // Get all projects for user
   async getUserProjects(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -142,8 +142,9 @@ export class ProjectController {
         .leftJoinAndSelect('project.teamLead', 'teamLead')
         .leftJoinAndSelect('project.sourceIdea', 'sourceIdea')
         .leftJoinAndSelect('project.milestones', 'milestones')
-        .where('project.founderId = :userId OR project.teamLeadId = :userId OR :userId = ANY(project.coreTeamMembers)', {
-          userId
+        .where('project.founderId = :userId OR project.teamLeadId = :userId OR (project.coreTeamMembers IS NOT NULL AND project.coreTeamMembers LIKE :userIdPattern)', {
+          userId,
+          userIdPattern: `%${userId}%`
         });
 
       if (status) {
@@ -188,7 +189,7 @@ export class ProjectController {
   async getProject(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -209,7 +210,7 @@ export class ProjectController {
       // Check if user has access to this project
       const hasAccess = project.founderId === userId || 
                        project.teamLeadId === userId || 
-                       project.coreTeamMembers?.includes(userId);
+                       (project.coreTeamMembers && project.coreTeamMembers.includes(userId));
 
       if (!hasAccess) {
         return res.status(403).json({
@@ -236,7 +237,7 @@ export class ProjectController {
   async updateProject(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -293,7 +294,7 @@ export class ProjectController {
   async convertIdeaToProject(req: Request, res: Response) {
     try {
       const { ideaId } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -413,7 +414,7 @@ export class ProjectController {
   // Get project statistics
   async getProjectStats(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }

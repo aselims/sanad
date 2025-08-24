@@ -17,7 +17,7 @@ export class InvestmentController {
     try {
       const { projectId } = req.params;
       const { investorId, investmentType, amount, currency, notes } = req.body;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -101,7 +101,7 @@ export class InvestmentController {
   // Get all investments with filtering
   async getInvestments(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -211,7 +211,7 @@ export class InvestmentController {
   async getInvestment(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -261,7 +261,7 @@ export class InvestmentController {
   async updateInvestment(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -351,7 +351,7 @@ export class InvestmentController {
     try {
       const { id } = req.params;
       const { date, type, attendees, notes, outcome } = req.body;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -420,7 +420,7 @@ export class InvestmentController {
   // Get investment pipeline statistics
   async getInvestmentPipelineStats(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }

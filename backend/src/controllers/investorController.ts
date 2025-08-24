@@ -15,7 +15,7 @@ export class InvestorController {
   // Create new investor profile
   async createInvestor(req: Request, res: Response) {
     try {
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
       }
@@ -307,7 +307,7 @@ export class InvestorController {
   async updateInvestor(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -358,7 +358,7 @@ export class InvestorController {
   async verifyInvestor(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
@@ -410,7 +410,7 @@ export class InvestorController {
   async matchInvestorsToProject(req: Request, res: Response) {
     try {
       const { projectId } = req.params;
-      const userId = req.user?.userId;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({ success: false, error: 'Authentication required' });
