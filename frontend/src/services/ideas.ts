@@ -279,6 +279,28 @@ export const updateIdea = async (id: string, data: Partial<Collaboration>): Prom
 };
 
 /**
+ * Get ideas for a specific user
+ * @param userId User ID
+ * @returns Promise with user's ideas
+ */
+export const getIdeasByUser = async (userId: string): Promise<any[]> => {
+  try {
+    const response = await api.get(`/ideas/user/${userId}`);
+    return response.data.data || response.data || [];
+  } catch (error) {
+    console.error(`Error fetching ideas for user ${userId}:`, error);
+    // Fallback to filtering all ideas
+    try {
+      const allIdeas = await getAllIdeas();
+      return allIdeas.filter(idea => idea.createdById === userId);
+    } catch (fallbackError) {
+      console.error('Error in fallback idea fetch:', fallbackError);
+      return [];
+    }
+  }
+};
+
+/**
  * Delete an idea
  * @param id Idea ID
  * @returns Promise with the deletion response

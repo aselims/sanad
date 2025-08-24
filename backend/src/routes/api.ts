@@ -17,6 +17,13 @@ import { Challenge } from '../entities/Challenge';
 import { Idea } from '../entities/Idea';
 import notificationRoutes from './notificationRoutes';
 import interestRoutes from './interestRoutes';
+import ideaRoutes from './ideaRoutes';
+import teamInvitationRoutes from './teamInvitationRoutes';
+import userSkillRoutes from './userSkillRoutes';
+import projectRoutes from './projectRoutes';
+import milestoneRoutes from './milestoneRoutes';
+import teamRoutes from './teamRoutes';
+import mentorRoutes from './mentorRoutes';
 
 const router = Router();
 
@@ -463,5 +470,12 @@ router.get(
 router.use('/auth', authRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/interest', interestRoutes);
+router.use('/ideas', ideaRoutes);
+router.use('/team-invitations', teamInvitationRoutes);
+router.use('/user-skills', userSkillRoutes);
+router.use('/projects', projectRoutes);
+router.use('/milestones', milestoneRoutes);
+router.use('/teams', teamRoutes);
+router.use('/mentors', mentorRoutes);
 
 export default router;

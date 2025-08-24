@@ -1,6 +1,15 @@
 import { AppConfig } from '../config';
 
-export const testConfig: Partial<AppConfig> = {
+type PartialAppConfig = {
+  database?: Partial<AppConfig['database']>;
+  jwt?: Partial<AppConfig['jwt']>;
+  app?: Partial<AppConfig['app']>;
+  port?: number;
+  nodeEnv?: AppConfig['nodeEnv'];
+  apiKeys?: Partial<AppConfig['apiKeys']>;
+};
+
+export const testConfig: PartialAppConfig = {
   // Server Configuration
   port: 3001,
   

@@ -1477,7 +1477,7 @@ const seedIdeas = async (): Promise<void> => {
       idea.targetAudience = ideaData.targetAudience;
       idea.potentialImpact = ideaData.potentialImpact;
       idea.resourcesNeeded = ideaData.resourcesNeeded;
-      idea.status = IdeaStatus.PROPOSED;
+      idea.status = IdeaStatus.DRAFT;
       idea.createdBy = creator;
       idea.createdById = creator.id;
 

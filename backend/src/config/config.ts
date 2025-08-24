@@ -74,8 +74,18 @@ const validateBoolean = (value: string | undefined, defaultValue: boolean): bool
   return value.toLowerCase() === 'true';
 };
 
+// Partial configuration type for environment defaults
+type PartialAppConfig = {
+  database?: Partial<AppConfig['database']>;
+  jwt?: Partial<AppConfig['jwt']>;
+  app?: Partial<AppConfig['app']>;
+  port?: number;
+  nodeEnv?: AppConfig['nodeEnv'];
+  apiKeys?: Partial<AppConfig['apiKeys']>;
+};
+
 // Get environment-specific configuration defaults
-const getEnvironmentDefaults = (env: Environment): Partial<AppConfig> => {
+const getEnvironmentDefaults = (env: Environment): PartialAppConfig => {
   switch (env) {
     case 'development':
       return developmentConfig;
@@ -89,7 +99,7 @@ const getEnvironmentDefaults = (env: Environment): Partial<AppConfig> => {
 };
 
 // Merge configurations with environment variables taking precedence
-const mergeConfig = (defaults: Partial<AppConfig>, overrides: Partial<AppConfig>): AppConfig => {
+const mergeConfig = (defaults: PartialAppConfig, overrides: PartialAppConfig): AppConfig => {
   return {
     port: overrides.port || defaults.port || 3000,
     nodeEnv: overrides.nodeEnv || defaults.nodeEnv || 'development',
@@ -130,7 +140,7 @@ const createConfig = (): AppConfig => {
   const envDefaults = getEnvironmentDefaults(nodeEnv);
   
   // Environment variable overrides
-  const envOverrides: Partial<AppConfig> = {
+  const envOverrides: PartialAppConfig = {
     port: process.env.PORT ? validatePort(process.env.PORT, 3000) : undefined,
     nodeEnv,
     

@@ -15,6 +15,13 @@ import challengeRoutes from './routes/challengeRoutes';
 import collaborationRoutes from './routes/collaborationRoutes';
 import fileRoutes from './routes/fileRoutes';
 import authRoutes from './routes/auth.routes';
+import investorRoutes from './routes/investorRoutes';
+import investmentRoutes from './routes/investmentRoutes';
+import projectResourceRoutes from './routes/projectResourceRoutes';
+import projectRiskRoutes from './routes/projectRiskRoutes';
+import projectDocumentRoutes from './routes/projectDocumentRoutes';
+import projectUpdateRoutes from './routes/projectUpdateRoutes';
+import milestoneDependencyRoutes from './routes/milestoneDependencyRoutes';
 import _path from 'path';
 
 // Create Express app
@@ -52,6 +59,13 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/collaborations', collaborationRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/investors', investorRoutes);
+app.use('/api/investments', investmentRoutes);
+app.use('/api/project-resources', projectResourceRoutes);
+app.use('/api/project-risks', projectRiskRoutes);
+app.use('/api/project-documents', projectDocumentRoutes);
+app.use('/api/project-updates', projectUpdateRoutes);
+app.use('/api/milestone-dependencies', milestoneDependencyRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

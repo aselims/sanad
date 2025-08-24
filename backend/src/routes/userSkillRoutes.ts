@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { userSkillController } from '../controllers/userSkillController';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateJWT } from '../middlewares/auth';
 
 const router = Router();
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(authenticateJWT);
 
 // My Skills (current user)
 router.get('/my-skills', userSkillController.getMySkills.bind(userSkillController));

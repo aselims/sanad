@@ -1,24 +1,37 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../config/data-source';
-import { Idea } from '../entities/Idea';
+import { Idea, IdeaStatus, ApprovalStatus } from '../entities/Idea';
 import { User } from '../entities/User';
 import logger from '../utils/logger';
 
-// Get all ideas
+// Get all ideas with filtering support
 export const getAllIdeas = async (req: Request, res: Response) => {
   try {
     const ideaRepository = AppDataSource.getRepository(Idea);
+    const { status, stage, approvalStatus, submissionCompleted, category } = req.query;
+
+    // Build where condition based on filters
+    const whereConditions: any = {};
+    if (status) whereConditions.status = status;
+    if (stage) whereConditions.stage = stage;
+    if (approvalStatus) whereConditions.approvalStatus = approvalStatus;
+    if (submissionCompleted !== undefined) whereConditions.submissionCompleted = submissionCompleted === 'true';
+    if (category) whereConditions.category = category;
+
     const ideas = await ideaRepository.find({
-      relations: ['createdBy'],
+      where: whereConditions,
+      relations: ['createdBy', 'approvedBy'],
+      order: { createdAt: 'DESC' },
     });
 
     // Format the response to include creator information
     const formattedIdeas = ideas.map(idea => {
-      const { createdBy, ...ideaData } = idea;
+      const { createdBy, approvedBy, ...ideaData } = idea;
       return {
         ...ideaData,
         creatorName: createdBy ? `${createdBy.firstName} ${createdBy.lastName}` : 'Unknown',
         creatorEmail: createdBy ? createdBy.email : '',
+        approvedByName: approvedBy ? `${approvedBy.firstName} ${approvedBy.lastName}` : null,
       };
     });
 
@@ -71,6 +84,14 @@ export const createIdea = async (req: Request, res: Response) => {
       potentialImpact,
       resourcesNeeded,
       status,
+      businessModel,
+      targetMarket,
+      competitiveAdvantage,
+      fundingNeeded,
+      timeline,
+      riskFactors,
+      successMetrics,
+      attachments,
     } = req.body;
 
     // Get the current user
@@ -85,6 +106,7 @@ export const createIdea = async (req: Request, res: Response) => {
     const ideaRepository = AppDataSource.getRepository(Idea);
     const idea = new Idea();
 
+    // Basic idea fields
     idea.title = title;
     idea.description = description;
     idea.category = category;
@@ -92,9 +114,19 @@ export const createIdea = async (req: Request, res: Response) => {
     idea.targetAudience = targetAudience;
     idea.potentialImpact = potentialImpact;
     idea.resourcesNeeded = resourcesNeeded;
-    idea.status = status;
+    idea.status = status || 'draft';
     idea.createdBy = user;
     idea.createdById = user.id;
+
+    // Business-focused fields
+    if (businessModel) idea.businessModel = businessModel;
+    if (targetMarket) idea.targetMarket = targetMarket;
+    if (competitiveAdvantage) idea.competitiveAdvantage = competitiveAdvantage;
+    if (fundingNeeded) idea.fundingNeeded = fundingNeeded;
+    if (timeline) idea.timeline = timeline;
+    if (riskFactors) idea.riskFactors = riskFactors;
+    if (successMetrics) idea.successMetrics = successMetrics;
+    if (attachments) idea.attachments = attachments;
 
     // Set the creator as the first participant
     idea.participants = [`${user.firstName} ${user.lastName}`];
@@ -203,5 +235,206 @@ export const deleteIdea = async (req: Request, res: Response) => {
   } catch (error: any) {
     logger.error(`Error deleting idea with ID ${req.params.id}:`, error);
     return res.status(500).json({ message: 'Failed to delete idea', error: error.message });
+  }
+};
+
+// Complete idea submission (PUT /api/ideas/:id/complete)
+export const completeIdeaSubmission = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const ideaRepository = AppDataSource.getRepository(Idea);
+
+    const idea = await ideaRepository.findOne({
+      where: { id },
+      relations: ['createdBy'],
+    });
+
+    if (!idea) {
+      return res.status(404).json({ message: 'Idea not found' });
+    }
+
+    // Check if the current user is the creator of the idea
+    const userId = (req.user as any).id;
+    if (idea.createdById !== userId) {
+      return res.status(403).json({ message: 'You are not authorized to complete this idea submission' });
+    }
+
+    // Validate that required fields are completed
+    const requiredFields = [
+      'title', 'description', 'category', 'targetAudience', 
+      'potentialImpact', 'businessModel', 'targetMarket'
+    ];
+    
+    const missingFields = requiredFields.filter(field => !idea[field as keyof Idea]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({ 
+        message: 'Cannot complete submission. Missing required fields', 
+        missingFields 
+      });
+    }
+
+    // Mark as completed and submitted
+    idea.submissionCompleted = true;
+    idea.submittedAt = new Date();
+    idea.status = IdeaStatus.SUBMITTED;
+
+    await ideaRepository.save(idea);
+
+    return res.status(200).json({
+      message: 'Idea submission completed successfully',
+      idea: {
+        ...idea,
+        creatorName: idea.createdBy ? `${idea.createdBy.firstName} ${idea.createdBy.lastName}` : 'Unknown',
+        creatorEmail: idea.createdBy ? idea.createdBy.email : '',
+      },
+    });
+  } catch (error: any) {
+    logger.error(`Error completing idea submission with ID ${req.params.id}:`, error);
+    return res.status(500).json({ message: 'Failed to complete idea submission', error: error.message });
+  }
+};
+
+// Admin approve idea
+export const approveIdea = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { adminFeedback } = req.body;
+    const adminUserId = (req.user as any).id;
+
+    const ideaRepository = AppDataSource.getRepository(Idea);
+    const userRepository = AppDataSource.getRepository(User);
+
+    // Check if the current user is an admin
+    const adminUser = await userRepository.findOne({ where: { id: adminUserId } });
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const idea = await ideaRepository.findOne({
+      where: { id },
+      relations: ['createdBy'],
+    });
+
+    if (!idea) {
+      return res.status(404).json({ message: 'Idea not found' });
+    }
+
+    // Update approval status
+    idea.approvalStatus = ApprovalStatus.APPROVED;
+    idea.status = IdeaStatus.APPROVED;
+    idea.approvedById = adminUserId;
+    idea.approvedAt = new Date();
+    if (adminFeedback) idea.adminFeedback = adminFeedback;
+
+    await ideaRepository.save(idea);
+
+    return res.status(200).json({
+      message: 'Idea approved successfully',
+      idea: {
+        ...idea,
+        creatorName: idea.createdBy ? `${idea.createdBy.firstName} ${idea.createdBy.lastName}` : 'Unknown',
+        approvedByName: `${adminUser.firstName} ${adminUser.lastName}`,
+      },
+    });
+  } catch (error: any) {
+    logger.error(`Error approving idea with ID ${req.params.id}:`, error);
+    return res.status(500).json({ message: 'Failed to approve idea', error: error.message });
+  }
+};
+
+// Admin reject idea
+export const rejectIdea = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { rejectionReason, adminFeedback } = req.body;
+    const adminUserId = (req.user as any).id;
+
+    if (!rejectionReason) {
+      return res.status(400).json({ message: 'Rejection reason is required' });
+    }
+
+    const ideaRepository = AppDataSource.getRepository(Idea);
+    const userRepository = AppDataSource.getRepository(User);
+
+    // Check if the current user is an admin
+    const adminUser = await userRepository.findOne({ where: { id: adminUserId } });
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const idea = await ideaRepository.findOne({
+      where: { id },
+      relations: ['createdBy'],
+    });
+
+    if (!idea) {
+      return res.status(404).json({ message: 'Idea not found' });
+    }
+
+    // Update rejection status
+    idea.approvalStatus = ApprovalStatus.REJECTED;
+    idea.status = IdeaStatus.REJECTED;
+    idea.rejectionReason = rejectionReason;
+    if (adminFeedback) idea.adminFeedback = adminFeedback;
+    idea.approvedById = adminUserId;
+    idea.approvedAt = new Date();
+
+    await ideaRepository.save(idea);
+
+    return res.status(200).json({
+      message: 'Idea rejected',
+      idea: {
+        ...idea,
+        creatorName: idea.createdBy ? `${idea.createdBy.firstName} ${idea.createdBy.lastName}` : 'Unknown',
+        rejectedByName: `${adminUser.firstName} ${adminUser.lastName}`,
+      },
+    });
+  } catch (error: any) {
+    logger.error(`Error rejecting idea with ID ${req.params.id}:`, error);
+    return res.status(500).json({ message: 'Failed to reject idea', error: error.message });
+  }
+};
+
+// Get ideas for admin review
+export const getIdeasForReview = async (req: Request, res: Response) => {
+  try {
+    const adminUserId = (req.user as any).id;
+    const userRepository = AppDataSource.getRepository(User);
+
+    // Check if the current user is an admin
+    const adminUser = await userRepository.findOne({ where: { id: adminUserId } });
+    if (!adminUser || adminUser.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+
+    const ideaRepository = AppDataSource.getRepository(Idea);
+    
+    const ideas = await ideaRepository.find({
+      where: { 
+        status: IdeaStatus.SUBMITTED,
+        submissionCompleted: true 
+      },
+      relations: ['createdBy'],
+      order: { submittedAt: 'ASC' },
+    });
+
+    const formattedIdeas = ideas.map(idea => {
+      const { createdBy, ...ideaData } = idea;
+      return {
+        ...ideaData,
+        creatorName: createdBy ? `${createdBy.firstName} ${createdBy.lastName}` : 'Unknown',
+        creatorEmail: createdBy ? createdBy.email : '',
+      };
+    });
+
+    return res.status(200).json({
+      message: 'Ideas for review retrieved successfully',
+      ideas: formattedIdeas,
+      count: formattedIdeas.length,
+    });
+  } catch (error: any) {
+    logger.error('Error fetching ideas for review:', error);
+    return res.status(500).json({ message: 'Failed to fetch ideas for review', error: error.message });
   }
 };

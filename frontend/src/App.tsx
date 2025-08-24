@@ -30,6 +30,17 @@ import { createChallenge } from './services/challenges';
 import { createPartnership } from './services/partnerships';
 import { performNormalSearch } from './services/search';
 import UserProfileModal from './components/modals/UserProfileModal';
+import { IdeaSubmissionForm } from './components/IdeaSubmissionForm';
+import { CoFounderSearch } from './components/CoFounderSearch';
+import { AdminDashboard } from './components/AdminDashboard';
+import { ProjectConversion } from './components/ProjectConversion';
+import { ProjectsDashboard } from './components/ProjectsDashboard';
+import { TeamFormation } from './components/TeamFormation';
+import { MentorMatching } from './components/MentorMatching';
+import InvestorDirectory from './components/InvestorDirectory';
+import InvestorOnboarding from './components/InvestorOnboarding';
+import InvestmentDashboard from './components/InvestmentDashboard';
+import AdvancedProjectManagement from './components/AdvancedProjectManagement';
 
 export function App() {
   const navigate = useNavigate();
@@ -425,6 +436,120 @@ export function App() {
                   onViewProfile={handleViewInnovator}
                 />
               </div>
+            } />
+            
+            {/* New Venture Studio Routes */}
+            <Route path="/submit-idea" element={
+              <ProtectedRoute>
+                <IdeaSubmissionForm 
+                  onClose={() => navigate(-1)} 
+                  onSubmit={() => navigate('/workspace')}
+                />
+              </ProtectedRoute>
+            } />
+            <Route path="/find-cofounders" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <CoFounderSearch />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <AdminDashboard />
+                </div>
+              </ProtectedRoute>
+            } />
+            
+            {/* Phase 1 Routes - Core Venture Development */}
+            <Route path="/projects" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <ProjectsDashboard />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/new" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <ProjectConversion />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/new/:ideaId" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <ProjectConversion />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:projectId" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  {/* Project Details component would go here */}
+                  <ProjectsDashboard />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:projectId/advanced" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <AdvancedProjectManagement 
+                    projectId={window.location.pathname.split('/projects/')[1]?.split('/')[0] || ''}
+                  />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/teams" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <TeamFormation />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/teams/:teamId" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <TeamFormation />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/mentors" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <MentorMatching />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/mentors/:mentorId" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <MentorMatching />
+                </div>
+              </ProtectedRoute>
+            } />
+            
+            {/* Phase 2 Routes - Investment Pipeline */}
+            <Route path="/investors" element={
+              <div className="bg-gray-50 min-h-screen">
+                <InvestorDirectory />
+              </div>
+            } />
+            <Route path="/investors/onboarding" element={
+              <ProtectedRoute>
+                <InvestorOnboarding 
+                  onComplete={() => navigate('/investors')}
+                  onCancel={() => navigate('/investors')}
+                />
+              </ProtectedRoute>
+            } />
+            <Route path="/investments" element={
+              <ProtectedRoute>
+                <div className="bg-gray-50 min-h-screen">
+                  <InvestmentDashboard />
+                </div>
+              </ProtectedRoute>
             } />
           </Routes>
         </main>

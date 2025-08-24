@@ -375,3 +375,4 @@ OPENAI_API_KEY=gsk_your_groq_api_key_here
 
 **API Key**: Use Groq API key (starting with `gsk_`) in OPENAI_API_KEY environment variable.
 - we run all in docker
+- clear context after each feature implementation and then get back to implementation with @progress.md @general-AI-guidelines.md

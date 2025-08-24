@@ -12,8 +12,8 @@ const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextF
 // Public routes - Make sure specific routes come before parameterized routes
 router.get('/', asyncHandler(ideaController.getAllIdeas));
 
-// Any specific routes with fixed paths should go here
-// For example: router.get('/featured', asyncHandler(ideaController.getFeaturedIdeas));
+// Admin routes for idea review
+router.get('/admin/review', authenticateJWT, asyncHandler(ideaController.getIdeasForReview));
 
 // Parameterized routes should come last
 router.get('/:id', asyncHandler(ideaController.getIdeaById));
@@ -22,5 +22,12 @@ router.get('/:id', asyncHandler(ideaController.getIdeaById));
 router.post('/', authenticateJWT, asyncHandler(ideaController.createIdea));
 router.put('/:id', authenticateJWT, asyncHandler(ideaController.updateIdea));
 router.delete('/:id', authenticateJWT, asyncHandler(ideaController.deleteIdea));
+
+// Idea submission completion
+router.put('/:id/complete', authenticateJWT, asyncHandler(ideaController.completeIdeaSubmission));
+
+// Admin approval/rejection routes
+router.put('/:id/approve', authenticateJWT, asyncHandler(ideaController.approveIdea));
+router.put('/:id/reject', authenticateJWT, asyncHandler(ideaController.rejectIdea));
 
 export default router;
