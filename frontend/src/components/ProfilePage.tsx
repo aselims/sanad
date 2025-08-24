@@ -42,6 +42,9 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { getUserConnections, getConnectionRequests, respondToConnectionRequest } from '../services/connections';
 import { getUserCollaborations } from '../services/collaborations';
 import UserProfileModal from './modals/UserProfileModal';
+import VerificationBadge from './VerificationBadge';
+import SkillsManagement from './SkillsManagement';
+import ProfileCompletionWizard from './ProfileCompletionWizard';
 
 interface ProfilePageProps {
   user: Innovator;
@@ -72,12 +75,13 @@ export function ProfilePage({
   const tabParam = queryParams.get('tab');
   
   // Set initial active tab based on query parameter if it exists and is valid
-  const initialTab = tabParam && ['profile', 'potential-matches', 'match-requests', 'connections', 'collaborations', 'messages', 'connection-requests'].includes(tabParam) 
-    ? tabParam as 'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages' | 'connection-requests'
+  const initialTab = tabParam && ['profile', 'skills', 'potential-matches', 'match-requests', 'connections', 'collaborations', 'messages', 'connection-requests'].includes(tabParam) 
+    ? tabParam as 'profile' | 'skills' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages' | 'connection-requests'
     : 'profile';
   
-  const [activeTab, setActiveTab] = useState<'profile' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages' | 'connection-requests'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'profile' | 'skills' | 'potential-matches' | 'match-requests' | 'connections' | 'collaborations' | 'messages' | 'connection-requests'>(initialTab);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showCompletionWizard, setShowCompletionWizard] = useState(false);
   const [profileData, setProfileData] = useState<Innovator>(user);
   const [isLoading, setIsLoading] = useState<boolean>(externalLoading || false);
   const [error, setError] = useState<string | null>(null);
@@ -148,6 +152,25 @@ export function ProfilePage({
 
     fetchMatches();
   }, [activeTab, isAuthenticated, isOwnProfile, user.id]);
+
+  // Show ProfileCompletionWizard for users with incomplete profiles
+  useEffect(() => {
+    if (isAuthenticated && isOwnProfile) {
+      // Check if profile completion is low or if it's a new user
+      const profileCompletionPercentage = (profileData as any).profileCompletionPercentage || 0;
+      const isNewUser = profileCompletionPercentage === 0;
+      const hasIncompleteProfile = profileCompletionPercentage < 50;
+      
+      if (isNewUser || hasIncompleteProfile) {
+        // Show wizard after a brief delay to let the page load
+        const timer = setTimeout(() => {
+          setShowCompletionWizard(true);
+        }, 1000);
+        
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isAuthenticated, isOwnProfile, profileData]);
   
   // Fetch connections when tab changes
   useEffect(() => {
@@ -763,6 +786,20 @@ export function ProfilePage({
             {renderTypeSpecificFields()}
           </div>
         </div>
+      </div>
+    );
+  };
+
+  // Function to render skills tab content
+  const renderSkillsContent = () => {
+    return (
+      <div className="space-y-6">
+        <SkillsManagement 
+          userId={profileData.id} 
+          canEdit={isOwnProfile}
+          canEndorse={isAuthenticated && !isOwnProfile}
+          showAddButton={isOwnProfile}
+        />
       </div>
     );
   };
@@ -1468,6 +1505,8 @@ export function ProfilePage({
     switch (activeTab) {
       case 'profile':
         return renderProfileContent();
+      case 'skills':
+        return renderSkillsContent();
       case 'potential-matches':
         return renderPotentialMatchesContent();
       case 'match-requests':
@@ -1575,7 +1614,10 @@ export function ProfilePage({
             </div>
             
             <div className="md:ml-5 mt-3 md:mt-0">
-              <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-gray-900">{profileData.name}</h1>
+                <VerificationBadge user={profileData as any} size="lg" showLabel showTooltip />
+              </div>
               <div className="flex flex-wrap items-center mt-1">
                 <span className="capitalize bg-gray-100 text-gray-800 text-sm px-2 py-1 rounded">
                   {profileData.type}
@@ -1619,13 +1661,22 @@ export function ProfilePage({
           </div>
           
           {isOwnProfile && (
-            <button
-              onClick={() => setShowEditModal(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Profile
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Profile
+              </button>
+              <button
+                onClick={() => setShowCompletionWizard(true)}
+                className="inline-flex items-center px-4 py-2 border border-indigo-600 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <Zap className="mr-2 h-4 w-4" />
+                Complete Profile
+              </button>
+            </div>
           )}
           
           {!isOwnProfile && isAuthenticated && (
@@ -1688,6 +1739,17 @@ export function ProfilePage({
             }`}
           >
             Profile
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('skills')}
+            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'skills'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Skills & Portfolio
           </button>
           
           {isAuthenticated && isOwnProfile && (
@@ -1775,6 +1837,19 @@ export function ProfilePage({
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           onSave={handleSaveProfile}
+        />
+      )}
+      
+      {/* Profile Completion Wizard */}
+      {showCompletionWizard && (
+        <ProfileCompletionWizard
+          user={profileData as any}
+          onComplete={(updatedUser) => {
+            setProfileData(updatedUser as any);
+            setShowCompletionWizard(false);
+          }}
+          onClose={() => setShowCompletionWizard(false)}
+          isModal={true}
         />
       )}
       
