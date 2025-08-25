@@ -11,6 +11,7 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 // Project document routes
+router.get('/', authenticateJWT, asyncHandler(projectDocumentController.getAllDocuments.bind(projectDocumentController)));
 router.post('/', authenticateJWT, asyncHandler(projectDocumentController.createDocument.bind(projectDocumentController)));
 router.get('/project/:projectId', authenticateJWT, asyncHandler(projectDocumentController.getProjectDocuments.bind(projectDocumentController)));
 router.get('/project/:projectId/analytics', authenticateJWT, asyncHandler(projectDocumentController.getDocumentAnalytics.bind(projectDocumentController)));

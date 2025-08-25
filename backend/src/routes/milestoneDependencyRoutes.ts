@@ -11,6 +11,7 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 // Milestone dependency routes
+router.get('/', authenticateJWT, asyncHandler(milestoneDependencyController.getAllDependencies.bind(milestoneDependencyController)));
 router.post('/', authenticateJWT, asyncHandler(milestoneDependencyController.createDependency.bind(milestoneDependencyController)));
 router.get('/milestone/:milestoneId', authenticateJWT, asyncHandler(milestoneDependencyController.getMilestoneDependencies.bind(milestoneDependencyController)));
 router.get('/project/:projectId', authenticateJWT, asyncHandler(milestoneDependencyController.getProjectDependencies.bind(milestoneDependencyController)));

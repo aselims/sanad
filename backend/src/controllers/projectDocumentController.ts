@@ -16,6 +16,26 @@ export class ProjectDocumentController {
     this.userRepository = AppDataSource.getRepository(User);
   }
 
+  async getAllDocuments(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req.user as any)?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const documents = await this.documentRepository
+        .createQueryBuilder('document')
+        .leftJoinAndSelect('document.project', 'project')
+        .where('project.founderId = :userId OR project.teamLeadId = :userId', { userId })
+        .orderBy('document.createdAt', 'DESC')
+        .getMany();
+      res.json({ message: 'Documents retrieved successfully', documents, count: documents.length });
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      res.status(500).json({ error: 'Failed to fetch documents' });
+    }
+  }
+
   async createDocument(req: Request, res: Response): Promise<void> {
     try {
       const {

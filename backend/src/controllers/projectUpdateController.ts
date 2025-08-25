@@ -19,6 +19,26 @@ export class ProjectUpdateController {
     this.userRepository = AppDataSource.getRepository(User);
   }
 
+  async getAllUpdates(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req.user as any)?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const updates = await this.updateRepository
+        .createQueryBuilder('update')
+        .leftJoinAndSelect('update.project', 'project')
+        .where('project.founderId = :userId OR project.teamLeadId = :userId', { userId })
+        .orderBy('update.createdAt', 'DESC')
+        .getMany();
+      res.json({ message: 'Updates retrieved successfully', updates, count: updates.length });
+    } catch (error) {
+      console.error('Error fetching updates:', error);
+      res.status(500).json({ error: 'Failed to fetch updates' });
+    }
+  }
+
   async createUpdate(req: Request, res: Response): Promise<void> {
     try {
       const {

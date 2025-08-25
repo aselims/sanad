@@ -16,6 +16,27 @@ export class ProjectRiskController {
     this.userRepository = AppDataSource.getRepository(User);
   }
 
+  async getAllRisks(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req.user as any)?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const risks = await this.projectRiskRepository
+        .createQueryBuilder('risk')
+        .leftJoinAndSelect('risk.project', 'project')
+        .where('project.founderId = :userId OR project.teamLeadId = :userId', { userId })
+        .orderBy('risk.createdAt', 'DESC')
+        .getMany();
+      res.json({ message: 'Risks retrieved successfully', risks, count: risks.length });
+    } catch (error) {
+      console.error('Error fetching risks:', error);
+      res.status(500).json({ error: 'Failed to fetch risks' });
+    }
+  }
+
+
   async createRisk(req: Request, res: Response): Promise<void> {
     try {
       const {

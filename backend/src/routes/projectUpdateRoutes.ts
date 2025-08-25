@@ -11,6 +11,7 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 // Project update routes
+router.get('/', authenticateJWT, asyncHandler(projectUpdateController.getAllUpdates.bind(projectUpdateController)));
 router.post('/', authenticateJWT, asyncHandler(projectUpdateController.createUpdate.bind(projectUpdateController)));
 router.get('/project/:projectId', authenticateJWT, asyncHandler(projectUpdateController.getProjectUpdates.bind(projectUpdateController)));
 router.get('/project/:projectId/health', authenticateJWT, asyncHandler(projectUpdateController.getProjectHealthMetrics.bind(projectUpdateController)));

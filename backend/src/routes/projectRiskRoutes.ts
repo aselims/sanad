@@ -11,6 +11,7 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
 };
 
 // Project risk routes
+router.get('/', authenticateJWT, asyncHandler(projectRiskController.getAllRisks.bind(projectRiskController)));
 router.post('/', authenticateJWT, asyncHandler(projectRiskController.createRisk.bind(projectRiskController)));
 router.get('/project/:projectId', authenticateJWT, asyncHandler(projectRiskController.getProjectRisks.bind(projectRiskController)));
 router.get('/project/:projectId/analytics', authenticateJWT, asyncHandler(projectRiskController.getRiskAnalytics.bind(projectRiskController)));

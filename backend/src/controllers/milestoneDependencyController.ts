@@ -16,6 +16,29 @@ export class MilestoneDependencyController {
     this.projectRepository = AppDataSource.getRepository(Project);
   }
 
+  async getAllDependencies(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req.user as any)?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const dependencies = await this.dependencyRepository
+        .createQueryBuilder('dependency')
+        .leftJoinAndSelect('dependency.predecessorMilestone', 'predecessor')
+        .leftJoinAndSelect('dependency.successorMilestone', 'successor')
+        .leftJoinAndSelect('predecessor.project', 'predecessorProject')
+        .leftJoinAndSelect('successor.project', 'successorProject')
+        .where('predecessorProject.founderId = :userId OR predecessorProject.teamLeadId = :userId OR successorProject.founderId = :userId OR successorProject.teamLeadId = :userId', { userId })
+        .orderBy('dependency.createdAt', 'DESC')
+        .getMany();
+      res.json({ message: 'Dependencies retrieved successfully', dependencies, count: dependencies.length });
+    } catch (error) {
+      console.error('Error fetching dependencies:', error);
+      res.status(500).json({ error: 'Failed to fetch dependencies' });
+    }
+  }
+
   async createDependency(req: Request, res: Response): Promise<void> {
     try {
       const {

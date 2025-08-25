@@ -16,6 +16,26 @@ export class ProjectResourceController {
     this.userRepository = AppDataSource.getRepository(User);
   }
 
+  async getAllResources(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req.user as any)?.id;
+      if (!userId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+      const resources = await this.projectResourceRepository
+        .createQueryBuilder('resource')
+        .leftJoinAndSelect('resource.project', 'project')
+        .where('project.founderId = :userId OR project.teamLeadId = :userId', { userId })
+        .orderBy('resource.createdAt', 'DESC')
+        .getMany();
+      res.json({ message: 'Resources retrieved successfully', resources, count: resources.length });
+    } catch (error) {
+      console.error('Error fetching resources:', error);
+      res.status(500).json({ error: 'Failed to fetch resources' });
+    }
+  }
+
   async createResource(req: Request, res: Response): Promise<void> {
     try {
       const {
