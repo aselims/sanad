@@ -13,7 +13,7 @@
     "migration:generate": "npm run typeorm migration:generate -- -d src/config/data-source.ts",
     "migration:run": "npm run typeorm migration:run -- -d src/config/data-source.ts",
     "seed:db": "ts-node src/scripts/seed-database.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node -r ts-node/register/transpile-only --test src/middlewares/__tests__/*.test.ts"
   },
   "keywords": [],
   "author": "",

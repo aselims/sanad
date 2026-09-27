@@ -6,7 +6,10 @@ interface RateLimitEntry {
   resetTime: Date;
 }
 
-// In-memory storage for rate limiting
+// In-memory storage for rate limiting, shared by every limiter in this module.
+// Every key is prefixed with the limiter's required `name`: without it, two
+// limiters on the same path would share one counter, so the tightest `max`
+// would cap both and the first caller's window would apply to the other.
 // In production, consider using Redis for better scalability
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
@@ -19,9 +22,10 @@ setInterval(() => {
     }
   }
   logger.info(`Rate limit cleanup completed. Active entries: ${rateLimitStore.size}`);
-}, 60 * 60 * 1000); // 1 hour
+}, 60 * 60 * 1000).unref(); // 1 hour; unref so the timer never holds the process open
 
 export interface RateLimitOptions {
+  name: string; // Bucket name; prefixes every store key so limiters never share a counter
   windowMs: number; // Time window in milliseconds
   max: number; // Maximum number of requests per window
   message?: string; // Custom error message
@@ -48,7 +52,7 @@ export function createRateLimit(options: RateLimitOptions) {
                     'unknown';
 
     const now = new Date();
-    const key = `${clientIP}:${req.route?.path || req.path}`;
+    const key = `${options.name}:${clientIP}:${req.route?.path || req.path}`;
     
     // Get or create rate limit entry
     let entry = rateLimitStore.get(key);
@@ -101,6 +105,7 @@ export function createRateLimit(options: RateLimitOptions) {
  * Authenticated users: 10 requests per hour per user
  */
 export const smartAISearchRateLimit = createSmartRateLimit({
+  name: 'ai-search',
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // 10 requests per hour for anonymous users (IP-based)
   authenticatedMax: 10, // 10 requests per hour for authenticated users (user-based)
@@ -114,6 +119,7 @@ export const smartAISearchRateLimit = createSmartRateLimit({
  * @deprecated Use smartAISearchRateLimit for better user experience
  */
 export const aiSearchRateLimit = createRateLimit({
+  name: 'ai-search-legacy',
   windowMs: 24 * 60 * 60 * 1000, // 24 hours
   max: 3, // 3 requests per day
   message: 'Daily AI search limit reached (3 requests per day). Please register for unlimited access or try again tomorrow.'
@@ -141,12 +147,12 @@ export function createSmartRateLimit(options: SmartRateLimitOptions) {
     
     if (options.authenticationAware && isAuthenticated) {
       // Use user-based rate limiting for authenticated users
-      key = `user:${user.id}:${req.route?.path || req.path}`;
+      key = `${options.name}:user:${user.id}:${req.route?.path || req.path}`;
       currentMax = options.authenticatedMax || options.max;
       currentMessage = options.authenticatedMessage || options.message || 'Rate limit exceeded for authenticated user';
     } else {
       // Use IP-based rate limiting for anonymous users
-      key = `ip:${clientIP}:${req.route?.path || req.path}`;
+      key = `${options.name}:ip:${clientIP}:${req.route?.path || req.path}`;
       currentMax = options.max;
       currentMessage = options.message || 'Rate limit exceeded';
     }
@@ -215,6 +221,7 @@ export function createSmartRateLimit(options: SmartRateLimitOptions) {
  * General API rate limiter: 100 requests per 15 minutes
  */
 export const generalRateLimit = createRateLimit({
+  name: 'general',
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 requests per 15 minutes
   message: 'Too many requests from this IP. Please try again later.'
