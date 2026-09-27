@@ -1,4 +1,8 @@
-name: CI/CD Pipeline
+name: CI
+
+# Prod (sanad.eleventures.ai on srvEagle) is deployed by hand from a pinned commit:
+# see DEPLOY-srvEagle.md in /opt/sources/sanad on that box. The old Apache/ssh-action
+# deploy targeted the pre-2026-07-28 host and never authenticated after 2025-08.
 
 on:
   push:
@@ -7,183 +11,18 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  backend:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
+    defaults:
+      run:
+        working-directory: backend
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Deploy to server
-      uses: appleboy/ssh-action@master
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        script: |
-          mkdir -p ~/sanad
-          cd ~/sanad
-          
-          # Enable necessary Apache modules
-          sudo a2enmod proxy proxy_http proxy_wstunnel ssl rewrite
-
-          # Backup existing files before deployment
-          timestamp=$(date +%Y%m%d_%H%M%S)
-          if [ -d ".git" ]; then
-            # Create backup of any local changes
-            git diff > ~/sanad_changes_$timestamp.patch || true
-            echo "Backed up local changes to ~/sanad_changes_$timestamp.patch"
-            
-            # Track untracked files
-            if [ -n "$(git ls-files --others --exclude-standard)" ]; then
-              mkdir -p ~/sanad_backup_$timestamp
-              git ls-files --others --exclude-standard -z | xargs -0 -I{} cp --parents {} ~/sanad_backup_$timestamp/
-              echo "Backed up untracked files to ~/sanad_backup_$timestamp/"
-            fi
-            
-            # Update repository
-            git fetch origin main
-            git reset --hard origin/main
-            git clean -fd  # Remove untracked files
-          else
-            # Backup entire directory if it's not a git repo
-            if [ "$(ls -A)" ]; then
-              mkdir -p ~/sanad_backup_$timestamp
-              cp -r ./* ~/sanad_backup_$timestamp/ 2>/dev/null || true
-              cp -r ./.[^.]* ~/sanad_backup_$timestamp/ 2>/dev/null || true
-              echo "Backed up existing files to ~/sanad_backup_$timestamp/"
-            fi
-            
-            # Initialize repository
-            git init
-            git remote add origin https://github.com/aselims/sanad.git
-            git fetch origin main
-            git reset --hard origin/main
-          fi
-          
-          # Create .env file with secrets
-          cat > .env << EOL
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          POSTGRES_USER=postgres
-          POSTGRES_PASSWORD=postgres
-          POSTGRES_DB=sanad
-          EOL
-          
-          # Make dev.sh executable
-          chmod +x dev.sh
-          
-          # Stop any running containers
-          echo "Stopping any existing Docker containers..."
-          sudo docker compose down || true
-          
-          # Start using dev.sh script
-          echo "Starting services with dev.sh..."
-          nohup ./dev.sh --remote > deployment.log 2>&1 &
-          
-          # Wait for services to start
-          echo "Waiting for services to start..."
-          sleep 15
-          
-          # Run database seed script to populate initial data
-          echo "Running database seed script..."
-          # Enter backend container and run the seed script
-          sudo docker compose -f docker-compose.dev-remote.yml exec -T backend node dist/scripts/seed-database.js >> deployment.log 2>&1 || echo "Seed script failed - database may already be populated"
-          
-          # Backup existing Apache configs if they exist
-          if [ -f "/etc/apache2/sites-available/sanad.conf" ]; then
-            sudo cp /etc/apache2/sites-available/sanad.conf /etc/apache2/sites-available/sanad.conf.bak.$timestamp
-            echo "Backed up existing Apache config to sanad.conf.bak.$timestamp"
-          fi
-          
-          if [ -f "/etc/apache2/sites-available/sanad-le-ssl.conf" ]; then
-            sudo cp /etc/apache2/sites-available/sanad-le-ssl.conf /etc/apache2/sites-available/sanad-le-ssl.conf.bak.$timestamp
-            echo "Backed up existing SSL Apache config to sanad-le-ssl.conf.bak.$timestamp"
-          fi
-          
-          # Create HTTP virtual host for Certbot validation
-          sudo tee /etc/apache2/sites-available/sanad.conf > /dev/null << EOL
-          <VirtualHost *:80>
-              ServerName sanad.selimsalman.de
-              
-              # Frontend proxy
-              ProxyPreserveHost On
-              ProxyPass / http://localhost:8081/
-              ProxyPassReverse / http://localhost:8081/
-              
-              # API proxy - ensure no double /api prefix
-              ProxyPass /api http://localhost:3001/
-              ProxyPassReverse /api http://localhost:3001/
-              
-              ErrorLog \${APACHE_LOG_DIR}/sanad-error.log
-              CustomLog \${APACHE_LOG_DIR}/sanad-access.log combined
-          </VirtualHost>
-          EOL
-          
-          # Enable site and reload Apache
-          sudo a2ensite sanad.conf
-          sudo systemctl reload apache2
-          
-          # Install certbot if not available
-          if ! command -v certbot &> /dev/null; then
-            sudo apt update
-            sudo apt install -y certbot python3-certbot-apache
-          fi
-          
-          # Check if certificate already exists and is valid
-          cert_exists=false
-          if [ -d "/etc/letsencrypt/live/sanad.selimsalman.de" ]; then
-            cert_exists=true
-            # Check expiry date (30 days threshold)
-            expiry=$(sudo openssl x509 -enddate -noout -in /etc/letsencrypt/live/sanad.selimsalman.de/cert.pem | cut -d= -f2)
-            expiry_seconds=$(sudo date -d "$expiry" +%s)
-            now_seconds=$(date +%s)
-            # 30 days in seconds = 30*24*60*60 = 2592000
-            if [ $((expiry_seconds - now_seconds)) -gt 2592000 ]; then
-              echo "SSL certificate exists and is valid for more than 30 days. Skipping renewal."
-            else
-              cert_exists=false
-              echo "SSL certificate exists but expires soon. Will renew."
-            fi
-          fi
-          
-          # Get SSL certificate using certbot if needed
-          if [ "$cert_exists" = false ]; then
-            echo "Obtaining SSL certificate..."
-            sudo certbot --apache -d sanad.selimsalman.de --non-interactive --agree-tos --email admin@selimsalman.de
-          fi
-          
-          # Update SSL configuration
-          sudo tee /etc/apache2/sites-available/sanad-le-ssl.conf > /dev/null << EOL
-          <IfModule mod_ssl.c>
-          <VirtualHost *:443>
-              ServerName sanad.selimsalman.de
-              
-              # Frontend proxy
-              ProxyPreserveHost On
-              ProxyPass / http://localhost:8081/
-              ProxyPassReverse / http://localhost:8081/
-              
-              # API proxy - ensure no double /api prefix
-              ProxyPass /api http://localhost:3001/
-              ProxyPassReverse /api http://localhost:3001/
-              
-              # WebSocket support
-              RewriteEngine On
-              RewriteCond %{HTTP:Upgrade} =websocket [NC]
-              RewriteRule /(.*)  ws://localhost:8081/$1 [P,L]
-              
-              ErrorLog \${APACHE_LOG_DIR}/sanad-error.log
-              CustomLog \${APACHE_LOG_DIR}/sanad-access.log combined
-              
-              Include /etc/letsencrypt/options-ssl-apache.conf
-              SSLCertificateFile /etc/letsencrypt/live/sanad.selimsalman.de/fullchain.pem
-              SSLCertificateKeyFile /etc/letsencrypt/live/sanad.selimsalman.de/privkey.pem
-          </VirtualHost>
-          </IfModule>
-          EOL
-          
-          # Reload Apache after configuration update
-          sudo systemctl reload apache2
-          
-          echo "Deployment complete. Site is available at https://sanad.selimsalman.de"
+        node-version: 22
+        cache: npm
+        cache-dependency-path: backend/package-lock.json
+    - run: npm ci
+    - run: npm test
+    - run: npm run build
