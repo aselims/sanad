@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { AnalyticsOptOut } from './AnalyticsOptOut';
 
 interface LegalPageProps {
   onBack: () => void;
@@ -151,12 +152,24 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
         Depending on your location, you may have certain rights regarding your personal information, such as the right to access, correct, delete, or restrict processing of your personal information.
       </p>
       
-      <h2>6. Changes to This Privacy Policy</h2>
+      <h2 id="analytics">6. Analytics</h2>
+      <p>
+        We measure how the platform is used with Umami, open-source analytics that we host ourselves on a server in Germany. No third party receives this data, and it is neither sold nor used for advertising.
+      </p>
+      <p>
+        Umami sets no cookies and stores nothing on your device for the measurement. It records the page address and title, referrer, browser, operating system, device type, screen size, language, country, time and named interaction events. Visits are told apart by an identifier derived from a hash with a rotating salt; your IP address is used briefly for that and for a country lookup and is not stored. There is no cross-site or cross-device tracking and no persistent visitor profile. Browsers that send Do Not Track are not counted. For these reasons no consent banner is shown for it.
+      </p>
+      <p>
+        You can opt out at any time with the switch below. Your choice is stored in this browser's local storage under "umami.disabled" and applies to this browser only.
+      </p>
+      <AnalyticsOptOut />
+      
+      <h2>7. Changes to This Privacy Policy</h2>
       <p>
         We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
       </p>
       
-      <h2>7. Contact Us</h2>
+      <h2>8. Contact Us</h2>
       <p>
         If you have any questions about this Privacy Policy, please contact us at privacy@collopi.com.
       </p>
@@ -240,7 +253,7 @@ export function LegalPage({ onBack, pageType }: LegalPageProps) {
           <div className="px-6 py-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-6">{getPageTitle()}</h1>
             <div className="text-sm text-gray-500 mb-8">
-              Last Updated: June 1, 2023
+              Last Updated: {pageType === 'privacy' ? 'October 7, 2026' : 'June 1, 2023'}
             </div>
             
             {renderContent()}
